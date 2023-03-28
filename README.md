@@ -1,9 +1,9 @@
 # StarWarsTL:  Wookieepedia script
 Code used to fetch and transform data from Wookieepedia.
 
-## Rest of StarWarsTL
-Client: https://github.com/tomasz13nocon/starwarstl
-Server: https://github.com/tomasz13nocon/starwarstl-server
+## Other StarWarsTL repositories
+- [Client](https://github.com/tomasz13nocon/starwarstl-client)
+- [Server](https://github.com/tomasz13nocon/starwarstl-server)
 
 ---
 
