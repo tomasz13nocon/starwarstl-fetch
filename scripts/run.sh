@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Script to be used from a cron job
+# Runs the main script, logs to files, sends email in case of errors
+
 [ -z $FETCH_DIR ] && echo "FETCH_DIR env var not set. Aborting." && exit 1
 [ -z $MAILBOT_SERVER ] && echo "MAILBOT_SERVER env var not set. Aborting." && exit 1
 [ -z $MAILBOT_FROM ] && echo "MAILBOT_FROM env var not set. Aborting." && exit 1
