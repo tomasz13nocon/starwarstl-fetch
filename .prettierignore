@@ -1,0 +1,8 @@
+src/index.js
+wtf_wikipedia
+node_modules
+.cache
+debug
+.env*
+logs
+TODO

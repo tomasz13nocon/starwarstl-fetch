@@ -7,148 +7,19 @@ import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 import { decode } from "html-entities";
 import { MongoClient } from "mongodb";
-import { fetchBuilder, FileSystemCache } from "node-fetch-cache";
 import { encode, isBlurhashValid } from "blurhash";
 
-import { FsImage } from "./fsImage.js";
-import { S3Image } from "./s3Image.js";
-import { buildTvImagePath, fileExists, Size, log, unscuffDate } from "./utils.js";
+import { buildTvImagePath, fileExists, log, toCamelCase, toHumanReadable, unscuffDate } from "./util.js";
+import { NUMBERS, seriesTypes, Size, suppressLog } from "./const.js";
 import { parseWookieepediaDate, UnsupportedDateFormat } from "./parseWookieepediaDate.js";
+import config, { debug } from "./config.js";
+import { seasonReg, seasonRegWordBound, seriesRegexes } from "./regex.js";
+import { fetchImageInfo, fetchWookiee } from "./fetchWookiee.js";
+import netLog from "./netLog.js";
 
-const fetchCache = fetchBuilder.withCache(new FileSystemCache());
-const MW_API_USER_AGENT = process.env.MW_API_USER_AGENT;
+const { Image, CACHE_PAGES, LIMIT } = config();
 
-if (MW_API_USER_AGENT === undefined) {
-  log.error("MW_API_USER_AGENT environment variable must be defined.");
-  process.exit(1);
-}
-
-let CACHE_PAGES = false;
-let LIMIT;
-let Image = FsImage;
-if (process.env.IMAGE_HOST === "filesystem") {
-  Image = FsImage;
-}
-else if (process.env.IMAGE_HOST === "s3") {
-  Image = S3Image;
-}
-
-// Command line args
-for (let i = 2; i < process.argv.length; i++) {
-  let arg = process.argv[i];
-
-  if (arg === "--cache" || arg === "-c") {
-    CACHE_PAGES = true;
-  }
-  else if (arg === "--limit" || arg === "-l") {
-    i++;
-    let value = +(process.argv[i]);
-    if (i >= process.argv.length || !Number.isInteger(value) || value < 1) {
-      log.error(`option ${arg} requires a positive integer value`);
-      process.exit(1);
-    }
-    LIMIT = value;
-  }
-  else if (arg === "--fs") {
-    Image = FsImage;
-  }
-  else if (arg === "--s3") {
-    Image = S3Image;
-  }
-  else {
-    log.error(`Unknown argument: ${arg}`);
-    process.exit(1);
-  }
-}
-
-if (Image === S3Image) {
-  log.info("Using S3 as image host");
-}
-else if (Image === FsImage) {
-  log.info("Using filesystem as image host");
-}
-
-
-const debug = {
-  // Write a list of distinct infobox templates to file
-  distinctInfoboxes: false,
-  // Warn on bad, yet recoverable wikitext
-  badWikitext: false, // not implemented
-  // Warn on redlinks
-  redlinks: false,
-  normalizations: true,
-  normalizationsImages: false,
-  saveTimeline: true, // saves timeline wikitext to file
-};
-
-// Suppress specific warnings for specific titles after manually confirming they're not an issue
-// TODO read these from a file
-const suppressLog = {
-  lowConfidenceManga: ["The Banchiians"],
-  lowConfidenceAdultNovel: [
-    "Star Wars: The Aftermath Trilogy",
-    "The High Republic: Cataclysm"
-  ],
-  multipleRegexMatches: [
-    "Star Wars: The High Republic (Marvel Comics 2021)",
-    "Star Wars: The High Republic Adventures",
-    "Star Wars: The High Republic: The Edge of Balance",
-    "Star Wars: The High Republic: Trail of Shadows",
-    "Star Wars: The High Republic: Eye of the Storm",
-    "Star Wars: The High Republic Adventures (IDW Publishing 2021)",
-    "Star Wars: The High Republic — The Blade",
-    "Star Wars: The High Republic Adventures: The Nameless Terror",
-  ],
-  lowConfidenceAnimated: [
-    "Hunted",
-  ],
-};
-
-const NUMBERS = {
-  'one': 1,
-  'two': 2,
-  'three': 3,
-  'four': 4,
-  'five': 5,
-  'six': 6,
-  'seven': 7,
-  'eight': 8,
-  'nine': 9,
-  'ten': 10,
-  'eleven': 11,
-  'twelve': 12,
-  'thirteen': 13,
-  'fourteen': 14,
-  'fifteen': 15,
-  'sixteen': 16,
-  'seventeen': 17,
-  'eighteen': 18,
-  'nineteen': 19,
-  'twenty': 20,
-};
-const seasonReg = new RegExp("^(?:season )?(" + Object.keys(NUMBERS).reduce((acc, n) => `${acc}|${n}`) + ")$");
-const seasonRegWordBoundaries = new RegExp("(?:season )?\\b(" + Object.keys(NUMBERS).reduce((acc, n) => `${acc}|${n}`) + ")\\b");
-const seriesTypes = {
-  "book series": "book",
-  "comic series": "comic",
-  "movie": "film",
-  "television series": "tv",
-  "comic story arc": "comic",
-  "magazine": "comic",
-};
-// Latter ones have higher priority, as they overwrite
-const seriesRegexes = {
-  "multimedia": /multimedia project/i,
-  "comic": /((comic([ -]book)?|manga|graphic novel) (mini-?)?series|series of( young readers?)? (comic([ -]book)?s|mangas|graphic novels))/i,
-  "short-story": /short stor(y|ies)/i,
-  "game": /video game/i,
-  // "yr": /((series of books|book series).*?young children|young[- ]reader.*?(book series|series of books))/i,
-};
 let tvTypes = {};
-let redirectNum = 0;
-let bytesRecieved = 0;
-let imageBytesRecieved = 0;
-let requestNum = 0;
 
 (() => {
   wtf.extend((models, templates) => {
@@ -175,17 +46,11 @@ let requestNum = 0;
     templates["scroll box"] = (tmpl, list) => {
       // TODO
       // console.log(parse(tmpl));
-      //list.push({ template: "Scroll Box", value: wtf(tmpl) });
+      // list.push({ template: "Scroll Box", value: wtf(tmpl) });
       return tmpl;
     };
   });
 })();
-
-const toCamelCase = str => {
-  return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
-    return index === 0 ? word.toLowerCase() : word.toUpperCase();
-  }).replace(/\s+/g, '');
-};
 
 // `keys` is an array of (possibly mixed):
 // - strings representing infobox key
@@ -213,113 +78,6 @@ const getInfoboxData = (infobox, keys) => {
     ret[dbKey] = value;
   }
   return ret;
-};
-
-const toHumanReadable = (n) => {
-  if (n < 1000) return `${n} B`;
-  else if (n < 1000000) return `${n / 1000} KB`;
-  else if (n < 1000000000) return `${n / 1000000} MB`;
-  else if (n < 1000000000000) return `${n / 1000000000} GB`;
-};
-
-// Code extracted to use in fetchWookiee and fetchImageInfo
-const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true) {
-  if (typeof titles === "string") titles = [titles];
-  // Fandom allows up to 50 titles per request
-  for (let i = 0; i < titles.length; i+=50) {
-    let titlesStr = titles.slice(i, i+50).reduce((acc, t) => acc += t + "|", "").slice(0, -1);
-    const apiUrl = `https://starwars.fandom.com/api.php?\
-action=query&\
-format=json&\
-origin=*&\
-maxlag=1&\
-maxage=604800&\
-titles=${encodeURIComponent(titlesStr)}\
-${Object.entries(apiParams).reduce((acc, [key, value]) => acc += `&${key}=${value}`, "")}`;
-    const resp = cache ? await fetchCache(apiUrl) : await fetch(apiUrl, { headers: { "Accept-Encoding": "gzip", "User-Agent": MW_API_USER_AGENT } });
-    requestNum++;
-    if (!resp.ok) {
-      throw "Non 2xx response status! Response:\n" + JSON.stringify(resp);
-    }
-    let respSize = (await resp.clone().blob()).size;
-    bytesRecieved += respSize;
-    log.info(`Recieved ${toHumanReadable(respSize)} of ${apiParams.prop}`); //  for titles: ${titles.slice(i, i+50)}
-    const json = await resp.json();
-    if (json.query === undefined) {
-      log.error(apiUrl);
-      log.error(json);
-      log.error(resp);
-      throw "Response Invalid";
-    }
-    let pages = Object.values(json.query.pages);
-    // If there's random symbols or underscores in the title it gets normalized,
-    // so we make the normalized version part of the return value
-    let normalizations = {};
-    if (json.query.normalized) {
-      if (apiParams.prop === "imageinfo") {
-        if (debug.normalizationsImages) {
-          log.info("Normalized: ", json.query.normalized);
-        }
-      }
-      else if (debug.normalizations) {
-        log.info("Normalized: ", json.query.normalized);
-      }
-      // log.info("Normalized ", json.query.normalized.length, " items");
-      for (let normalization of json.query.normalized) {
-        normalizations[normalization.to] = normalization.from;
-      }
-    }
-    for (let page of pages) {
-      page.normalizedFrom = normalizations[page.title];
-      yield page;
-    }
-  }
-};
-
-// yields objects containing title, pageid and wikitext
-// number of yields will be the same as the amount of titles provided
-// titles needs to be a string (single title) or a non empty array of strings
-const fetchWookiee = async function* (titles, cache = true) {
-  for await (let page of fetchWookieeHelper(titles, { prop: "revisions", rvprop: "content|timestamp", rvslots: "main" }, cache)) {
-    if (page.missing !== undefined) {
-      yield {
-        title: page.title,
-        missing: true,
-      };
-    }
-    else {
-      yield {
-        title: page.title,
-        pageid: page.pageid,
-        wikitext: page.revisions?.[0].slots.main["*"],
-        timestamp: page.revisions?.[0].timestamp,
-        // If there's no normalization for this title this field is just undefined
-        normalizedFrom: page.normalizedFrom,
-      };
-    }
-  }
-};
-
-const fetchImageInfo = async function* (titles) {
-  for await (let page of fetchWookieeHelper(titles, { prop: "imageinfo", iiprop: "url|sha1|timestamp" })) {
-    if (page.missing !== undefined) {
-      yield {
-        title: page.title,
-        missing: true,
-      };
-    }
-    else {
-      yield {
-        title: page.title,
-        pageid: page.pageid,
-        sha1: page.imageinfo?.[0].sha1,
-        timestamp: page.imageinfo?.[0].timestamp,
-        url: page.imageinfo?.[0].url,
-        // If there's no normalization for this title this field is just undefined
-        normalizedFrom: page.normalizedFrom,
-      };
-    }
-  }
 };
 
 // if article doesn't exist returns null
@@ -588,7 +346,7 @@ const fillDraftWithInfoboxData = (draft, infobox) => {
   if (draft.releaseDate && !draft.releaseDateDetails) {
     let rd = new Date(draft.releaseDate);
     if (isNaN(rd)) {
-      draft.releaseDateDetails = [ { type: "text", text: draft.releaseDate } ];
+      draft.releaseDateDetails = [{ type: "text", text: draft.releaseDate }];
     }
     else {
       draft.releaseDateDetails = rd.toLocaleDateString("en-US", {
@@ -599,7 +357,7 @@ const fillDraftWithInfoboxData = (draft, infobox) => {
     }
   }
   if (draft.date && !draft.dateDetails) {
-    draft.dateDetails = [ { type: "text", text: draft.date } ];
+    draft.dateDetails = [{ type: "text", text: draft.date }];
   }
 
   // no comment...
@@ -615,7 +373,7 @@ const fillDraftWithInfoboxData = (draft, infobox) => {
     if (draft.season === undefined) {
       // We use word boundaries as last resort (and log it) in order to avoid false positives.
       // log.warn(`Using word boundary regex to match season of "${draft.title}". Season text: ${seasonText}`);
-      draft.season = NUMBERS[seasonTextClean.match(seasonRegWordBoundaries)?.[1]] ?? seasonTextClean.match(/(?:season )?\b(\d+)\b/)?.[1];
+      draft.season = NUMBERS[seasonTextClean.match(seasonRegWordBound)?.[1]] ?? seasonTextClean.match(/(?:season )?\b(\d+)\b/)?.[1];
       if (draft.season && /shorts/i.test(seasonTextClean))
         draft.seasonNote = "shorts";
 
@@ -847,7 +605,7 @@ const docFromPage = async (page, drafts) => {
   let doc = wtf(page.wikitext);
   while (doc.isRedirect()) {
     log.info(`Article ${draft.title} is a redirect to ${doc.redirectTo().page}. Fetching...`);
-    redirectNum++;
+    netLog.redirectNum++;
     draft.redirect = true;
     doc = await docFromTitle(doc.redirectTo().page);
     if (doc === null)
@@ -883,7 +641,7 @@ for await (let page of pages) {
   if (debug.distinctInfoboxes && !infoboxes.includes(infobox._type))
     infoboxes.push(infobox._type, "\n");
 
-  if (infobox._type ==="audiobook")
+  if (infobox._type === "audiobook")
     draft.audiobook === true;
 
   fillDraftWithInfoboxData(draft, infobox);
@@ -1020,7 +778,7 @@ for await (let page of seriesPages) {
     fillDraftWithInfoboxData(seriesDraft, seriesInfobox);
     figureOutFullTypes(seriesDraft, seriesDoc, true);
   }
-  else if(!seriesDraft.type) {
+  else if (!seriesDraft.type) {
     throw `No infobox and failed to infer series type from article!! series: ${seriesTitle} sentence: ${firstSentence}`;
   }
   log.setStatusBarText([`Series article: ${++progress}/${outOf}`]);
@@ -1062,15 +820,17 @@ for (let bookSeries of bookSeriesArr) {
 ///// COVERS /////
 
 // TODO use a title index once I set it up
-let docs = await media.find({}, {projection:{
-  title: 1,
-  cover: 1,
-  coverTimestamp: 1,
-  coverWidth: 1,
-  coverHeight: 1,
-  coverSha1: 1,
-  coverHash: 1
-}}).toArray();
+let docs = await media.find({}, {
+  projection: {
+    title: 1,
+    cover: 1,
+    coverTimestamp: 1,
+    coverWidth: 1,
+    coverHeight: 1,
+    coverSha1: 1,
+    coverHash: 1
+  }
+}).toArray();
 
 let currentCovers = {};
 for (let doc of docs) {
@@ -1118,8 +878,8 @@ for await (let imageinfo of imageinfos) {
       buffer = await image.read();
     }
     else {
-      let resp = await fetchCache(imageinfo.url, { headers: { Accept: "image/webp,*/*;0.9" } }); // TODO why fetchCache??
-      requestNum++;
+      let resp = await fetch(imageinfo.url, { headers: { Accept: "image/webp,*/*;0.9" } });
+      netLog.requestNum++;
       if (!resp.ok) {
         throw "Non 2xx response status! Response:\n" + JSON.stringify(resp);
       }
@@ -1129,9 +889,9 @@ for await (let imageinfo of imageinfos) {
         process.exit(1);
       }
       let respSize = (await resp.clone().blob()).size;
-      imageBytesRecieved += respSize;
+      netLog.imageBytesRecieved += respSize;
       log.info(`Recieved ${toHumanReadable(respSize)} of image "${imageinfo.title}"`);
-      buffer = await resp.buffer();
+      buffer = Buffer.from(await resp.arrayBuffer());
       log.info(`Writing cover for "${articleTitle}" named "${image.filename}"`);
       await image.write(buffer);
     }
@@ -1147,12 +907,12 @@ for await (let imageinfo of imageinfos) {
     try {
       let { data: bufferData, info: { width, height } } =
         await sharp(await image.read(Size.THUMB))
-        .raw()
-        .ensureAlpha()
-        .toBuffer({ resolveWithObject: true });
+          .raw()
+          .ensureAlpha()
+          .toBuffer({ resolveWithObject: true });
       let ar = width / height;
-      let w = Math.floor(Math.min(9 ,Math.max(3, 3 * ar)));
-      let h = Math.floor(Math.min(9 ,Math.max(3, 3 / ar)));
+      let w = Math.floor(Math.min(9, Math.max(3, 3 * ar)));
+      let h = Math.floor(Math.min(9, Math.max(3, 3 / ar)));
       drafts[articleTitle].coverHash = encode(new Uint8ClampedArray(bufferData), width, height, w, h);
       // log.info(`Hashed cover to ${drafts[articleTitle].coverHash}`);
     }
@@ -1186,7 +946,7 @@ for await (let imageinfo of imageinfos) {
   log.setStatusBarText([`Image: ${++progress}/${outOf}`]);
 }
 
-let noFullTypes = Object.values(drafts).filter(e => ["tv","book","comic","game"].includes(e.type) && e.fullType === undefined).map(e => e.title);
+let noFullTypes = Object.values(drafts).filter(e => ["tv", "book", "comic", "game"].includes(e.type) && e.fullType === undefined).map(e => e.title);
 if (noFullTypes.length)
   log.error(`No fullType despite being required (for frontend filters) on the following media:\n${noFullTypes.join("\n")}`);
 
@@ -1199,7 +959,7 @@ if (nopageDrafts.length)
   await media.insertMany(nopageDrafts);
 await series.insertMany(Object.values(seriesDrafts));
 
-let tvShowsNew = await media.distinct("series", {type: "tv"});
+let tvShowsNew = await media.distinct("series", { type: "tv" });
 // let tvShowsOld = await db.collection("tv-images").find({}, {series: 1}).toArray();
 // tvShowsOld = tvShowsOld.map(o => o.series);
 for (let show of tvShowsNew) {
@@ -1221,11 +981,10 @@ if (debug.distinctInfoboxes) {
   await writeFile("seriesInfoboxes.txt", seriesInfoboxes);
 }
 log.info(
-`Done!
-Number of redirects encountered: ${redirectNum}
-Total API data recieved: ${toHumanReadable(bytesRecieved)}
-Total image data recieved: ${toHumanReadable(imageBytesRecieved)}
-Number of HTTP requests made: ${requestNum}
+  `Done!
+Number of redirects encountered: ${netLog.redirectNum}
+Total API data recieved: ${toHumanReadable(netLog.bytesRecieved)}
+Total image data recieved: ${toHumanReadable(netLog.imageBytesRecieved)}
+Number of HTTP requests made: ${netLog.requestNum}
 ${Image.s3requests !== undefined ? "Number of S3 requests: read: " + Image.s3requests.read + ", write: " + Image.s3requests.write : ""}`
 );
-

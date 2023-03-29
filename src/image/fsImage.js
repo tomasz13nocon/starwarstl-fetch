@@ -1,8 +1,9 @@
+import fs from "fs/promises";
 import sharp from "sharp";
-import * as fs from "fs/promises";
-import { Size, IMAGE_PATH, fileExists, log } from "./utils.js";
+import { fileExists, log } from "../util.js";
+import { Size, IMAGE_PATH } from "../const.js";
 
-for (const [key, value] of Object.entries(Size)) {
+for (const value of Object.values(Size)) {
   await fs.mkdir(`${IMAGE_PATH}${value}`, { recursive: true });
 }
 
@@ -18,14 +19,16 @@ export class FsImage {
     for (const [key, value] of Object.entries(Size)) {
       exists[key] = await this.exists(value);
     }
-    return Object.values(exists).some(e => e === false);
+    return Object.values(exists).some((e) => e === false);
   }
 
   async exists(size = Size.FULL) {
     if (this.existsCache[size] !== undefined) {
       return this.existsCache[size];
     }
-    this.existsCache[size] = await fileExists(`${IMAGE_PATH}${size}${this.filename}`);
+    this.existsCache[size] = await fileExists(
+      `${IMAGE_PATH}${size}${this.filename}`
+    );
     return this.existsCache[size];
   }
 
@@ -39,16 +42,22 @@ export class FsImage {
 
   async writeVariantsIfMissing(buffer) {
     let resized = "";
-    if (!await this.exists(Size.MEDIUM)) {
-      await sharp(buffer).resize(500, null, { withoutEnlargement: true }).toFile(`${IMAGE_PATH}${Size.MEDIUM}${this.filename}`);
+    if (!(await this.exists(Size.MEDIUM))) {
+      await sharp(buffer)
+        .resize(500, null, { withoutEnlargement: true })
+        .toFile(`${IMAGE_PATH}${Size.MEDIUM}${this.filename}`);
       resized += "medium, ";
     }
-    if (!await this.exists(Size.SMALL)) {
-      await sharp(buffer).resize(220, null, { withoutEnlargement: true }).toFile(`${IMAGE_PATH}${Size.SMALL}${this.filename}`);
+    if (!(await this.exists(Size.SMALL))) {
+      await sharp(buffer)
+        .resize(220, null, { withoutEnlargement: true })
+        .toFile(`${IMAGE_PATH}${Size.SMALL}${this.filename}`);
       resized += "small, ";
     }
-    if (!await this.exists(Size.THUMB)) {
-      await sharp(buffer).resize(55, null, { withoutEnlargement: true }).toFile(`${IMAGE_PATH}${Size.THUMB}${this.filename}`);
+    if (!(await this.exists(Size.THUMB))) {
+      await sharp(buffer)
+        .resize(55, null, { withoutEnlargement: true })
+        .toFile(`${IMAGE_PATH}${Size.THUMB}${this.filename}`);
       resized += "thumb, ";
     }
     if (resized) {
@@ -58,14 +67,13 @@ export class FsImage {
 
   /** If size is undefined delete all sizes. */
   async delete(size) {
-      if (size === undefined) {
-        for (const s of Object.values(Size)) {
-          await this.#deleteHelper(s);
-        }
+    if (size === undefined) {
+      for (const s of Object.values(Size)) {
+        await this.#deleteHelper(s);
       }
-      else {
-        await this.#deleteHelper(size);
-      }
+    } else {
+      await this.#deleteHelper(size);
+    }
   }
 
   async #deleteHelper(size) {

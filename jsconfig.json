@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2020",
+    "checkJs": false
+  },
+  "exclude": [
+    "node_modules",
+    "wtf_wikipedia"
+  ]
+}
