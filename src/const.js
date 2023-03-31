@@ -7,23 +7,21 @@ export const Size = Object.freeze({
   FULL: "full/",
 });
 
-export const IMAGE_PATH =
-  process.env.IMAGE_PATH ?? "../client/public/img/covers/";
+export const IMAGE_PATH = process.env.IMAGE_PATH ?? "../client/public/img/covers/";
 export const S3_IMAGE_PATH = "img/covers/";
 export const TV_IMAGE_PATH = `../client/public/img/tv-images/thumb/`;
 export const MW_API_USER_AGENT = process.env.MW_API_USER_AGENT;
 export const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
 export const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
+export const DB_CONN_STRING =
+  process.env.DB_CONNECTION_STRING ?? "mongodb://127.0.0.1:27017/?directConnection=true";
 export const BUCKET = "starwarstl";
 
 // Suppress specific warnings for specific titles after manually confirming they're not an issue
 // TODO read these from a file
 export const suppressLog = {
   lowConfidenceManga: ["The Banchiians"],
-  lowConfidenceAdultNovel: [
-    "Star Wars: The Aftermath Trilogy",
-    "The High Republic: Cataclysm",
-  ],
+  lowConfidenceAdultNovel: ["Star Wars: The Aftermath Trilogy", "The High Republic: Cataclysm"],
   multipleRegexMatches: [
     "Star Wars: The High Republic (Marvel Comics 2021)",
     "Star Wars: The High Republic Adventures",
@@ -68,3 +66,83 @@ export const seriesTypes = {
   "comic story arc": "comic",
   magazine: "comic",
 };
+
+export const types = {
+  C: "comic",
+  N: "book",
+  SS: "short-story",
+  YR: "yr",
+  JR: "book",
+  TV: "tv",
+  F: "film",
+  VG: "game",
+};
+
+export const infoboxFields = [
+  {
+    aliases: [
+      "release date",
+      "airdate",
+      "publication date",
+      "publish date",
+      "released",
+      "first aired",
+    ],
+    details: true,
+  },
+  "closed",
+  "author",
+  { aliases: ["writer", "writers"], details: true },
+  "narrator",
+  "developer",
+  { aliases: ["season"], details: true },
+  "episode",
+  "production",
+  "guests",
+  { aliases: ["director", "directors"] },
+  "producer",
+  "starring",
+  "music",
+  { aliases: ["runtime", "run time"] },
+  "budget",
+  "penciller",
+  "inker",
+  "letterer",
+  "colorist",
+  "editor",
+  "language",
+  { aliases: ["publisher"], details: true },
+  "pages",
+  "cover artist",
+  { name: "dateDetails", aliases: ["timeline"] },
+  "illustrator",
+  "editor",
+  "media type",
+  "published in",
+  "engine",
+  "genre",
+  "modes",
+  "ratings",
+  "platforms",
+  { aliases: ["series"], details: true },
+  "basegame",
+  "expansions",
+  "designer",
+  "programmer",
+  "artist",
+  "composer",
+  "issue",
+  "num episodes",
+  "num seasons",
+  "network",
+  "last aired",
+  "creators",
+  "executive producers",
+  "prev",
+  "next",
+  "preceded by",
+  "followed by",
+  "upc",
+  "isbn",
+  // { name: "coverWook", aliases: ["image"] },
+];

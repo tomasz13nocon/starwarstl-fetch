@@ -6,30 +6,34 @@ import netLog from "./netLog.js";
 
 const fetchCache = fetchBuilder.withCache(new FileSystemCache());
 
-// Code extracted to use in fetchWookiee and fetchImageInfo
-const fetchWookieeHelper = async function* (
-  titles,
-  apiParams = {},
-  cache = true
-) {
+// Joins titles with pipe and returns a wookieepedia API URL string
+function createUrl(titles, apiParams) {
+  const titlesStr = encodeURIComponent(titles.join("|"));
+
+  const paramsStr = Object.entries(apiParams).reduce(
+    (acc, [key, value]) => acc + `&${key}=${value}`,
+    ""
+  );
+
+  return (
+    "https://starwars.fandom.com/api.php" +
+    "?action=query" +
+    "&format=json" +
+    "&origin=*" +
+    "&maxlag=1" +
+    "&maxage=604800" +
+    `&titles=${titlesStr}` +
+    `${paramsStr}`
+  );
+}
+
+// Code common to fetchWookiee and fetchImageInfo
+const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true) {
   if (typeof titles === "string") titles = [titles];
+
   // Fandom allows up to 50 titles per request
   for (let i = 0; i < titles.length; i += 50) {
-    let titlesStr = titles
-      .slice(i, i + 50)
-      .reduce((acc, t) => (acc += t + "|"), "")
-      .slice(0, -1);
-    const apiUrl = `https://starwars.fandom.com/api.php?\
-action=query&\
-format=json&\
-origin=*&\
-maxlag=1&\
-maxage=604800&\
-titles=${encodeURIComponent(titlesStr)}\
-${Object.entries(apiParams).reduce(
-  (acc, [key, value]) => (acc += `&${key}=${value}`),
-  ""
-)}`;
+    const apiUrl = createUrl(titles.slice(i, i + 50), apiParams);
     const resp = cache
       ? await fetchCache(apiUrl)
       : await fetch(apiUrl, {
@@ -39,12 +43,15 @@ ${Object.entries(apiParams).reduce(
           },
         });
     netLog.requestNum++;
+
     if (!resp.ok) {
       throw "Non 2xx response status! Response:\n" + JSON.stringify(resp);
     }
+
     let respSize = (await resp.clone().blob()).size;
     netLog.bytesRecieved += respSize;
-    log.info(`Recieved ${toHumanReadable(respSize)} of ${apiParams.prop}`); //  for titles: ${titles.slice(i, i+50)}
+    log.info(`Recieved ${toHumanReadable(respSize)} of ${apiParams.prop}`);
+
     const json = await resp.json();
     if (json.query === undefined) {
       log.error(apiUrl);
@@ -53,24 +60,25 @@ ${Object.entries(apiParams).reduce(
       throw "Response Invalid";
     }
     let pages = Object.values(json.query.pages);
+
     // If there's random symbols or underscores in the title it gets normalized,
     // so we make the normalized version part of the return value
-    let normalizations = {};
+    let norms = {};
     if (json.query.normalized) {
       if (apiParams.prop === "imageinfo") {
-        if (debug.normalizationsImages) {
+        if (debug.normImages) {
           log.info("Normalized: ", json.query.normalized);
         }
-      } else if (debug.normalizations) {
+      } else if (debug.normTitles) {
         log.info("Normalized: ", json.query.normalized);
       }
-      // log.info("Normalized ", json.query.normalized.length, " items");
-      for (let normalization of json.query.normalized) {
-        normalizations[normalization.to] = normalization.from;
+      for (let norm of json.query.normalized) {
+        norms[norm.to] = norm.from;
       }
     }
+
     for (let page of pages) {
-      page.normalizedFrom = normalizations[page.title];
+      page.normalizedFrom = norms[page.title];
       yield page;
     }
   }
@@ -96,7 +104,7 @@ export const fetchWookiee = async function* (titles, cache = true) {
         pageid: page.pageid,
         wikitext: page.revisions?.[0].slots.main["*"],
         timestamp: page.revisions?.[0].timestamp,
-        // If there's no normalization for this title this field is just undefined
+        // If there's no normalization this field is undefined
         normalizedFrom: page.normalizedFrom,
       };
     }
@@ -120,7 +128,7 @@ export const fetchImageInfo = async function* (titles) {
         sha1: page.imageinfo?.[0].sha1,
         timestamp: page.imageinfo?.[0].timestamp,
         url: page.imageinfo?.[0].url,
-        // If there's no normalization for this title this field is just undefined
+        // If there's no normalization this field is undefined
         normalizedFrom: page.normalizedFrom,
       };
     }
