@@ -89,6 +89,7 @@ export class S3Image {
       })
     );
     netLog.s3write++;
+    log.info(`Wrote ${this.filename} at size ${size} to S3.`);
   }
 
   async writeVariantsIfMissing(buffer) {
@@ -133,5 +134,6 @@ export class S3Image {
       })
     );
     netLog.s3write++;
+    log.info(`Deleted ${this.filename} at size ${size} from S3.`);
   }
 }
