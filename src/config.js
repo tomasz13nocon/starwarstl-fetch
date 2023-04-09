@@ -27,7 +27,7 @@ const config = {
   Image: FsImage,
 };
 
-// Process env vars and command line args on the first run
+// Process env vars and command line args on the first invocation
 // Returns config object
 export default function () {
   if (initialized) return config;

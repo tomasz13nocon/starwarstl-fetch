@@ -14,7 +14,7 @@ import images from "./pipeline/images.js";
 import adjustBookTypes from "./pipeline/adjustBookTypes.js";
 import validateFullTypes from "./pipeline/validateFullTypes.js";
 
-const { Image, CACHE_PAGES, LIMIT } = config();
+const { CACHE_PAGES, LIMIT } = config();
 
 (() => {
   wtf.extend((models, templates) => {
@@ -38,8 +38,8 @@ const { Image, CACHE_PAGES, LIMIT } = config();
       return "";
     };
 
-    templates["scroll box"] = (tmpl, list) => {
-      // TODO implement if causing issues
+    templates["scroll box"] = (tmpl) => {
+      // implement if causing issues
       return tmpl;
     };
   });
@@ -62,6 +62,7 @@ if (LIMIT) {
 }
 
 // Processing pipeline starts
+// TODO: make these pure
 
 const { drafts, nopageDrafts } = timeline(data);
 
@@ -76,7 +77,6 @@ adjustBookTypes(drafts, seriesDrafts);
 await images(drafts);
 
 validateFullTypes(drafts);
-
 
 
 let mediaColl = db.collection("media");
@@ -111,5 +111,6 @@ Number of redirects encountered: ${netLog.redirectNum}
 Total API data recieved: ${toHumanReadable(netLog.bytesRecieved)}
 Total image data recieved: ${toHumanReadable(netLog.imageBytesRecieved)}
 Number of HTTP requests made: ${netLog.requestNum}
-${Image.s3requests !== undefined ? "Number of S3 requests: read: " + Image.s3requests.read + ", write: " + Image.s3requests.write : ""}`
+${netLog.s3read ? "Number of S3 read requests: " + netLog.s3read : ""}
+${netLog.s3write ? "Number of S3 write requests: " + netLog.s3write : ""}`
 );

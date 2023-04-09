@@ -178,7 +178,6 @@ function processNotes(textNode) {
   return nodes;
 }
 
-// I'm not proud of this code but it just werks™
 function processAst(sentence) {
   if (!sentence) return sentence;
 

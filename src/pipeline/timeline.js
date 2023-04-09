@@ -8,7 +8,6 @@ export default function (table) {
   let drafts = {};
   let nopageDrafts = [];
   for (let [i, item] of table.entries()) {
-    // TODO: validation to check wheter we're getting the right table
     let draft = {
       title: decode(item.Title.links?.[0].page),
       type: types[item.col2.text],
@@ -32,6 +31,8 @@ export default function (table) {
           data: notes.slice(1).map((s) => [{ type: "text", text: s.trim() }]),
         },
       ]; // TODO:parser get links and such, not just text
+
+      // Check if adaptation
       for (let s of draft.timelineNotes[0].data) {
         let note = s[0].text.toLowerCase();
         if (note.includes("adaptation") || note.includes("novelization")) draft.adaptation = true;

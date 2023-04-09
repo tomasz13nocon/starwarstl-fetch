@@ -7,13 +7,8 @@ import {
 } from "@aws-sdk/client-s3";
 import sharp from "sharp";
 import { log } from "../util.js";
-import {
-  Size,
-  S3_IMAGE_PATH,
-  AWS_ACCESS_KEY,
-  AWS_SECRET_KEY,
-  BUCKET,
-} from "../const.js";
+import { Size, S3_IMAGE_PATH, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET } from "../const.js";
+import netLog from "../netLog.js";
 // import "./env.js"; // TODO confirm not needed
 
 const s3client = new S3Client({
@@ -23,10 +18,6 @@ const s3client = new S3Client({
 
 export class S3Image {
   static #existsCache = {};
-  static s3requests = {
-    read: 0,
-    write: 0,
-  };
 
   constructor(filename) {
     this.filename = filename;
@@ -57,7 +48,7 @@ export class S3Image {
           ContinuationToken: continuationToken,
         })
       );
-      S3Image.s3requests.read++;
+      netLog.s3read++;
 
       for (let item of response.Contents) {
         S3Image.#existsCache[size][item.Key] = true;
@@ -79,7 +70,7 @@ export class S3Image {
         })
       )
     ).Body;
-    S3Image.s3requests.read++;
+    netLog.s3read++;
     return new Promise((resolve, reject) => {
       const chunks = [];
       data.on("data", (chunk) => chunks.push(chunk));
@@ -97,30 +88,24 @@ export class S3Image {
         ContentType: "image/webp",
       })
     );
-    S3Image.s3requests.write++;
+    netLog.s3write++;
   }
 
   async writeVariantsIfMissing(buffer) {
     let b;
     let resized = "";
     if (!(await this.exists(Size.MEDIUM))) {
-      b = await sharp(buffer)
-        .resize(500, null, { withoutEnlargement: true })
-        .toBuffer();
+      b = await sharp(buffer).resize(500, null, { withoutEnlargement: true }).toBuffer();
       await this.write(b, Size.MEDIUM);
       resized += "medium, ";
     }
     if (!(await this.exists(Size.SMALL))) {
-      b = await sharp(buffer)
-        .resize(220, null, { withoutEnlargement: true })
-        .toBuffer();
+      b = await sharp(buffer).resize(220, null, { withoutEnlargement: true }).toBuffer();
       await this.write(b, Size.SMALL);
       resized += "small, ";
     }
     if (!(await this.exists(Size.THUMB))) {
-      b = await sharp(buffer)
-        .resize(55, null, { withoutEnlargement: true })
-        .toBuffer();
+      b = await sharp(buffer).resize(55, null, { withoutEnlargement: true }).toBuffer();
       await this.write(b, Size.THUMB);
       resized += "thumb, ";
     }
@@ -147,6 +132,6 @@ export class S3Image {
         Key: `${S3_IMAGE_PATH}${size}${this.filename}`,
       })
     );
-    S3Image.s3requests.write++;
+    netLog.s3write++;
   }
 }
