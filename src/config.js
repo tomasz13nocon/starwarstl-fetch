@@ -1,8 +1,9 @@
 import process from "node:process";
+import fs from "node:fs";
 import { S3Image } from "./image/s3Image.js";
 import { FsImage } from "./image/fsImage.js";
 import { log } from "./util.js";
-import { MW_API_USER_AGENT, AWS_ACCESS_KEY, AWS_SECRET_KEY } from "./const.js";
+import { MW_API_USER_AGENT, AWS_ACCESS_KEY, AWS_SECRET_KEY, IMAGE_PATH, Size } from "./const.js";
 
 export const debug = {
   // Write a list of distinct infobox templates to file
@@ -73,6 +74,13 @@ export default function () {
     log.info("Using S3 as image host");
   } else if (config.Image === FsImage) {
     log.info("Using filesystem as image host");
+    for (const value of Object.values(Size)) {
+      fs.mkdirSync(`${IMAGE_PATH}${value}`, { recursive: true });
+    }
+  }
+
+  if (!fs.existsSync("./debug")) {
+    fs.mkdirSync("./debug");
   }
 
   initialized = true;

@@ -3,10 +3,6 @@ import sharp from "sharp";
 import { fileExists, log } from "../util.js";
 import { Size, IMAGE_PATH } from "../const.js";
 
-for (const value of Object.values(Size)) {
-  await fs.mkdir(`${IMAGE_PATH}${value}`, { recursive: true });
-}
-
 export class FsImage {
   constructor(filename) {
     this.filename = filename;
@@ -26,9 +22,7 @@ export class FsImage {
     if (this.existsCache[size] !== undefined) {
       return this.existsCache[size];
     }
-    this.existsCache[size] = await fileExists(
-      `${IMAGE_PATH}${size}${this.filename}`
-    );
+    this.existsCache[size] = await fileExists(`${IMAGE_PATH}${size}${this.filename}`);
     return this.existsCache[size];
   }
 

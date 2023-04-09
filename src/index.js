@@ -1,7 +1,6 @@
-import { writeFile } from "fs/promises";
-import { existsSync, mkdirSync } from "fs";
-import wtf from "wtf_wikipedia";
 import "./env.js";
+import { writeFile } from "fs/promises";
+import wtf from "wtf_wikipedia";
 import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.js";
 import config, { debug } from "./config.js";
 import { fetchWookiee } from "./fetchWookiee.js";
@@ -16,10 +15,6 @@ import adjustBookTypes from "./pipeline/adjustBookTypes.js";
 import validateFullTypes from "./pipeline/validateFullTypes.js";
 
 const { CACHE_PAGES, LIMIT } = config();
-
-if (!existsSync("./debug")) {
-  mkdirSync("./debug");
-}
 
 (() => {
   wtf.extend((models, templates) => {
