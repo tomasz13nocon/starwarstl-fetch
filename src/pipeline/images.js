@@ -79,7 +79,7 @@ export default async function (drafts) {
         let resp = await fetch(imageinfo.url, { headers: { Accept: "image/webp,*/*;0.9" } });
         netLog.requestNum++;
         if (!resp.ok) {
-          throw "Non 2xx response status! Response:\n" + JSON.stringify(resp);
+          throw new Error("Non 2xx response status! Response:\n" + JSON.stringify(resp));
         }
         if (resp.headers.get("Content-Type") !== "image/webp") {
           log.error(`Image in non webp. article: ${articleTitle}, filename: ${image.filename}`);

@@ -15,7 +15,7 @@ export class FsImage {
     for (const [key, value] of Object.entries(Size)) {
       exists[key] = await this.exists(value);
     }
-    return Object.values(exists).some((e) => e === false);
+    return Object.values(exists).some((e) => !e);
   }
 
   async exists(size = Size.FULL) {

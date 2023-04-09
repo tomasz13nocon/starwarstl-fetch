@@ -29,7 +29,7 @@ export class S3Image {
     for (const [key, value] of Object.entries(Size)) {
       exists[key] = await this.exists(value);
     }
-    return Object.values(exists).some((e) => e === false);
+    return Object.values(exists).some((e) => !e);
   }
 
   async exists(size = Size.FULL) {
@@ -51,7 +51,7 @@ export class S3Image {
       netLog.s3read++;
 
       for (let item of response.Contents) {
-        S3Image.#existsCache[size][item.Key] = true;
+        S3Image.#existsCache[size][item.Key.split("/").pop()] = true;
       }
 
       truncated = response.IsTruncated;
