@@ -2,19 +2,39 @@ import { decode } from "html-entities";
 import { log, unscuffDate } from "../util.js";
 import { types } from "../const.js";
 
+function cleanupTitle(str) {
+  return decode(str)
+    .split("*")[0]
+    .replace("†", "")
+    .trim()
+    .replace(/^"(.*)"$/, "$1");
+}
+
 export default function (table) {
   log.info("Processing timeline...");
 
-  let drafts = {};
-  let nopageDrafts = [];
+  let drafts = [];
+  let draftMap = {}; // Used to find duplicates
+
+  if (
+    table[0].Title === undefined ||
+    table[0].col2 === undefined ||
+    table[0].Released === undefined ||
+    table[0].Year === undefined ||
+    table[0]["Writer(s)"] === undefined
+  ) {
+    throw new Error("Timeline parsing error: Unexpected table layout. Some columns are missing.");
+  }
+
   for (let [i, item] of table.entries()) {
     let draft = {
       title: decode(item.Title.links?.[0].page),
       type: types[item.col2.text],
-      releaseDate: item.Released?.text,
+      releaseDate: item.Released?.text, // TODO remove optional chaining
       writer: item["Writer(s)"].links?.map((e) => decode(e.page)) || null,
       date: decode(item.Year.text) || null,
       chronology: i,
+      titleText: item.Title.text, // For finding duplicates, removed later
     };
 
     if (item.col2.text === "JR") draft.fullType = "book-jr";
@@ -40,11 +60,12 @@ export default function (table) {
     }
     if (item.Title.text.includes("†")) draft.exactPlacementUnknown = true;
 
-    draft.altTitle = decode(item.Title.text)
-      .split("*")[0]
-      .replace("†", "")
-      .trim()
-      .replace(/^"(.*)"$/, "$1");
+    // Check for duplicate titles - these are usually "chapter" entries, that link to their parent media
+    if (draftMap[draft.title]) {
+      let first = draftMap[draft.title];
+      first.altTitle = cleanupTitle(first.titleText);
+      draft.altTitle = cleanupTitle(draft.titleText);
+    }
 
     let unscuffedDate = unscuffDate(draft.releaseDate);
     if (unscuffedDate === draft.releaseDate) {
@@ -65,17 +86,17 @@ export default function (table) {
           item.Title.text +
           '"'
       );
-      draft.title = item.Title.text
-        .replace("†", "")
-        .trim()
-        .replace(/^"(.*)"$/, "$1");
+      draft.title = cleanupTitle(item.Title.text);
       draft.nopage = true;
-      nopageDrafts.push(draft);
-      continue;
     }
 
-    drafts[draft.title] = draft;
+    drafts.push(draft);
+    draftMap[draft.title] = draft;
   }
 
-  return { drafts, nopageDrafts };
+  for (let draft of Object.values(drafts)) {
+    delete draft.titleText;
+  }
+
+  return drafts;
 }

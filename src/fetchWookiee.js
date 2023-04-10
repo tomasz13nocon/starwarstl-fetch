@@ -93,6 +93,13 @@ export const fetchWookiee = async function* (titles, cache = true) {
     { prop: "revisions", rvprop: "content|timestamp", rvslots: "main" },
     cache
   )) {
+    if (page.invalid !== undefined) {
+      log.error(`Page ${page.title} is invalid. invalid=true returned from the API.`);
+      yield {
+        title: page.title,
+        invalid: true,
+      };
+    }
     if (page.missing !== undefined) {
       yield {
         title: page.title,
@@ -116,6 +123,13 @@ export const fetchImageInfo = async function* (titles) {
     prop: "imageinfo",
     iiprop: "url|sha1|timestamp",
   })) {
+    if (page.invalid !== undefined) {
+      log.error(`Page ${page.title} is invalid. invalid=true returned from the API.`);
+      yield {
+        title: page.title,
+        invalid: true,
+      };
+    }
     if (page.missing !== undefined) {
       yield {
         title: page.title,

@@ -32,86 +32,87 @@ export default async function (drafts) {
   log.info("Fetching articles...");
 
   let progress = 0;
-  let outOf = Object.keys(drafts).length;
+  let outOf = drafts.length;
   log.setStatusBarText([`Article: ${progress}/${outOf}`]);
 
-  let pages = fetchWookiee(Object.keys(drafts), CACHE_PAGES);
+  let pages = fetchWookiee([...new Set(drafts.map((d) => d.title))], CACHE_PAGES);
   let infoboxes = [];
-  let seriesDrafts = {};
+  let seriesDraftsMap = {};
 
   for await (let page of pages) {
-    let [doc, draft] = await docFromPage(page, drafts);
-    if (doc === null) {
-      if (debug.redlinks) {
-        log.warn(`${page.title} is a redlink in the timeline! Ignoring.`);
-      } else {
-        log.info(`${page.title} is a redlink in the timeline! Ignoring.`);
+    // This will be a single iteration most of the time
+    // It won't be only for "chapter" entries which all link to their parent media
+    for (let draft of drafts.filter((d) => d.title === page.title)) {
+      let doc = await docFromPage(page, draft);
+      if (doc === null) {
+        let logRedlink = debug.redlinks ? log.warn : log.info;
+        logRedlink(`${page.title} is a redlink in the timeline! Ignoring.`);
+        draft.redlink = true;
+        // TODO: ensure these have all availible info
+        continue;
       }
-      delete drafts[page.title];
-      continue;
-    }
-    draft.doc = doc; // We need this for the second iteration
-    if (doc.isDisambig()) {
-      log.error("Disambiguation page! title: " + draft.title);
-    }
-    let infobox = doc.infobox();
-    if (!infobox) {
-      log.error(page.wikitext.slice(0, 1500));
-      throw `No infobox! title: ${draft.title}`;
-    }
+      draft.doc = doc; // We need this for the second iteration
 
-    if (debug.distinctInfoboxes && !infoboxes.includes(infobox._type))
-      infoboxes.push(infobox._type, "\n");
-
-    if (infobox._type === "audiobook") draft.audiobook === true;
-
-    fillDraftWithInfoboxData(draft, infobox);
-
-    try {
-      if (draft.dateDetails) {
-        try {
-          draft.dateParsed = parseWookieepediaDate(draft.dateDetails.reduce(reduceAstToText, ""));
-        } catch (e) {
-          if (e instanceof UnsupportedDateFormat) {
-            draft.dateParsed = parseWookieepediaDate(draft.date);
-          } else {
-            throw e;
-          }
-        }
-      } else {
-        draft.dateParsed = parseWookieepediaDate(draft.date);
-      }
-    } catch (e) {
-      if (e instanceof UnsupportedDateFormat) {
-        log.error(draft.title, e);
-      } else {
-        throw e;
-      }
-    }
-
-    if (draft.dateParsed === undefined) delete draft.dateParsed;
-
-    if (draft.series) {
-      if (draft.type === "tv" && draft.series.length > 1) {
-        log.warn(
-          `${draft.title} has type "tv" and belongs to multiple series.` +
-            " This can cause bugs in frontend!" +
-            " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples."
+      let infobox = doc.infobox();
+      if (!infobox) {
+        throw new Error(
+          `No infobox! title: ${draft.title}\nwikitext:\n${page.wikitext.slice(0, 1500)}`
         );
       }
-      for (let seriesTitle of draft.series) {
-        if (!(seriesTitle in seriesDrafts)) {
-          seriesDrafts[seriesTitle] = { title: seriesTitle };
+
+      if (debug.distinctInfoboxes && !infoboxes.includes(infobox._type))
+        infoboxes.push(infobox._type, "\n");
+
+      if (infobox._type === "audiobook") draft.audiobook === true;
+
+      fillDraftWithInfoboxData(draft, infobox);
+
+      try {
+        if (draft.dateDetails) {
+          try {
+            draft.dateParsed = parseWookieepediaDate(draft.dateDetails.reduce(reduceAstToText, ""));
+          } catch (e) {
+            if (e instanceof UnsupportedDateFormat) {
+              draft.dateParsed = parseWookieepediaDate(draft.date);
+            } else {
+              throw e;
+            }
+          }
+        } else {
+          draft.dateParsed = parseWookieepediaDate(draft.date);
+        }
+      } catch (e) {
+        if (e instanceof UnsupportedDateFormat) {
+          log.error(draft.title, e);
+        } else {
+          throw e;
         }
       }
-    }
 
-    log.setStatusBarText([`Article: ${++progress}/${outOf}`]);
+      if (draft.dateParsed === undefined) delete draft.dateParsed;
+
+      if (draft.series) {
+        if (draft.type === "tv" && draft.series.length > 1) {
+          log.warn(
+            `${draft.title} has type "tv" and belongs to multiple series.` +
+              " This can cause bugs in frontend!" +
+              " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples."
+          );
+        }
+        for (let seriesTitle of draft.series) {
+          if (!(seriesTitle in seriesDraftsMap)) {
+            seriesDraftsMap[seriesTitle] = { title: seriesTitle };
+          }
+        }
+      }
+
+      log.setStatusBarText([`Article: ${++progress}/${outOf}`]);
+    }
   }
 
   if (debug.distinctInfoboxes) {
     await writeFile("../../debug/infoboxes.txt", infoboxes);
   }
 
-  return { drafts, seriesDrafts };
+  return Object.values(seriesDraftsMap);
 }

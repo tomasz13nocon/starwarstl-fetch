@@ -18,32 +18,29 @@ export async function docFromTitle(title, cache) {
 }
 
 // Returns wtf doc from a fetchWookiee page, handling normalizations.
-export async function docFromPage(page, drafts) {
+export async function docFromPage(page, draft) {
+  if (page.normalizedFrom?.includes("#")) {
+    page.title += page.normalizedFrom.slice(page.normalizedFrom.indexOf("#")).replace("_", " ");
+  }
+
   if (page.missing) {
-    // what about title normalization? potential super rare super hard to track bug.
-    return [null, drafts[page.title]];
+    return null;
   }
 
-  if (page.normalizedFrom) {
-    if (page.normalizedFrom.includes("#")) {
-      page.title += page.normalizedFrom.slice(page.normalizedFrom.indexOf("#")).replace("_", " ");
-    }
-    drafts[page.title] = drafts[page.normalizedFrom];
-    if (page.title !== page.normalizedFrom) delete drafts[page.normalizedFrom];
-  }
-
-  let draft = drafts[page.title];
-  // This should never happen with all the checks before
+  // This will happen if the normalization is not exact
   if (draft === undefined) {
     throw new Error(
       `Mismatch between timeline title and the title received from the server for: "${page.title}"`
     );
   }
 
+  // Use the normalized title
   draft.title = page.title;
+
+  // We might need these in the future
   // In case of a redirect, the fields below describe the redirect page
-  draft.wookieepediaId = page.pageid;
-  draft.revisionTimestamp = page.timestamp;
+  // draft.wookieepediaId = page.pageid;
+  // draft.revisionTimestamp = page.timestamp;
 
   let doc = wtf(page.wikitext);
 
@@ -57,7 +54,11 @@ export async function docFromPage(page, drafts) {
     }
   }
 
-  return [doc, draft];
+  if (doc.isDisambig()) {
+    log.error("Disambiguation page! title: " + draft.title);
+  }
+
+  return doc;
 }
 
 function getPageWithAnchor(link) {
@@ -297,7 +298,7 @@ function getInfoboxData(infobox, keys) {
 }
 
 // series - wheter the draft is for a series
-export async function figureOutFullTypes(draft, doc, series, seriesDrafts = {}) {
+export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) {
   if (draft.type === "book") {
     if (doc.categories().includes("Canon audio dramas")) {
       draft.type = "audio-drama";
@@ -311,7 +312,9 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = {}) 
   } else if (draft.type === "tv" /* && (draft.series?.length || series)*/) {
     let seriesTitle = !draft.series
       ? draft.title
-      : draft.series.find((e) => seriesDrafts[e]?.type === "tv");
+      : draft.series.find(
+          (seriesTitle) => seriesDrafts.find((sd) => sd.title === seriesTitle)?.type === "tv"
+        );
     if (tvTypes[seriesTitle]) draft.fullType = tvTypes[seriesTitle];
     else {
       // if (!series) // This should theoretically never happen

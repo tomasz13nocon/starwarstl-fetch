@@ -36,13 +36,11 @@ export default async function (drafts) {
 
   // We need a map of cover filenames to article titles in order to check for existing covers
   let titlesDict = {};
-  for (let v of Object.values(drafts)) {
+  for (let v of drafts) {
     titlesDict[v.coverWook] = v.title;
   }
 
-  let covers = Object.values(drafts)
-    .filter((o) => o.coverWook)
-    .map((draft) => "File:" + draft.coverWook);
+  let covers = drafts.filter((o) => o.coverWook).map((draft) => "File:" + draft.coverWook);
 
   log.info("Fetching imageinfo...");
   let progress = 0;
@@ -54,6 +52,7 @@ export default async function (drafts) {
   for await (let imageinfo of imageinfos) {
     // Keep in mind imageinfo.title is a filename of the image, not the article title
     let articleTitle = titlesDict[(imageinfo.normalizedFrom ?? imageinfo.title).slice(5)];
+    let draft = drafts.find((d) => d.title === articleTitle);
     let current = currentCovers[articleTitle];
     // Remove leading "File:"
     let myFilename = imageinfo.title.slice(5);
@@ -97,11 +96,11 @@ export default async function (drafts) {
       await image.writeVariantsIfMissing(buffer);
 
       const dimensions = sizeOf(buffer);
-      drafts[articleTitle].cover = image.filename;
-      drafts[articleTitle].coverWidth = dimensions.width;
-      drafts[articleTitle].coverHeight = dimensions.height;
-      drafts[articleTitle].coverTimestamp = imageinfo.timestamp;
-      drafts[articleTitle].coverSha1 = imageinfo.sha1;
+      draft.cover = image.filename;
+      draft.coverWidth = dimensions.width;
+      draft.coverHeight = dimensions.height;
+      draft.coverTimestamp = imageinfo.timestamp;
+      draft.coverSha1 = imageinfo.sha1;
       try {
         let {
           data: bufferData,
@@ -114,13 +113,7 @@ export default async function (drafts) {
         let ar = width / height;
         let w = Math.floor(Math.min(9, Math.max(3, 3 * ar)));
         let h = Math.floor(Math.min(9, Math.max(3, 3 / ar)));
-        drafts[articleTitle].coverHash = encode(
-          new Uint8ClampedArray(bufferData),
-          width,
-          height,
-          w,
-          h
-        );
+        draft.coverHash = encode(new Uint8ClampedArray(bufferData), width, height, w, h);
       } catch (err) {
         log.error(`Error calculating hash for image: "${image.filename}" `, err);
         process.exit(1);
@@ -133,18 +126,18 @@ export default async function (drafts) {
         await oldImage.delete();
       }
     } else {
-      drafts[articleTitle].cover = current.cover;
-      drafts[articleTitle].coverWidth = current.coverWidth;
-      drafts[articleTitle].coverHeight = current.coverHeight;
-      drafts[articleTitle].coverTimestamp = current.coverTimestamp;
-      drafts[articleTitle].coverSha1 = current.coverSha1;
-      drafts[articleTitle].coverHash = current.coverHash;
+      draft.cover = current.cover;
+      draft.coverWidth = current.coverWidth;
+      draft.coverHeight = current.coverHeight;
+      draft.coverTimestamp = current.coverTimestamp;
+      draft.coverSha1 = current.coverSha1;
+      draft.coverHash = current.coverHash;
     }
 
-    let blurhashValid = isBlurhashValid(drafts[articleTitle].coverHash);
+    let blurhashValid = isBlurhashValid(draft.coverHash);
     if (!blurhashValid.result) {
       log.error(
-        `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${drafts[articleTitle].coverHash}" Reason: ` +
+        `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${draft.coverHash}" Reason: ` +
           blurhashValid.errorReason
       );
     }

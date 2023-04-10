@@ -64,13 +64,13 @@ if (LIMIT) {
 // Processing pipeline starts
 // TODO: make these pure
 
-const { drafts, nopageDrafts } = timeline(data);
+const drafts = timeline(data);
 
-const { seriesDrafts } = await media(drafts);
+const seriesDrafts = await media(drafts);
 
 await series(drafts, seriesDrafts);
 
-mediaTypes(drafts, seriesDrafts);
+await mediaTypes(drafts, seriesDrafts);
 
 adjustBookTypes(drafts, seriesDrafts);
 
@@ -87,10 +87,8 @@ mediaColl.deleteMany({});
 seriesColl.deleteMany({});
 
 log.info("Writing to DB...");
-await mediaColl.insertMany(Object.values(drafts));
-if (nopageDrafts.length)
-  await mediaColl.insertMany(nopageDrafts);
-await seriesColl.insertMany(Object.values(seriesDrafts));
+await mediaColl.insertMany(drafts);
+await seriesColl.insertMany(seriesDrafts);
 
 let tvShowsNew = await mediaColl.distinct("series", { type: "tv" });
 for (let show of tvShowsNew) {

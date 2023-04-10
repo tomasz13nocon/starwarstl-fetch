@@ -1,7 +1,7 @@
 import { log } from "../util.js";
 
 export default function (drafts) {
-  let noFullTypes = Object.values(drafts)
+  let noFullTypes = drafts
     .filter((e) => ["tv", "book", "comic", "game"].includes(e.type) && e.fullType === undefined)
     .map((e) => e.title);
 
