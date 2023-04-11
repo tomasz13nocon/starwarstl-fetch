@@ -5,6 +5,7 @@ import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieeped
 import { docFromPage, fillDraftWithInfoboxData } from "../parsing.js";
 import { log } from "../util.js";
 import { writeFile } from "fs/promises";
+import { cleanupDraft } from "./cleanupDrafts.js";
 
 let { CACHE_PAGES } = config();
 
@@ -66,6 +67,7 @@ export default async function (drafts) {
       if (infobox._type === "audiobook") draft.audiobook === true;
 
       fillDraftWithInfoboxData(draft, infobox);
+      cleanupDraft(draft);
 
       try {
         if (draft.dateDetails) {

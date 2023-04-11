@@ -13,6 +13,7 @@ import mediaTypes from "./pipeline/mediaTypes.js";
 import images from "./pipeline/images.js";
 import adjustBookTypes from "./pipeline/adjustBookTypes.js";
 import validateFullTypes from "./pipeline/validateFullTypes.js";
+import cleanupDrafts from "./pipeline/cleanupDrafts.js";
 
 const { CACHE_PAGES, LIMIT } = config();
 
@@ -77,6 +78,8 @@ adjustBookTypes(drafts, seriesDrafts);
 await images(drafts);
 
 validateFullTypes(drafts);
+
+cleanupDrafts(drafts, seriesDrafts);
 
 
 let mediaColl = db.collection("media");

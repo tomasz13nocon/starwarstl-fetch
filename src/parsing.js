@@ -140,17 +140,6 @@ export function fillDraftWithInfoboxData(draft, infobox) {
   if (draft.seasonNote) draft.se += "-" + draft.seasonNote;
   if (draft.season && draft.episode) draft.se += " ";
   if (draft.episode) draft.se += "E" + draft.episode;
-
-  // Delete empty values
-  for (const [key, value] of Object.entries(draft)) {
-    if (
-      (Array.isArray(value) && !value.length) ||
-      value === undefined ||
-      value === null ||
-      value === ""
-    )
-      delete draft[key];
-  }
 }
 
 // Takes a text node, returns an array of text and note nodes. Also removes italics/bold... (I really need a new parser...)

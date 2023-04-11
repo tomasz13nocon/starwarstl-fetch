@@ -5,6 +5,7 @@ import { fetchWookiee } from "../fetchWookiee.js";
 import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing.js";
 import { seriesRegexes } from "../regex.js";
 import { log } from "../util.js";
+import { cleanupDraft } from "./cleanupDrafts.js";
 
 const { CACHE_PAGES } = config();
 
@@ -92,6 +93,7 @@ export default async function (drafts, seriesDrafts) {
           }
         }
         fillDraftWithInfoboxData(seriesDraft, seriesInfobox);
+        cleanupDraft(seriesDraft);
         figureOutFullTypes(seriesDraft, seriesDoc, true);
       } else if (!seriesDraft.type) {
         throw new Error(
