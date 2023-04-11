@@ -33,6 +33,7 @@ export const suppressLog = {
     "Star Wars: The High Republic Adventures: The Nameless Terror",
   ],
   lowConfidenceAnimated: ["Hunted"],
+  noSeason: ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
 };
 
 export const NUMBERS = {

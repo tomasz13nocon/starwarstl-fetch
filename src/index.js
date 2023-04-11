@@ -62,7 +62,7 @@ if (LIMIT) {
 }
 
 // Processing pipeline starts
-// TODO: make these pure
+// TODO: make these pure and more SRP
 
 const drafts = timeline(data);
 

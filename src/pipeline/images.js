@@ -52,7 +52,10 @@ export default async function (drafts) {
   for await (let imageinfo of imageinfos) {
     // Keep in mind imageinfo.title is a filename of the image, not the article title
     let articleTitle = titlesDict[(imageinfo.normalizedFrom ?? imageinfo.title).slice(5)];
-    let draft = drafts.find((d) => d.title === articleTitle);
+    let draftsWithThisCover = drafts.filter(
+      (d) => d.coverWook === (imageinfo.normalizedFrom ?? imageinfo.title).slice(5)
+    );
+
     let current = currentCovers[articleTitle];
     // Remove leading "File:"
     let myFilename = imageinfo.title.slice(5);
@@ -96,11 +99,13 @@ export default async function (drafts) {
       await image.writeVariantsIfMissing(buffer);
 
       const dimensions = sizeOf(buffer);
-      draft.cover = image.filename;
-      draft.coverWidth = dimensions.width;
-      draft.coverHeight = dimensions.height;
-      draft.coverTimestamp = imageinfo.timestamp;
-      draft.coverSha1 = imageinfo.sha1;
+      for (let draft of draftsWithThisCover) {
+        draft.cover = image.filename;
+        draft.coverWidth = dimensions.width;
+        draft.coverHeight = dimensions.height;
+        draft.coverTimestamp = imageinfo.timestamp;
+        draft.coverSha1 = imageinfo.sha1;
+      }
       try {
         let {
           data: bufferData,
@@ -113,7 +118,9 @@ export default async function (drafts) {
         let ar = width / height;
         let w = Math.floor(Math.min(9, Math.max(3, 3 * ar)));
         let h = Math.floor(Math.min(9, Math.max(3, 3 / ar)));
-        draft.coverHash = encode(new Uint8ClampedArray(bufferData), width, height, w, h);
+        for (let draft of draftsWithThisCover) {
+          draft.coverHash = encode(new Uint8ClampedArray(bufferData), width, height, w, h);
+        }
       } catch (err) {
         log.error(`Error calculating hash for image: "${image.filename}" `, err);
         process.exit(1);
@@ -126,18 +133,20 @@ export default async function (drafts) {
         await oldImage.delete();
       }
     } else {
-      draft.cover = current.cover;
-      draft.coverWidth = current.coverWidth;
-      draft.coverHeight = current.coverHeight;
-      draft.coverTimestamp = current.coverTimestamp;
-      draft.coverSha1 = current.coverSha1;
-      draft.coverHash = current.coverHash;
+      for (let draft of draftsWithThisCover) {
+        draft.cover = current.cover;
+        draft.coverWidth = current.coverWidth;
+        draft.coverHeight = current.coverHeight;
+        draft.coverTimestamp = current.coverTimestamp;
+        draft.coverSha1 = current.coverSha1;
+        draft.coverHash = current.coverHash;
+      }
     }
 
-    let blurhashValid = isBlurhashValid(draft.coverHash);
+    let blurhashValid = isBlurhashValid(draftsWithThisCover[0].coverHash);
     if (!blurhashValid.result) {
       log.error(
-        `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${draft.coverHash}" Reason: ` +
+        `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${draftsWithThisCover[0].coverHash}" Reason: ` +
           blurhashValid.errorReason
       );
     }

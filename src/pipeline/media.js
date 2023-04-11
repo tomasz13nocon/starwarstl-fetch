@@ -35,18 +35,18 @@ export default async function (drafts) {
   let outOf = drafts.length;
   log.setStatusBarText([`Article: ${progress}/${outOf}`]);
 
-  let pages = fetchWookiee([...new Set(drafts.map((d) => d.title))], CACHE_PAGES);
+  let pages = fetchWookiee([...new Set(drafts.map((d) => d.href ?? d.title))], CACHE_PAGES);
   let infoboxes = [];
   let seriesDraftsMap = {};
 
   for await (let page of pages) {
     // This will be a single iteration most of the time
     // It won't be only for "chapter" entries which all link to their parent media
-    for (let draft of drafts.filter((d) => d.title === page.title)) {
+    for (let draft of drafts.filter((d) => (d.href ?? d.title) === page.title)) {
       let doc = await docFromPage(page, draft);
       if (doc === null) {
         let logRedlink = debug.redlinks ? log.warn : log.info;
-        logRedlink(`${page.title} is a redlink in the timeline! Ignoring.`);
+        logRedlink(`${page.title} is a redlink.`);
         draft.redlink = true;
         // TODO: ensure these have all availible info
         continue;

@@ -63,8 +63,12 @@ export default function (table) {
     // Check for duplicate titles - these are usually "chapter" entries, that link to their parent media
     if (draftMap[draft.title]) {
       let first = draftMap[draft.title];
-      first.altTitle = cleanupTitle(first.titleText);
-      draft.altTitle = cleanupTitle(draft.titleText);
+      if (!first.href) {
+        first.href = first.title;
+        first.title = cleanupTitle(first.titleText);
+      }
+      draft.href = draft.title;
+      draft.title = cleanupTitle(draft.titleText);
     }
 
     let unscuffedDate = unscuffDate(draft.releaseDate);

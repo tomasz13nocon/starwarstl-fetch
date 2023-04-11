@@ -35,7 +35,8 @@ export async function docFromPage(page, draft) {
   }
 
   // Use the normalized title
-  draft.title = page.title;
+  if (draft.href) draft.href = page.title;
+  else draft.title = page.title;
 
   // We might need these in the future
   // In case of a redirect, the fields below describe the redirect page
@@ -70,15 +71,10 @@ export function fillDraftWithInfoboxData(draft, infobox) {
     draft[key] = processAst(value);
   }
 
-  // draft.coverWook = infobox.get("image").wikitext().match(/\[\[(.*)\]\]/)?.[1];
   draft.coverWook = infobox
     .get("image")
     .wikitext()
     .replaceAll(/(\[\[|File:|\]\]|\|.*)/g, "");
-
-  // if (draft.coverWook === undefined && infobox.get("image").text() !== "") {
-  //   log.error(`Unexpected cover filename format! title: "${draft.title}", cover field in infobox: "${infobox.get("image").wikitext()}"`);
-  // }
 
   if (draft.releaseDate && !draft.releaseDateDetails) {
     let rd = new Date(draft.releaseDate);
@@ -123,7 +119,7 @@ export function fillDraftWithInfoboxData(draft, infobox) {
         seasonTextClean.match(/(?:season )?\b(\d+)\b/)?.[1];
       if (draft.season && /shorts/i.test(seasonTextClean)) draft.seasonNote = "shorts";
 
-      if (draft.season === undefined) {
+      if (draft.season === undefined && !suppressLog.noSeason.includes(draft.title)) {
         log.warn(`Couldn't get season of "${draft.title}". Season text: ${seasonText}`);
       }
     }
@@ -297,10 +293,12 @@ function getInfoboxData(infobox, keys) {
   return ret;
 }
 
-// series - wheter the draft is for a series
+// series - whether the draft is for a series
 export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) {
   if (draft.type === "book") {
-    if (doc.categories().includes("Canon audio dramas")) {
+    if (!doc) {
+      draft.fullType = "book-a";
+    } else if (doc.categories().includes("Canon audio dramas")) {
       draft.type = "audio-drama";
       draft.audiobook = false;
     } else {
@@ -320,8 +318,10 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
       // if (!series) // This should theoretically never happen
       //   throw `NO SERIES TYPE FOR EPISODE!!! Episode ${draft.title} is part of a series, for which we don't have the full type. Series title: ${seriesTitle} (${draft.series})`;
       let seriesDoc = doc;
+      if (!seriesDoc) draft.fullType = "tv-live-action";
       // If problematic, change sentence(0) to paragraph(0)
-      if (/micro[- ]series/i.test(seriesDoc.sentence(0).text())) draft.fullType = "tv-micro-series";
+      else if (/micro[- ]series/i.test(seriesDoc.sentence(0).text()))
+        draft.fullType = "tv-micro-series";
       else if (seriesDoc.categories().includes("Canon animated television series"))
         draft.fullType = "tv-animated";
       else if (seriesDoc.categories().includes("Canon live-action television series"))
@@ -347,7 +347,8 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
       tvTypes[seriesTitle] = draft.fullType;
     }
   } else if (draft.type === "game") {
-    if (doc.categories().includes("Canon mobile games")) draft.fullType = "game-mobile";
+    if (!doc) draft.fullType = "game";
+    else if (doc.categories().includes("Canon mobile games")) draft.fullType = "game-mobile";
     else if (doc.categories().includes("Web-based games")) draft.fullType = "game-browser";
     else if (
       doc.categories().includes("Virtual reality") ||
@@ -358,7 +359,8 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
       draft.fullType = "game-vr";
     else draft.fullType = "game";
   } else if (draft.type === "comic") {
-    if (
+    if (!doc) draft.fullType = "comic";
+    else if (
       /manga|japanese webcomic/i.test(doc.sentence(0).text()) ||
       doc.categories().includes("Canon manga")
     )
