@@ -326,22 +326,21 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
         draft.fullType = "tv-animated";
       else if (seriesDoc.categories().includes("Canon live-action television series"))
         draft.fullType = "tv-live-action";
-      else {
-        log.warn(
-          `Unknown TV full type. Series: "${seriesTitle}", categories: ${seriesDoc.categories()}`
-        );
-        if (
-          /animated/i.test(seriesDoc.sentence(0).text()) ||
-          /\bCG\b|\bCGI\b/.test(seriesDoc.sentence(0).text())
-        ) {
-          draft.fullType = "tv-animated";
-          if (!suppressLog.lowConfidenceAnimated.includes(seriesTitle)) {
-            log.warn(`Inferring animated type from sentence: ${seriesDoc.sentence(0).text()}`);
-          }
-        } else {
-          draft.fullType = "tv-live-action";
-          log.warn(`Couldn't infer type from sentence. Setting to live-action.`);
+      else if (
+        /animated/i.test(seriesDoc.sentence(0).text()) ||
+        /\bCG\b|\bCGI\b/.test(seriesDoc.sentence(0).text())
+      ) {
+        draft.fullType = "tv-animated";
+        if (!suppressLog.lowConfidenceAnimated.includes(seriesTitle)) {
+          log.warn(`Inferring animated type from sentence: ${seriesDoc.sentence(0).text()}`);
         }
+      } else {
+        draft.fullType = "tv-live-action";
+        log.warn(
+          `Unknown TV full type, setting to live action. Title: ${
+            draft.title
+          } Series: "${seriesTitle}", categories: ${seriesDoc.categories()}`
+        );
       }
 
       tvTypes[seriesTitle] = draft.fullType;

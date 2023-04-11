@@ -21,7 +21,11 @@ export const BUCKET = "starwarstl";
 // TODO read these from a file
 export const suppressLog = {
   lowConfidenceManga: ["The Banchiians"],
-  lowConfidenceAdultNovel: ["Star Wars: The Aftermath Trilogy", "The High Republic: Cataclysm"],
+  lowConfidenceAdultNovel: [
+    "Star Wars: The Aftermath Trilogy",
+    "The High Republic: Cataclysm",
+    "The High Republic: The Eye of Darkness",
+  ],
   multipleRegexMatches: [
     "Star Wars: The High Republic (Marvel Comics 2021)",
     "Star Wars: The High Republic Adventures",
@@ -31,6 +35,7 @@ export const suppressLog = {
     "Star Wars: The High Republic Adventures (IDW Publishing 2021)",
     "Star Wars: The High Republic — The Blade",
     "Star Wars: The High Republic Adventures: The Nameless Terror",
+    "Star Wars: The High Republic (Marvel Comics 2023)",
   ],
   lowConfidenceAnimated: ["Hunted"],
   noSeason: ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
