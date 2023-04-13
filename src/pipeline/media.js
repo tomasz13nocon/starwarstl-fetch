@@ -29,6 +29,10 @@ function reduceAstToText(acc, item) {
   return acc;
 }
 
+function getAppearances(draft, doc) {
+  log.error(doc.templates().find((t) => t._type === "App"));
+}
+
 export default async function (drafts) {
   log.info("Fetching articles...");
 
@@ -68,6 +72,8 @@ export default async function (drafts) {
 
       fillDraftWithInfoboxData(draft, infobox);
       cleanupDraft(draft);
+
+      getAppearances(draft, doc);
 
       try {
         if (draft.dateDetails) {

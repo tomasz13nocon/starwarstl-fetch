@@ -43,6 +43,11 @@ const { CACHE_PAGES, LIMIT } = config();
       // implement if causing issues
       return tmpl;
     };
+
+    // For appearances section (App template), which uses {{!}} as a column break
+    templates["!"] = (tmpl) => {
+      return "";
+    };
   });
 })();
 
