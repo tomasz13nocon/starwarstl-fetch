@@ -1,5 +1,6 @@
 import wtf from "wtf_wikipedia";
 import fs from "fs/promises";
+import native from "./native/index.cjs";
 
 // LISTS
 // let doc = wtf(`*[[Bantha]] {{Mo}}
@@ -22,7 +23,7 @@ wtf.extend((models, templates) => {
 
   // For appearances, which use {{!}} as a column break
   templates["!"] = (tmpl) => {
-    return "";
+    return "{{!}}";
   };
 
   templates["mo"] = (tmpl) => {
@@ -41,16 +42,14 @@ wtf.extend((models, templates) => {
 
 let wt = await fs.readFile("debug/ahsoka.wiki", "utf8");
 let doc = wtf(wt);
-// console.log(doc.templates().map((t) => t.data));
-console.log(
-  wtf(
-    doc
-      .templates()
-      .find((t) => t.data.template === "app")
-      .json()
-      .locations.replaceAll(/\n\n/g, "\n")
-  ).links()
-);
+let listStr = doc
+  .templates()
+  .find((t) => t.data.template === "app")
+  .json()
+  .locations.replaceAll(/\n{{!}}\n/g, "\n");
+let parsedList = native.parse_list("qwe" + listStr);
+console.dir(parsedList, { depth: 11 });
+
 // let data = doc.tables()[1].json();
 // console.dir([...data.entries()][1770], { depth: 5 });
 // console.dir([...data.entries()].find(v => v[1].Title.text.startsWith( "Star Wars: The Force Awakens Graphic Novel Adaptation")), {depth:5});

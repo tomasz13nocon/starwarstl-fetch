@@ -31,6 +31,8 @@ function createUrl(titles, apiParams) {
 const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true) {
   if (typeof titles === "string") titles = [titles];
 
+  let delayed = 0;
+
   // Fandom allows up to 50 titles per request
   for (let i = 0; i < titles.length; i += 50) {
     const apiUrl = createUrl(titles.slice(i, i + 50), apiParams);
@@ -53,11 +55,24 @@ const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true
     log.info(`Recieved ${toHumanReadable(respSize)} of ${apiParams.prop}`);
 
     const json = await resp.json();
+
+    // If server is busy, wait and retry
+    if (json.error?.code === "maxlag") {
+      if (++delayed > 5) {
+        throw new Error("Too many maxlag errors");
+      }
+      let delay = 1000 * +resp.headers.get("Retry-After");
+      log.info(`Waiting for server to catch up for ${delay}ms...`);
+      await new Promise((r) => setTimeout(r, delay));
+      i -= 50;
+      continue;
+    }
+
     if (json.query === undefined) {
       log.error(apiUrl);
       log.error(json);
       log.error(resp);
-      throw "Response Invalid";
+      throw new Error("Response Invalid");
     }
     let pages = Object.values(json.query.pages);
 

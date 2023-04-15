@@ -6,6 +6,7 @@ import { docFromPage, fillDraftWithInfoboxData } from "../parsing.js";
 import { log } from "../util.js";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.js";
+import native from "../../native/index.cjs";
 
 let { CACHE_PAGES } = config();
 
@@ -30,7 +31,36 @@ function reduceAstToText(acc, item) {
 }
 
 function getAppearances(draft, doc) {
-  log.error(doc.templates().find((t) => t._type === "App"));
+  let appsJson = doc
+    .templates()
+    .find((t) => t.data.template === "app")
+    ?.json();
+
+  // No appearances template
+  if (!appsJson) {
+    if (doc.wikitext().includes("{{App")) {
+      // The template is there but there's a syntax error inside it, which makes wtf fail to parse it
+      log.error(`Failed to parse appearances template in ${draft.title}`);
+    }
+    return;
+  }
+  delete appsJson.template; // template name
+
+  if (Object.values(appsJson).some((a) => typeof a !== "string")) {
+    log.error(`Non-string appearances value in ${draft.title}\n`, appsJson);
+    return;
+  }
+
+  let appsLists;
+  appsLists = Object.values(appsJson).map((a) => {
+    return a.replaceAll(/\n{{!}}\n/g, "\n");
+  });
+  try {
+    let parsedLists = appsLists.map((list) => native.parse_list(list));
+  } catch (e) {
+    log.error(`Error parsing appearances for ${draft.title}\n${e.message}`);
+    return;
+  }
 }
 
 export default async function (drafts) {
