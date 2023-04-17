@@ -45,10 +45,10 @@ let doc = wtf(wt);
 let listStr = doc
   .templates()
   .find((t) => t.data.template === "app")
-  .json()
-  .locations.replaceAll(/\n{{!}}\n/g, "\n");
-let parsedList = native.parse_list("qwe" + listStr);
-console.dir(parsedList, { depth: 11 });
+  .wikitext()
+  .replaceAll(/\n{{!}}\n/g, "\n");
+let parsed = native.parse(listStr);
+console.dir(parsed, { depth: 20 });
 
 // let data = doc.tables()[1].json();
 // console.dir([...data.entries()][1770], { depth: 5 });

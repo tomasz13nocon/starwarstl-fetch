@@ -3,16 +3,21 @@
   "version": "0.1.0",
   "description": "",
   "main": "index.node",
+  "watch": {
+    "test": "{src,test}/*.rs"
+  },
   "scripts": {
     "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
     "build-debug": "npm run build --",
     "build-release": "npm run build -- --release",
     "install": "npm run build-release",
-    "test": "cargo test"
+    "test": "cargo test",
+    "watch": "watch 'npm run build' ./src"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "cargo-cp-artifact": "^0.1"
+    "cargo-cp-artifact": "^0.1",
+    "watch": "^1.0.2"
   }
 }

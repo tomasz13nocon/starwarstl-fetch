@@ -30,7 +30,7 @@ function reduceAstToText(acc, item) {
   return acc;
 }
 
-function getAppearances(draft, doc) {
+function getAppearances(doc) {
   let appsJson = doc
     .templates()
     .find((t) => t.data.template === "app")
@@ -40,25 +40,29 @@ function getAppearances(draft, doc) {
   if (!appsJson) {
     if (doc.wikitext().includes("{{App")) {
       // The template is there but there's a syntax error inside it, which makes wtf fail to parse it
-      log.error(`Failed to parse appearances template in ${draft.title}`);
+      log.error(`Failed to parse appearances template in ${doc.title()}`);
     }
     return;
   }
   delete appsJson.template; // template name
 
   if (Object.values(appsJson).some((a) => typeof a !== "string")) {
-    log.error(`Non-string appearances value in ${draft.title}\n`, appsJson);
+    log.error(`Non-string appearances value in ${doc.title()}\n`, appsJson);
     return;
   }
 
-  let appsLists;
-  appsLists = Object.values(appsJson).map((a) => {
-    return a.replaceAll(/\n{{!}}\n/g, "\n");
-  });
   try {
-    let parsedLists = appsLists.map((list) => native.parse_list(list));
+    return Object.fromEntries(
+      Object.entries(appsJson).map(([appType, appStr]) => {
+        let appParsed = native.parse(appStr.replaceAll(/\n{{!}}\n/g, "\n"));
+        if (appParsed.Err) {
+          throw new Error(appParsed.Err);
+        }
+        return [appType, appParsed.Ok];
+      })
+    );
   } catch (e) {
-    log.error(`Error parsing appearances for ${draft.title}\n${e.message}`);
+    log.error(`Error parsing appearances for ${doc.title()}\n${e.message}`);
     return;
   }
 }
@@ -101,9 +105,10 @@ export default async function (drafts) {
       if (infobox._type === "audiobook") draft.audiobook === true;
 
       fillDraftWithInfoboxData(draft, infobox);
-      cleanupDraft(draft);
 
-      getAppearances(draft, doc);
+      draft.appearances = getAppearances(doc);
+
+      cleanupDraft(draft);
 
       try {
         if (draft.dateDetails) {
