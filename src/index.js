@@ -46,8 +46,16 @@ const { CACHE_PAGES, LIMIT } = config();
 
     // For appearances section (App template), which uses {{!}} as a column break
     templates["!"] = (tmpl) => {
-      return "";
+      return tmpl;
     };
+
+    // Appearances templates. Rust parses these, so leave them be
+    const appTemplates = ["1st", "1stm", "co", "mo", "imo", "flash", "1stID"];
+    for (let template of appTemplates) {
+      templates[template] = (tmpl) => {
+        return tmpl;
+      };
+    }
   });
 })();
 

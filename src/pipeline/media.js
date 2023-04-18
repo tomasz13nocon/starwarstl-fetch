@@ -31,36 +31,21 @@ function reduceAstToText(acc, item) {
 }
 
 function getAppearances(doc) {
-  let appsJson = doc
-    .templates()
-    .find((t) => t.data.template === "app")
-    ?.json();
+  let appsTemplate = doc.templates().find((t) => t.data.template === "app");
 
   // No appearances template
-  if (!appsJson) {
+  if (!appsTemplate) {
     if (doc.wikitext().includes("{{App")) {
       // The template is there but there's a syntax error inside it, which makes wtf fail to parse it
-      log.error(`Failed to parse appearances template in ${doc.title()}`);
+      log.error(`Malformed appearances template in ${doc.title()}`);
     }
-    return;
-  }
-  delete appsJson.template; // template name
-
-  if (Object.values(appsJson).some((a) => typeof a !== "string")) {
-    log.error(`Non-string appearances value in ${doc.title()}\n`, appsJson);
     return;
   }
 
   try {
-    return Object.fromEntries(
-      Object.entries(appsJson).map(([appType, appStr]) => {
-        let appParsed = native.parse(appStr.replaceAll(/\n{{!}}\n/g, "\n"));
-        if (appParsed.Err) {
-          throw new Error(appParsed.Err);
-        }
-        return [appType, appParsed.Ok];
-      })
-    );
+    let appsParsed = native.parse(appsTemplate.wikitext().replaceAll(/\n{{!}}\n/g, "\n"))[0]
+      .Template.parameters;
+    return appsParsed;
   } catch (e) {
     log.error(`Error parsing appearances for ${doc.title()}\n${e.message}`);
     return;
