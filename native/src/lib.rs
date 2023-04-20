@@ -72,13 +72,14 @@ fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
                                 Some(name) => param.start + name.len() + 1,
                                 None => param.start,
                             };
+                            let param_wt = &wikitext[start..param.end];
                             SimpleParameter {
                                 name,
                                 value: parse_nodes(
                                     &Configuration::default()
-                                        .parse(&wikitext[start..param.end])
+                                        .parse(param_wt)
                                         .nodes,
-                                    wikitext,
+                                    param_wt,
                                 ),
                             }
                         })
@@ -159,5 +160,49 @@ mod tests {
                 }],
             }]
         );
+    }
+
+    #[test]
+    fn test_1stid() {
+        let wt = "{{App
+|c-characters=
+*[[1138 (Geonosis)|1138]] {{1st}}
+*[[2638 (Geonosis)|2638]] {{1st}}
+*[[2684]] {{1st}}
+*[[2934]] {{1st}}
+*[[3464]] {{1st}}
+*[[Ask Aak]] {{1st}}
+*[[Paddy Accu]] {{1st}}
+*[[Chon Actrion]] {{1st}} {{C|Bust only}}
+*[[Maxiron Agolerga]] {{1st}}
+*[[Stass Allie]] {{1st}}
+*[[Mas Amedda]]
+*[[Padmé Amidala]]
+*[[Mari Amithest]] {{1st}}
+*[[Passel Argente]]
+*[[Ashla (Jedi)|Ashla]] {{1st}}
+*[[ASN-121]] {{1st}}
+*[[Hermione Bagwa]] {{1st}}
+*[[Sio Bibble]]
+*[[Depa Billaba]]
+*[[Jar Jar Binks]]
+*[[Dud Bolt]] {{Hologram}}
+*[[Buffy]] {{1st}}
+*[[Sora Bulq]] {{1st}}
+*[[Waks Burr]] {{1st}}
+*[[J. K. Burtola]] {{1st}}
+*[[C-3PO]]
+*[[Chian]] {{1st}}
+*[[COO-2180]] {{1st}}
+*[[Cordé]] {{1st}}
+*[[CT-411]] \"Ponds\" {{1st}}
+*[[Theomet Danlé]] {{1st}}
+*[[Braata Danlos]] {{1st}} {{C|Statue only}}
+*[[Oakie Dokes]] {{1st}}
+*[[Lexi Dio]] {{1st}}
+*[[Tox Don]] {{1stID|Tox Don}}
+}}";
+        let parsed = parse_nodes(&Configuration::default().parse(wt).nodes, wt);
+        dbg!(&parsed);
     }
 }

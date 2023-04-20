@@ -26,21 +26,15 @@ wtf.extend((models, templates) => {
     return "{{!}}";
   };
 
-  templates["mo"] = (tmpl) => {
-    return tmpl;
-  };
-  templates["imo"] = (tmpl) => {
-    return tmpl;
-  };
-  templates["flash"] = (tmpl) => {
-    return tmpl;
-  };
-  templates["1st"] = (tmpl) => {
-    return tmpl;
-  };
+  const appTemplates = ["1st", "1stm", "co", "mo", "imo", "flash", "1stid", "hologram"];
+  for (let template of appTemplates) {
+    templates[template] = (tmpl) => {
+      return tmpl;
+    };
+  }
 });
 
-let wt = await fs.readFile("debug/ahsoka.wiki", "utf8");
+let wt = await fs.readFile("debug/aotc.wiki", "utf8");
 let doc = wtf(wt);
 let listStr = doc
   .templates()

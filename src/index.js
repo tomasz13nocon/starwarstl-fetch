@@ -22,9 +22,10 @@ const { CACHE_PAGES, LIMIT } = config();
     let parse = models.parse;
 
     templates.c = (tmpl, list) => {
-      let x = parse(tmpl, ["value"]);
-      list.push({ template: "C", value: x.value });
-      return `((${x.value}))`;
+      // let x = parse(tmpl, ["value"]);
+      // list.push({ template: "C", value: x.value });
+      // return `((${x.value}))`;
+      return tmpl;
     };
 
     templates.circa = (tmpl, list) => {
@@ -50,7 +51,7 @@ const { CACHE_PAGES, LIMIT } = config();
     };
 
     // Appearances templates. Rust parses these, so leave them be
-    const appTemplates = ["1st", "1stm", "co", "mo", "imo", "flash", "1stID"];
+    const appTemplates = ["1st", "1stm", "co", "mo", "imo", "flash", "1stid", "hologram"];
     for (let template of appTemplates) {
       templates[template] = (tmpl) => {
         return tmpl;

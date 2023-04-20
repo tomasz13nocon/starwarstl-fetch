@@ -148,7 +148,7 @@ export function fillDraftWithInfoboxData(draft, infobox) {
 function processNotes(textNode) {
   textNode.text = textNode.text.replace(/'{2,}/g, "");
   let nodes = [];
-  let matches = textNode.text.split(/\(\((.*?)\)\)/);
+  let matches = textNode.text.split(/\{\{C\|(.*?)\}\}/);
   for (let [i, match] of matches.entries()) {
     if (match) {
       // note
