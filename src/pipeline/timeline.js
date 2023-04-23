@@ -28,6 +28,7 @@ export default function (table) {
 
   for (let [i, item] of table.entries()) {
     let draft = {
+      _id: i,
       title: decode(item.Title.links?.[0].page),
       type: types[item.col2.text],
       releaseDate: item.Released?.text, // TODO remove optional chaining

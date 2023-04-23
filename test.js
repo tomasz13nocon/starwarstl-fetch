@@ -34,14 +34,14 @@ wtf.extend((models, templates) => {
   }
 });
 
-let wt = await fs.readFile("debug/aotc.wiki", "utf8");
+let wt = await fs.readFile("debug/ahsoka.wiki", "utf8");
 let doc = wtf(wt);
 let listStr = doc
   .templates()
   .find((t) => t.data.template === "app")
   .wikitext()
   .replaceAll(/\n{{!}}\n/g, "\n");
-let parsed = native.parse(listStr);
+let parsed = native.parse_appearances(listStr);
 console.dir(parsed, { depth: 20 });
 
 // let data = doc.tables()[1].json();

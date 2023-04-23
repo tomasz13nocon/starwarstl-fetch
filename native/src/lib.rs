@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use neon::prelude::*;
 use parse_wiki_text::{Configuration, ListItem, Node};
 use serde::Serialize;
@@ -20,6 +22,12 @@ enum SimpleNode {
 struct SimpleParameter {
     name: Option<String>,
     value: Vec<SimpleNode>,
+}
+
+#[derive(Serialize, Debug)]
+struct Appearances {
+    nodes: Vec<SimpleNode>,
+    links: HashMap<String, Vec<String>>, // TODO: Should value be a set instead of vec?
 }
 
 fn reduce_nodes_to_text(nodes: &Vec<Node>) -> String {
@@ -76,9 +84,7 @@ fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
                             SimpleParameter {
                                 name,
                                 value: parse_nodes(
-                                    &Configuration::default()
-                                        .parse(param_wt)
-                                        .nodes,
+                                    &Configuration::default().parse(param_wt).nodes,
                                     param_wt,
                                 ),
                             }
@@ -92,8 +98,24 @@ fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
     node_list
 }
 
-fn parse(mut cx: FunctionContext) -> JsResult<JsValue> {
-    let wikitext = cx.argument::<JsString>(0)?.value(&mut cx);
+fn collect_links_from_nodes(nodes: &Vec<SimpleNode>) -> Vec<String> {
+    let mut links = Vec::new();
+    for node in nodes {
+        match node {
+            SimpleNode::Link { target, .. } => links.push(target.to_string()),
+            SimpleNode::List(items) => {
+                for item in items {
+                    links.append(&mut collect_links_from_nodes(item));
+                }
+            }
+            _ => (),
+        }
+    }
+    links
+}
+
+fn parse_wikitext(cx: &mut FunctionContext) -> NeonResult<Vec<SimpleNode>> {
+    let wikitext = cx.argument::<JsString>(0)?.value(cx);
     let result = Configuration::default().parse(&wikitext);
     if !result.warnings.is_empty() {
         let erroneous_wt = result
@@ -107,7 +129,36 @@ fn parse(mut cx: FunctionContext) -> JsResult<JsValue> {
         ));
     }
 
-    let ret = parse_nodes(&result.nodes, &wikitext);
+    Ok(parse_nodes(&result.nodes, &wikitext))
+}
+
+fn parse(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let parsed = parse_wikitext(&mut cx)?;
+
+    Ok(neon_serde3::to_value(&mut cx, &parsed)
+        .or_else(|e| cx.throw_error(e.to_string()))
+        .unwrap())
+}
+
+fn parse_appearances(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let parsed = parse_wikitext(&mut cx)?;
+
+    let mut ret = Appearances {
+        nodes: parsed,
+        links: HashMap::new(),
+    };
+    if let SimpleNode::Template { parameters, .. } = &ret.nodes[0] {
+        for param in parameters {
+            if let Some(name) = &param.name {
+                ret.links.insert(name.to_string(), collect_links_from_nodes(&param.value));
+            }
+            else {
+                return cx.throw_error("Incorrect input. Template parameter name was expected. (App had an unnamed parameter)");
+            }
+        }
+    } else {
+        return cx.throw_error("Incorrect input. Template node was expected.");
+    }
 
     Ok(neon_serde3::to_value(&mut cx, &ret)
         .or_else(|e| cx.throw_error(e.to_string()))
@@ -117,6 +168,7 @@ fn parse(mut cx: FunctionContext) -> JsResult<JsValue> {
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
     cx.export_function("parse", parse)?;
+    cx.export_function("parse_appearances", parse_appearances)?;
     Ok(())
 }
 
@@ -167,31 +219,6 @@ mod tests {
         let wt = "{{App
 |c-characters=
 *[[1138 (Geonosis)|1138]] {{1st}}
-*[[2638 (Geonosis)|2638]] {{1st}}
-*[[2684]] {{1st}}
-*[[2934]] {{1st}}
-*[[3464]] {{1st}}
-*[[Ask Aak]] {{1st}}
-*[[Paddy Accu]] {{1st}}
-*[[Chon Actrion]] {{1st}} {{C|Bust only}}
-*[[Maxiron Agolerga]] {{1st}}
-*[[Stass Allie]] {{1st}}
-*[[Mas Amedda]]
-*[[Padmé Amidala]]
-*[[Mari Amithest]] {{1st}}
-*[[Passel Argente]]
-*[[Ashla (Jedi)|Ashla]] {{1st}}
-*[[ASN-121]] {{1st}}
-*[[Hermione Bagwa]] {{1st}}
-*[[Sio Bibble]]
-*[[Depa Billaba]]
-*[[Jar Jar Binks]]
-*[[Dud Bolt]] {{Hologram}}
-*[[Buffy]] {{1st}}
-*[[Sora Bulq]] {{1st}}
-*[[Waks Burr]] {{1st}}
-*[[J. K. Burtola]] {{1st}}
-*[[C-3PO]]
 *[[Chian]] {{1st}}
 *[[COO-2180]] {{1st}}
 *[[Cordé]] {{1st}}
@@ -201,8 +228,15 @@ mod tests {
 *[[Oakie Dokes]] {{1st}}
 *[[Lexi Dio]] {{1st}}
 *[[Tox Don]] {{1stID|Tox Don}}
+|c-events=
+*[[Clone Wars]] {{1st}}
+**[[Battle of Geonosis]] {{1st}} {{C|[[link]]}}
 }}";
         let parsed = parse_nodes(&Configuration::default().parse(wt).nodes, wt);
-        dbg!(&parsed);
+        if let SimpleNode::Template { name, parameters } = &parsed[0] {
+            for param in parameters {
+                dbg!(&param.name, collect_links_from_nodes(&param.value));
+            }
+        }
     }
 }

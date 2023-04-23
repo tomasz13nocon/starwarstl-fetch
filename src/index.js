@@ -77,11 +77,11 @@ if (LIMIT) {
 }
 
 // Processing pipeline starts
-// TODO: make these pure and more SRP
+// TODO: make these pure-ish and more SRP
 
 const drafts = timeline(data);
 
-const seriesDrafts = await media(drafts);
+const { seriesDrafts, appearancesDrafts } = await media(drafts);
 
 await series(drafts, seriesDrafts);
 
@@ -106,6 +106,16 @@ seriesColl.deleteMany({});
 log.info("Writing to DB...");
 await mediaColl.insertMany(drafts);
 await seriesColl.insertMany(seriesDrafts);
+
+// appearancesDrafts stores temporary IDs we got from parsing.
+// map them to the actual IDs in the DB, and insert
+for (let [type, apps] of Object.entries(appearancesDrafts)) {
+  // TODO: `type` is injectable, fix
+  db.collection(type).deleteMany({});
+  for (let [name, ids] of Object.entries(apps)) {
+    await db.collection(type).updateOne({ name }, { $push: { media: { $each: ids } } }, { upsert: true });
+  }
+}
 
 let tvShowsNew = await mediaColl.distinct("series", { type: "tv" });
 for (let show of tvShowsNew) {

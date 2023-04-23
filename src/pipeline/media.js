@@ -43,9 +43,13 @@ function getAppearances(doc) {
   }
 
   try {
-    let appsParsed = native.parse(appsTemplate.wikitext().replaceAll(/\n{{!}}\n/g, "\n"))[0]
-      .Template.parameters;
-    return appsParsed;
+    let appsParsed = native.parse_appearances(
+      appsTemplate.wikitext().replaceAll(/\n{{!}}\n/g, "\n")
+    );
+    return {
+      nodes: appsParsed.nodes[0].Template.parameters,
+      links: appsParsed.links,
+    };
   } catch (e) {
     log.error(`Error parsing appearances for ${doc.title()}\n${e.message}`);
     return;
@@ -62,6 +66,7 @@ export default async function (drafts) {
   let pages = fetchWookiee([...new Set(drafts.map((d) => d.href ?? d.title))], CACHE_PAGES);
   let infoboxes = [];
   let seriesDraftsMap = {};
+  let appearancesDrafts = {};
 
   for await (let page of pages) {
     // This will be a single iteration most of the time
@@ -91,7 +96,18 @@ export default async function (drafts) {
 
       fillDraftWithInfoboxData(draft, infobox);
 
-      draft.appearances = getAppearances(doc);
+      let appearances = getAppearances(doc);
+      draft.appearances = appearances?.nodes;
+      if (appearances?.links) {
+        for (let [type, links] of Object.entries(appearances.links)) {
+          if (type.startsWith("l-") || type.startsWith("c-")) type = type.slice(2);
+          for (let link of links) {
+            if (!(type in appearancesDrafts)) appearancesDrafts[type] = {};
+            if (!(link in appearancesDrafts[type])) appearancesDrafts[type][link] = [];
+            appearancesDrafts[type][link].push(draft._id);
+          }
+        }
+      }
 
       cleanupDraft(draft);
 
@@ -142,5 +158,5 @@ export default async function (drafts) {
     await writeFile("../../debug/infoboxes.txt", infoboxes);
   }
 
-  return Object.values(seriesDraftsMap);
+  return { seriesDrafts: Object.values(seriesDraftsMap), appearancesDrafts };
 }
