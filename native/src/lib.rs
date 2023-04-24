@@ -27,7 +27,13 @@ struct SimpleParameter {
 #[derive(Serialize, Debug)]
 struct Appearances {
     nodes: Vec<SimpleNode>,
-    links: HashMap<String, Vec<String>>, // TODO: Should value be a set instead of vec?
+    links: HashMap<String, Vec<Appearance>>, // TODO: Should value be a set instead of vec?
+}
+
+#[derive(Serialize, Debug)]
+struct Appearance {
+    name: String,
+    templates: Option<Vec<String>>,
 }
 
 fn reduce_nodes_to_text(nodes: &Vec<Node>) -> String {
@@ -51,7 +57,6 @@ fn parse_list_items(items: &Vec<ListItem>, wikitext: &str) -> SimpleNode {
 fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
     let mut node_list = Vec::new();
     for node in nodes {
-        // TODO CharacterEntity
         match node {
             Node::Link { target, text, .. } => {
                 node_list.push(SimpleNode::Link {
@@ -64,6 +69,9 @@ fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
             }
             Node::Text { value, .. } => {
                 node_list.push(SimpleNode::Text(value.to_string()));
+            }
+            Node::CharacterEntity { character, .. } => {
+                node_list.push(SimpleNode::Text(character.to_string()));
             }
             Node::Template {
                 name, parameters, ..
@@ -98,20 +106,36 @@ fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
     node_list
 }
 
-fn collect_links_from_nodes(nodes: &Vec<SimpleNode>) -> Vec<String> {
-    let mut links = Vec::new();
+fn collect_links_from_nodes(nodes: &Vec<SimpleNode>) -> Vec<Appearance> {
+    let mut appearances = Vec::new();
     for node in nodes {
         match node {
-            SimpleNode::Link { target, .. } => links.push(target.to_string()),
+            SimpleNode::Link { target, .. } => appearances.push(Appearance {
+                name: target.to_string(),
+                templates: None,
+            }),
             SimpleNode::List(items) => {
                 for item in items {
-                    links.append(&mut collect_links_from_nodes(item));
+                    appearances.append(&mut collect_links_from_nodes(item));
                 }
             }
+            SimpleNode::Template { name, .. } => match appearances.last_mut() {
+                Some(mut appearance) => {
+                    if let None = appearance.templates {
+                        appearance.templates = Some(Vec::new());
+                    };
+                    appearance
+                        .templates
+                        .as_mut()
+                        .unwrap()
+                        .push(name.to_string());
+                }
+                None => {} // This happens for non-link appearances that have a template
+            },
             _ => (),
         }
     }
-    links
+    appearances
 }
 
 fn parse_wikitext(cx: &mut FunctionContext) -> NeonResult<Vec<SimpleNode>> {
@@ -150,9 +174,9 @@ fn parse_appearances(mut cx: FunctionContext) -> JsResult<JsValue> {
     if let SimpleNode::Template { parameters, .. } = &ret.nodes[0] {
         for param in parameters {
             if let Some(name) = &param.name {
-                ret.links.insert(name.to_string(), collect_links_from_nodes(&param.value));
-            }
-            else {
+                ret.links
+                    .insert(name.to_string(), collect_links_from_nodes(&param.value));
+            } else {
                 return cx.throw_error("Incorrect input. Template parameter name was expected. (App had an unnamed parameter)");
             }
         }

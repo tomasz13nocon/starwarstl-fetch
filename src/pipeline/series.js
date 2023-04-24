@@ -23,7 +23,7 @@ export default async function (drafts, seriesDrafts) {
   );
 
   for await (let page of seriesPages) {
-    for (let seriesDraft of seriesDrafts.filter((d) => d.title === page.title)) {
+    for (let seriesDraft of seriesDrafts.filter((d) => d.title.replace(/#.*/, "") === page.title)) {
       let seriesDoc = await docFromPage(page, seriesDraft);
       if (seriesDoc === null) {
         if (debug.redlinks) {

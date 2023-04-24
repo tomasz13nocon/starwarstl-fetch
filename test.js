@@ -34,7 +34,7 @@ wtf.extend((models, templates) => {
   }
 });
 
-let wt = await fs.readFile("debug/ahsoka.wiki", "utf8");
+let wt = await fs.readFile("debug/battle-of-jedha.wiki", "utf8");
 let doc = wtf(wt);
 let listStr = doc
   .templates()
@@ -42,7 +42,7 @@ let listStr = doc
   .wikitext()
   .replaceAll(/\n{{!}}\n/g, "\n");
 let parsed = native.parse_appearances(listStr);
-console.dir(parsed, { depth: 20 });
+console.dir(parsed.links, { depth: 20 });
 
 // let data = doc.tables()[1].json();
 // console.dir([...data.entries()][1770], { depth: 5 });

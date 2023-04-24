@@ -96,6 +96,7 @@ export default async function (drafts) {
 
       fillDraftWithInfoboxData(draft, infobox);
 
+      // log.info(`Now fetching apps for ${draft.title}`);
       let appearances = getAppearances(doc);
       draft.appearances = appearances?.nodes;
       if (appearances?.links) {
@@ -103,8 +104,15 @@ export default async function (drafts) {
           if (type.startsWith("l-") || type.startsWith("c-")) type = type.slice(2);
           for (let link of links) {
             if (!(type in appearancesDrafts)) appearancesDrafts[type] = {};
-            if (!(link in appearancesDrafts[type])) appearancesDrafts[type][link] = [];
-            appearancesDrafts[type][link].push(draft._id);
+            if (!(link.name in appearancesDrafts[type])) appearancesDrafts[type][link.name] = [];
+            appearancesDrafts[type][link.name].push(
+              Object.assign(
+                {
+                  id: draft._id,
+                },
+                link.templates && { t: link.templates }
+              )
+            );
           }
         }
       }

@@ -100,8 +100,8 @@ let mediaColl = db.collection("media");
 let seriesColl = db.collection("series");
 
 log.info("Clearing DB...");
-mediaColl.deleteMany({});
-seriesColl.deleteMany({});
+await mediaColl.deleteMany({});
+await seriesColl.deleteMany({});
 
 log.info("Writing to DB...");
 await mediaColl.insertMany(drafts);
@@ -109,12 +109,17 @@ await seriesColl.insertMany(seriesDrafts);
 
 // appearancesDrafts stores temporary IDs we got from parsing.
 // map them to the actual IDs in the DB, and insert
-for (let [type, apps] of Object.entries(appearancesDrafts)) {
+for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
   // TODO: `type` is injectable, fix
-  db.collection(type).deleteMany({});
-  for (let [name, ids] of Object.entries(apps)) {
-    await db.collection(type).updateOne({ name }, { $push: { media: { $each: ids } } }, { upsert: true });
+  await db.collection(type).deleteMany({});
+  let typeDraft = {};
+  for (let [name, appearances] of Object.entries(typeAppearances)) {
+    if (!typeDraft[name]) {
+      typeDraft[name] = [];
+    }
+    typeDraft[name].push(...appearances);
   }
+  await db.collection(type).insertMany(Object.entries(typeDraft).map(([name, ids]) => ({ name, ids })));
 }
 
 let tvShowsNew = await mediaColl.distinct("series", { type: "tv" });
