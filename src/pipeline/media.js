@@ -104,12 +104,15 @@ export default async function (drafts) {
           if (type.startsWith("l-") || type.startsWith("c-")) type = type.slice(2);
           for (let link of links) {
             if (!(type in appearancesDrafts)) appearancesDrafts[type] = {};
-            if (!(link.name in appearancesDrafts[type])) appearancesDrafts[type][link.name] = [];
-            appearancesDrafts[type][link.name].push(
+            let linkName = link.name;
+            if (linkName.endsWith("/Legends")) linkName = linkName.slice(0, -8);
+            if (!(linkName in appearancesDrafts[type])) appearancesDrafts[type][linkName] = [];
+            appearancesDrafts[type][linkName].push(
               Object.assign(
                 {
                   id: draft._id,
                 },
+                // TODO: payload size optimization: only include Mo Imo Flash and Hologram, since we're only using these for filters
                 link.templates && { t: link.templates }
               )
             );

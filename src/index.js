@@ -120,6 +120,7 @@ for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
     typeDraft[name].push(...appearances);
   }
   await db.collection(type).insertMany(Object.entries(typeDraft).map(([name, ids]) => ({ name, ids })));
+  await db.collection(type).createIndex({ name: "text" });
 }
 
 let tvShowsNew = await mediaColl.distinct("series", { type: "tv" });
