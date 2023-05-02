@@ -67,9 +67,11 @@ export default function (table) {
       if (!first.href) {
         first.href = first.title;
         first.title = cleanupTitle(first.titleText);
+        first.notUnique = true;
       }
       draft.href = draft.title;
       draft.title = cleanupTitle(draft.titleText);
+      draft.notUnique = true;
     }
 
     let unscuffedDate = unscuffDate(draft.releaseDate);

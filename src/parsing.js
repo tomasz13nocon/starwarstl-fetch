@@ -43,6 +43,9 @@ export async function docFromPage(page, draft) {
   // draft.wookieepediaId = page.pageid;
   // draft.revisionTimestamp = page.timestamp;
 
+  // Log articles which have a link in a note template
+  // if (page.wikitext.includes("{{C|[[")) log.error(page.title);
+
   let doc = wtf(page.wikitext);
 
   while (doc.isRedirect()) {

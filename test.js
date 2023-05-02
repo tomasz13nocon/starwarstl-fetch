@@ -16,9 +16,10 @@ wtf.extend((models, templates) => {
   let parse = models.parse;
 
   templates.c = (tmpl, list) => {
-    let x = parse(tmpl, ["value"]);
-    list.push({ template: "C", value: x.value });
-    return `((${x.value}))`;
+    // let x = parse(tmpl, ["value"]);
+    // list.push({ template: "C", value: x.value });
+    // return `((${x.value}))`;
+    return tmpl;
   };
 
   // For appearances, which use {{!}} as a column break
@@ -42,7 +43,12 @@ let listStr = doc
   .wikitext()
   .replaceAll(/\n{{!}}\n/g, "\n");
 let parsed = native.parse_appearances(listStr);
-console.dir(parsed.links, { depth: 20 });
+// console.dir(parsed.links, { depth: 20 });
+
+let wt2 = `*[[October 13]], [[2014]] {{C|On demand}}<ref name="Insider 156" />
+*[[October 20]], 2014 {{C|[[Disney XD]]}}<ref name="Insider 156" />`;
+let doc2 = wtf(wt2);
+console.log(doc2.lists()[0].json()[1].text);
 
 // let data = doc.tables()[1].json();
 // console.dir([...data.entries()][1770], { depth: 5 });

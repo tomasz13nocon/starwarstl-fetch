@@ -69,6 +69,7 @@ export default async function (drafts) {
   let appearancesDrafts = {};
 
   for await (let page of pages) {
+    if (debug.article && debug.article !== page.title) continue;
     // This will be a single iteration most of the time
     // It won't be only for "chapter" entries which all link to their parent media
     for (let draft of drafts.filter((d) => (d.href ?? d.title) === page.title)) {
@@ -101,19 +102,35 @@ export default async function (drafts) {
       draft.appearances = appearances?.nodes;
       if (appearances?.links) {
         for (let [type, links] of Object.entries(appearances.links)) {
-          if (type.startsWith("l-") || type.startsWith("c-")) type = type.slice(2);
+          if (type.startsWith("l-")) continue;
+          if (type.startsWith("c-")) type = type.slice(2);
           for (let link of links) {
             if (!(type in appearancesDrafts)) appearancesDrafts[type] = {};
             let linkName = link.name;
             if (linkName.endsWith("/Legends")) linkName = linkName.slice(0, -8);
             if (!(linkName in appearancesDrafts[type])) appearancesDrafts[type][linkName] = [];
+            // Log repeat appearances
+            // if (appearancesDrafts[type][linkName].find((o) => o.id === draft._id)) {
+            //   console.error(`Repeat appearance of ${type}: ${linkName} in ${draft.title}`);
+            // }
+            // for (let [oldType, appDraftsType] of Object.entries(appearancesDrafts)) {
+            //   if (appDraftsType[linkName]?.find((o) => o.id === draft._id)) {
+            //     console.error(
+            //       `Repeat appearance across categories of ${oldType}: ${linkName} in ${draft.title}`
+            //     );
+            //   }
+            // }
             appearancesDrafts[type][linkName].push(
               Object.assign(
                 {
                   id: draft._id,
                 },
-                // TODO: payload size optimization: only include Mo Imo Flash and Hologram, since we're only using these for filters
-                link.templates && { t: link.templates }
+                link.templates && {
+                  t: link.templates.map((t) => ({
+                    name: t.name,
+                    ...(t.parameters.length ? { parameters: t.parameters } : {}),
+                  })),
+                }
               )
             );
           }

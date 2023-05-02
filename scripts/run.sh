@@ -23,7 +23,7 @@ if [ -s "$log_file_err" ]; then
        --ssl-reqd \
        --mail-from "$MAILBOT_FROM" \
        --mail-rcpt "$MAILBOT_RCPT" \
-       --user "$MAILBOT_FROM:$MAIL_BOT_PASS" \
+       --user "$MAILBOT_FROM:$MAILBOT_PASS" \
        -T <(echo -e "Subject: Errors during fetching timeline\n" | cat - "$log_file_err")
 fi
 

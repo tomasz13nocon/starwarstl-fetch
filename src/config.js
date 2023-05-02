@@ -16,6 +16,8 @@ export const debug = {
   normImages: false,
   // saves timeline wikitext to file
   saveTimeline: true,
+  // only process one article
+  // article: "Fighter Flight",
 };
 
 const requiredEnv = [MW_API_USER_AGENT, AWS_ACCESS_KEY, AWS_SECRET_KEY];

@@ -22,10 +22,9 @@ const { CACHE_PAGES, LIMIT } = config();
     let parse = models.parse;
 
     templates.c = (tmpl, list) => {
-      // let x = parse(tmpl, ["value"]);
-      // list.push({ template: "C", value: x.value });
-      // return `((${x.value}))`;
-      return tmpl;
+      let x = parse(tmpl, ["value"]);
+      list.push({ template: "C", value: x.value });
+      return `{{C|${x.value}}}`;
     };
 
     templates.circa = (tmpl, list) => {
@@ -102,24 +101,16 @@ let seriesColl = db.collection("series");
 log.info("Clearing DB...");
 await mediaColl.deleteMany({});
 await seriesColl.deleteMany({});
+for (let type of Object.keys(appearancesDrafts)) {
+  // TODO: `type` is injectable, fix (not crucial, we're deleting entire db anyway)
+  await db.collection(type).deleteMany({});
+}
 
 log.info("Writing to DB...");
 await mediaColl.insertMany(drafts);
 await seriesColl.insertMany(seriesDrafts);
-
-// appearancesDrafts stores temporary IDs we got from parsing.
-// map them to the actual IDs in the DB, and insert
 for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
-  // TODO: `type` is injectable, fix
-  await db.collection(type).deleteMany({});
-  let typeDraft = {};
-  for (let [name, appearances] of Object.entries(typeAppearances)) {
-    if (!typeDraft[name]) {
-      typeDraft[name] = [];
-    }
-    typeDraft[name].push(...appearances);
-  }
-  await db.collection(type).insertMany(Object.entries(typeDraft).map(([name, ids]) => ({ name, ids })));
+  await db.collection(type).insertMany(Object.entries(typeAppearances).map(([name, media]) => ({ name, media })));
   await db.collection(type).createIndex({ name: "text" });
 }
 

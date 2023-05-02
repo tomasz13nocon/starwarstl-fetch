@@ -1,16 +1,20 @@
 use std::collections::HashMap;
+use std::cmp;
 
 use neon::prelude::*;
 use parse_wiki_text::{Configuration, ListItem, Node};
 use serde::Serialize;
 
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Clone)]
+struct SimpleTemplate {
+    name: String,
+    parameters: Vec<SimpleParameter>,
+}
+
+#[derive(Serialize, Debug, PartialEq, Clone)]
 enum SimpleNode {
     List(Vec<Vec<SimpleNode>>),
-    Template {
-        name: String,
-        parameters: Vec<SimpleParameter>,
-    },
+    Template(SimpleTemplate),
     Link {
         target: String,
         text: String,
@@ -18,7 +22,7 @@ enum SimpleNode {
     Text(String),
 }
 
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Clone)]
 struct SimpleParameter {
     name: Option<String>,
     value: Vec<SimpleNode>,
@@ -33,7 +37,7 @@ struct Appearances {
 #[derive(Serialize, Debug)]
 struct Appearance {
     name: String,
-    templates: Option<Vec<String>>,
+    templates: Option<Vec<SimpleTemplate>>,
 }
 
 fn reduce_nodes_to_text(nodes: &Vec<Node>) -> String {
@@ -76,7 +80,7 @@ fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
             Node::Template {
                 name, parameters, ..
             } => {
-                node_list.push(SimpleNode::Template {
+                node_list.push(SimpleNode::Template(SimpleTemplate {
                     name: reduce_nodes_to_text(&name),
                     parameters: parameters
                         .iter()
@@ -98,7 +102,7 @@ fn parse_nodes(nodes: &Vec<Node>, wikitext: &str) -> Vec<SimpleNode> {
                             }
                         })
                         .collect(),
-                });
+                    }));
             }
             _ => (),
         };
@@ -119,7 +123,7 @@ fn collect_links_from_nodes(nodes: &Vec<SimpleNode>) -> Vec<Appearance> {
                     appearances.append(&mut collect_links_from_nodes(item));
                 }
             }
-            SimpleNode::Template { name, .. } => match appearances.last_mut() {
+            SimpleNode::Template(template) => match appearances.last_mut() {
                 Some(mut appearance) => {
                     if let None = appearance.templates {
                         appearance.templates = Some(Vec::new());
@@ -128,7 +132,7 @@ fn collect_links_from_nodes(nodes: &Vec<SimpleNode>) -> Vec<Appearance> {
                         .templates
                         .as_mut()
                         .unwrap()
-                        .push(name.to_string());
+                        .push(template.clone());
                 }
                 None => {} // This happens for non-link appearances that have a template
             },
@@ -147,9 +151,14 @@ fn parse_wikitext(cx: &mut FunctionContext) -> NeonResult<Vec<SimpleNode>> {
             .iter()
             .map(|warn| &wikitext[warn.start..warn.end])
             .collect::<String>();
+        let erroneous_wt_big = result
+            .warnings
+            .iter()
+            .map(|warn| &wikitext[cmp::max(0, warn.start-30)..cmp::min(wikitext.len(), warn.end+30)])
+            .collect::<String>();
         return cx.throw_error(format!(
-            "Parsing warnings: {:?}\nErroneous wikitext: {:?}",
-            result.warnings, erroneous_wt
+            "Parsing warnings: {:?}\nErroneous wikitext: {:?}\nContext: {:?}",
+            result.warnings, erroneous_wt, erroneous_wt_big
         ));
     }
 
@@ -171,8 +180,8 @@ fn parse_appearances(mut cx: FunctionContext) -> JsResult<JsValue> {
         nodes: parsed,
         links: HashMap::new(),
     };
-    if let SimpleNode::Template { parameters, .. } = &ret.nodes[0] {
-        for param in parameters {
+    if let SimpleNode::Template(template) = &ret.nodes[0] {
+        for param in &template.parameters {
             if let Some(name) = &param.name {
                 ret.links
                     .insert(name.to_string(), collect_links_from_nodes(&param.value));
@@ -225,7 +234,7 @@ mod tests {
         let parsed = parse_nodes(&doc.nodes, wt);
         assert_eq!(
             parsed,
-            vec![SimpleNode::Template {
+            vec![SimpleNode::Template( SimpleTemplate {
                 name: "template_name".to_string(),
                 parameters: vec![SimpleParameter {
                     name: Some("param_name".to_string()),
@@ -234,7 +243,7 @@ mod tests {
                         text: "link_target".to_string(),
                     }]]),],
                 }],
-            }]
+            })]
         );
     }
 
@@ -257,7 +266,7 @@ mod tests {
 **[[Battle of Geonosis]] {{1st}} {{C|[[link]]}}
 }}";
         let parsed = parse_nodes(&Configuration::default().parse(wt).nodes, wt);
-        if let SimpleNode::Template { name, parameters } = &parsed[0] {
+        if let SimpleNode::Template(SimpleTemplate { parameters, .. }) = &parsed[0] {
             for param in parameters {
                 dbg!(&param.name, collect_links_from_nodes(&param.value));
             }
