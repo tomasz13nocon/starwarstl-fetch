@@ -14,6 +14,7 @@ import images from "./pipeline/images.js";
 import adjustBookTypes from "./pipeline/adjustBookTypes.js";
 import validateFullTypes from "./pipeline/validateFullTypes.js";
 import cleanupDrafts from "./pipeline/cleanupDrafts.js";
+import { createClient } from "redis";
 
 const { CACHE_PAGES, LIMIT } = config();
 
@@ -98,7 +99,7 @@ cleanupDrafts(drafts, seriesDrafts);
 let mediaColl = db.collection("media");
 let seriesColl = db.collection("series");
 
-log.info("Clearing DB...");
+log.info("Clearing DB");
 await mediaColl.deleteMany({});
 await seriesColl.deleteMany({});
 for (let type of Object.keys(appearancesDrafts)) {
@@ -106,7 +107,7 @@ for (let type of Object.keys(appearancesDrafts)) {
   await db.collection(type).deleteMany({});
 }
 
-log.info("Writing to DB...");
+log.info("Writing to DB");
 await mediaColl.insertMany(drafts);
 await seriesColl.insertMany(seriesDrafts);
 for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
@@ -121,9 +122,11 @@ for (let show of tvShowsNew) {
   }
 }
 
-let now = Date.now();
-log.info("Updating data timestamp: " + now);
-await db.collection("meta").updateOne({}, { $set: { dataUpdateTimestamp: now } }, { upsert: true });
+log.info("Invalidating redis cache");
+const redis = createClient();
+await redis.connect();
+await redis.flushDb();
+await redis.disconnect();
 
 await closeDb();
 
