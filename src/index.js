@@ -103,7 +103,7 @@ log.info("Clearing DB");
 await mediaColl.deleteMany({});
 await seriesColl.deleteMany({});
 for (let type of Object.keys(appearancesDrafts)) {
-  // TODO: `type` is injectable, fix (not crucial, we're deleting entire db anyway)
+  // TODO: `type` is injectable, fix (not crucial, we're deleting the entire db anyway. Fix when adding auth)
   await db.collection(type).deleteMany({});
 }
 
