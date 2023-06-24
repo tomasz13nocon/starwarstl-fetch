@@ -36,6 +36,7 @@ export const suppressLog = {
     "Star Wars: The High Republic — The Blade",
     "Star Wars: The High Republic Adventures: The Nameless Terror",
     "Star Wars: The High Republic (Marvel Comics 2023)",
+    "Star Wars: The High Republic: Shadows of Starlight",
   ],
   lowConfidenceAnimated: ["Hunted"],
   noSeason: ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
