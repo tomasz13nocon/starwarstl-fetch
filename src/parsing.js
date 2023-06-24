@@ -9,6 +9,26 @@ import _ from "lodash";
 
 const tvTypes = {};
 
+export function reduceAstToText(acc, item) {
+  switch (item.type) {
+    case "text":
+    case "note":
+      acc += item.text;
+      break;
+    case "list":
+      acc += _.flatten(item.data).reduce(reduceAstToText, "");
+      break;
+    case "internal link":
+    case "interwiki link":
+      acc += item.text ?? item.page;
+      break;
+    case "external link":
+      acc += item.text ?? item.site;
+      break;
+  }
+  return acc;
+}
+
 // Fetches an article with a given title and returns a wtf doc
 // if article doesn't exist returns null
 export async function docFromTitle(title, cache) {
@@ -129,9 +149,13 @@ export function fillDraftWithInfoboxData(draft, infobox) {
     if (!isNaN(parseInt(draft.season, 10)) && !isNaN(+draft.season)) draft.season = +draft.season;
   }
 
-  if (draft.episode) {
-    if (!/^\d+([–-]\d+)?$/.test(draft.episode)) {
-      log.error(`Episode '${draft.episode}' does not have a valid format! Title: ${draft.title}`);
+  let episodeText = draft.episode;
+  if (episodeText) {
+    if (Array.isArray(episodeText)) {
+      episodeText = episodeText.reduce(reduceAstToText, "");
+    }
+    if (!/^\d+([–-]\d+)?$/.test(episodeText)) {
+      log.error(`Episode '${episodeText}' does not have a valid format! Title: ${draft.title}`);
     }
     // Unpractical to parse episodes to int due to double episodes written as 1-2
     // draft.episode = +draft.episode;
@@ -141,8 +165,8 @@ export function fillDraftWithInfoboxData(draft, infobox) {
   draft.se = "";
   if (draft.season) draft.se += "S" + draft.season;
   if (draft.seasonNote) draft.se += "-" + draft.seasonNote;
-  if (draft.season && draft.episode) draft.se += " ";
-  if (draft.episode) draft.se += "E" + draft.episode;
+  if (draft.season && episodeText) draft.se += " ";
+  if (episodeText) draft.se += "E" + episodeText;
 }
 
 // Takes a text node, returns an array of text and note nodes. Also removes italics/bold... (I really need a new parser...)

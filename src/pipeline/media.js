@@ -2,33 +2,13 @@ import _ from "lodash";
 import config, { debug } from "../config.js";
 import { fetchWookiee } from "../fetchWookiee.js";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.js";
-import { docFromPage, fillDraftWithInfoboxData } from "../parsing.js";
+import { docFromPage, fillDraftWithInfoboxData, reduceAstToText } from "../parsing.js";
 import { log } from "../util.js";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.js";
 import native from "../../native/index.cjs";
 
 let { CACHE_PAGES } = config();
-
-function reduceAstToText(acc, item) {
-  switch (item.type) {
-    case "text":
-    case "note":
-      acc += item.text;
-      break;
-    case "list":
-      acc += _.flatten(item.data).reduce(reduceAstToText, "");
-      break;
-    case "internal link":
-    case "interwiki link":
-      acc += item.text ?? item.page;
-      break;
-    case "external link":
-      acc += item.text ?? item.site;
-      break;
-  }
-  return acc;
-}
 
 function getAppearances(doc) {
   let appsTemplate = doc.templates().find((t) => t.data.template === "app");
