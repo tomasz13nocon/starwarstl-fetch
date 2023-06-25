@@ -27,6 +27,13 @@ function createUrl(titles, apiParams) {
   );
 }
 
+const opts = {
+  headers: {
+    "Accept-Encoding": "gzip",
+    "User-Agent": MW_API_USER_AGENT,
+  },
+};
+
 // Code common to fetchWookiee and fetchImageInfo
 const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true) {
   if (typeof titles === "string") titles = [titles];
@@ -36,14 +43,7 @@ const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true
   // Fandom allows up to 50 titles per request
   for (let i = 0; i < titles.length; i += 50) {
     const apiUrl = createUrl(titles.slice(i, i + 50), apiParams);
-    const resp = cache
-      ? await fetchCache(apiUrl)
-      : await fetch(apiUrl, {
-          headers: {
-            "Accept-Encoding": "gzip",
-            "User-Agent": MW_API_USER_AGENT,
-          },
-        });
+    const resp = cache ? await fetchCache(apiUrl, opts) : await fetch(apiUrl, opts);
     netLog.requestNum++;
 
     if (!resp.ok) {
