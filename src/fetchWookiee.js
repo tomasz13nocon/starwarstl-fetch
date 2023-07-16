@@ -58,7 +58,7 @@ const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true
 
     // If server is busy, wait and retry
     if (json.error?.code === "maxlag") {
-      if (++delayed > 5) {
+      if (++delayed > 15) {
         throw new Error("Too many maxlag errors");
       }
       let delay = 1000 * +resp.headers.get("Retry-After");

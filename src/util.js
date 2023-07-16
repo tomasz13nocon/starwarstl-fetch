@@ -45,14 +45,15 @@ if (process.stdout.isTTY) {
 // return the latest possible date e.g. 2022-??-?? => 2022-12-31
 export const unscuffDate = (date) => {
   date = date.replaceAll("–", "-"); // endash
-  if (/^\d{4}[-?]*$/.test(date)) {
+  if (/^\d{4}[-?xX]*$/.test(date)) {
     return `${date.slice(0, 4)}-12-31`;
   }
-  if (/^\d{4}-\d{2}[-?]*$/.test(date)) {
+  if (/^\d{4}-\d{2}[-?xX]*$/.test(date)) {
     let d = new Date(date.slice(0, 4), parseInt(date.slice(5, 7)), 0);
-    return `${d.getFullYear()}-${(d.getMonth() + 1)
+    return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+      .getDate()
       .toString()
-      .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+      .padStart(2, "0")}`;
   }
   return date;
 };
