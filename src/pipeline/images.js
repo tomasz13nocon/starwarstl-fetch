@@ -55,6 +55,10 @@ export default async function (drafts) {
     let draftsWithThisCover = drafts.filter(
       (d) => d.coverWook === (imageinfo.normalizedFrom ?? imageinfo.title).slice(5)
     );
+    if (!imageinfo.url) {
+      log.warn(`Image file is 404 for image "${imageinfo.title}" in article "${articleTitle}".`);
+      continue;
+    }
 
     let current = currentCovers[articleTitle];
     // Remove leading "File:"
@@ -84,9 +88,10 @@ export default async function (drafts) {
           throw new Error("Non 2xx response status! Response:\n" + JSON.stringify(resp));
         }
         if (resp.headers.get("Content-Type") !== "image/webp") {
-          log.error(`Image in non webp. article: ${articleTitle}, filename: ${image.filename}`);
+          throw new Error(
+            `Image in non webp. article: ${articleTitle}, filename: ${image.filename}`
+          );
           // image.filename = imageinfo.title.slice(5);
-          process.exit(1);
         }
         let respSize = (await resp.clone().blob()).size;
         netLog.imageBytesRecieved += respSize;

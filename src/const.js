@@ -72,6 +72,7 @@ export const seriesTypes = {
   "television series": "tv",
   "comic story arc": "comic",
   magazine: "comic",
+  "magazine series": "comic",
 };
 
 export const types = {
