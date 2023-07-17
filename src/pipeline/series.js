@@ -25,13 +25,14 @@ export default async function (drafts, seriesDrafts) {
   for await (let page of seriesPages) {
     for (let seriesDraft of seriesDrafts.filter((d) => d.title.replace(/#.*/, "") === page.title)) {
       let seriesDoc = await docFromPage(page, seriesDraft);
+      let episodes = drafts.filter((e) => e.series?.includes(seriesDraft.title));
+
       if (seriesDoc === null) {
         if (debug.redlinks) {
           log.warn(`Series ${seriesDraft.title} is a redlink!`);
         }
         // infer series type from episodes
         log.info(`Inferring series type from episodes of a redlink series: ${seriesDraft.title}`);
-        let episodes = drafts.filter((e) => e.series?.includes(seriesDraft.title));
         let epType;
         if (episodes.every((e, index) => (index === 0 ? (epType = e.type) : epType === e.type))) {
           seriesDraft.type = epType;
@@ -70,7 +71,9 @@ export default async function (drafts, seriesDrafts) {
             if (seriesDraft.type) {
               if (!suppressLog.multipleRegexMatches.includes(seriesTitle))
                 log.warn(
-                  `Multiple regex matches in first sentence of series article: ${seriesTitle} when looking for type. Matched for: ${seriesDraft.type} and ${type} (latter takes priority). Sentence: ${firstSentence}`
+                  `Multiple regex matches in first sentence of series article: ${seriesTitle} when looking for type.
+Matched for: ${seriesDraft.type} and ${type} (latter takes priority).
+Sentence: ${firstSentence}`
                 );
             }
             seriesDraft.type = type;
@@ -82,7 +85,10 @@ export default async function (drafts, seriesDrafts) {
           seriesDraft.type = seriesTypes[seriesInfobox._type];
           if (seriesDraft.type === undefined)
             throw new Error(
-              `Series ${seriesTitle} has unknown infobox: ${seriesInfobox._type}! Can't infer type.`
+              `Can't infer type.
+Series ${seriesTitle} has unknown infobox:
+${seriesInfobox._type}
+Series comprises: ${episodes.map((e) => e.title).join("\n")}}`
             );
           if (
             debug.distinctInfoboxes &&
@@ -97,7 +103,10 @@ export default async function (drafts, seriesDrafts) {
         figureOutFullTypes(seriesDraft, seriesDoc, true);
       } else if (!seriesDraft.type) {
         throw new Error(
-          `No infobox and failed to infer series type from article!! series: ${seriesTitle} sentence: ${firstSentence}`
+          `No infobox and failed to infer series type from article!
+Series: ${seriesTitle}
+Sentence: ${firstSentence}
+Series comprises: ${episodes.map((e) => e.title).join("\n")}`
         );
       }
       log.setStatusBarText([`Series article: ${++progress}/${outOf}`]);
