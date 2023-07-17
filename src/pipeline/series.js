@@ -9,6 +9,10 @@ import { cleanupDraft } from "./cleanupDrafts.js";
 
 const { CACHE_PAGES } = config();
 
+const hardcodedSeriesTypes = {
+  "Golden Books": "yr",
+};
+
 export default async function (drafts, seriesDrafts) {
   log.info("Fetching series...");
 
@@ -26,6 +30,10 @@ export default async function (drafts, seriesDrafts) {
     for (let seriesDraft of seriesDrafts.filter((d) => d.title.replace(/#.*/, "") === page.title)) {
       let seriesDoc = await docFromPage(page, seriesDraft);
       let episodes = drafts.filter((e) => e.series?.includes(seriesDraft.title));
+
+      if (hardcodedSeriesTypes[seriesDraft.title]) {
+        seriesDraft.type = hardcodedSeriesTypes[seriesDraft.title];
+      }
 
       if (seriesDoc === null) {
         if (debug.redlinks) {
@@ -88,7 +96,7 @@ Sentence: ${firstSentence}`
               `Can't infer type.
 Series ${seriesTitle} has unknown infobox:
 ${seriesInfobox._type}
-Series comprises: ${episodes.map((e) => e.title).join("\n")}}`
+Series comprises: ${episodes.map((e) => e.title).join("\n")}`
             );
           if (
             debug.distinctInfoboxes &&
