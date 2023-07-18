@@ -77,7 +77,6 @@ export default async function (drafts) {
 
       fillDraftWithInfoboxData(draft, infobox);
 
-      // log.info(`Now fetching apps for ${draft.title}`);
       let appearances = getAppearances(doc);
       draft.appearances = appearances?.nodes;
       if (appearances?.links) {

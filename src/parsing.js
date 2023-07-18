@@ -323,6 +323,18 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
         if (audience) draft.fullType = `book-${audience}`;
       }
     }
+    let sentence = doc?.sentence(0).text();
+    if (sentence && /adaptation|novelization/.test(sentence)) {
+      draft.adaptation = true;
+    }
+    if (sentence && /adapts|retells|retelling/.test(sentence)) {
+      draft.adaptation = true;
+      if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
+        log.warn(
+          `Low confidence guess of adaptation for ${draft.title} from sentence: ${sentence}`
+        );
+      }
+    }
   } else if (draft.type === "tv" /* && (draft.series?.length || series)*/) {
     let seriesTitle = !draft.series
       ? draft.title
@@ -408,7 +420,7 @@ async function getAudience(doc) {
   if (regSentence) return regSentence;
   let seriesTitle;
   try {
-    seriesTitle = doc.infobox().get("series").links()[0].json().page; // TODO: ??????
+    seriesTitle = doc.infobox().get("series").links()[0].json().page;
   } catch (e) {
     log.warn(
       `Couldn't get a 'series' from infobox. title: ${doc.title()}, series: ${seriesTitle}, error: `,
