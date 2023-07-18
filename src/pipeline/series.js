@@ -11,6 +11,7 @@ const { CACHE_PAGES } = config();
 
 const hardcodedSeriesTypes = {
   "Golden Books": "yr",
+  "Disney Die-Cut Classics": "yr",
 };
 
 export default async function (drafts, seriesDrafts) {
@@ -108,7 +109,7 @@ Series comprises: ${episodes.map((e) => e.title).join("\n")}`
         }
         fillDraftWithInfoboxData(seriesDraft, seriesInfobox);
         cleanupDraft(seriesDraft);
-        figureOutFullTypes(seriesDraft, seriesDoc, true);
+        await figureOutFullTypes(seriesDraft, seriesDoc, true);
       } else if (!seriesDraft.type) {
         throw new Error(
           `No infobox and failed to infer series type from article!

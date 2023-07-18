@@ -323,11 +323,12 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
         if (audience) draft.fullType = `book-${audience}`;
       }
     }
+
+    // Adaptaions
     let sentence = doc?.sentence(0).text();
     if (sentence && /adaptation|novelization/.test(sentence)) {
       draft.adaptation = true;
-    }
-    if (sentence && /adapts|retells|retelling/.test(sentence)) {
+    } else if (sentence && /adapts|retells|retelling/.test(sentence)) {
       draft.adaptation = true;
       if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
         log.warn(
@@ -422,13 +423,16 @@ async function getAudience(doc) {
   try {
     seriesTitle = doc.infobox().get("series").links()[0].json().page;
   } catch (e) {
-    log.warn(
-      `Couldn't get a 'series' from infobox. title: ${doc.title()}, series: ${seriesTitle}, error: `,
-      e.name + ":",
-      e.message
-    );
-    log.warn(`Can't figure out target audience for ${doc.title()} from sentence: ${sentence}`);
-    return null;
+    if (!suppressLog.noSeriesForAudience.includes(doc.title())) {
+      log.warn(
+        `Couldn't get a 'series' from infobox when figuring out book's target audience. Defaulting to adult novel.
+title: ${doc.title()}
+series: ${seriesTitle}
+sentence: ${sentence}
+error: ${e.name}: ${e.message}`
+      );
+    }
+    return "a";
   }
   log.info(`Getting series: ${seriesTitle} for ${doc.title()}`);
   let seriesDoc = await docFromTitle(seriesTitle);

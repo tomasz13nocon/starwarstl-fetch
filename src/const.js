@@ -39,7 +39,12 @@ export const suppressLog = {
     "Star Wars: The High Republic: Shadows of Starlight",
   ],
   lowConfidenceAnimated: ["Hunted"],
-  lowConfidenceAdaptation: [],
+  lowConfidenceAdaptation: [
+    "Star Wars Treasury: The Original Trilogy",
+    "The Force Awakens: Rey's Story",
+    "The Force Awakens: Finn's Story",
+  ],
+  noSeriesForAudience: ["Star Wars Treasury: The Original Trilogy"],
   noSeason: ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
 };
 
