@@ -15,6 +15,7 @@ import adjustBookTypes from "./pipeline/adjustBookTypes.js";
 import validateFullTypes from "./pipeline/validateFullTypes.js";
 import cleanupDrafts from "./pipeline/cleanupDrafts.js";
 import { createClient } from "redis";
+import { allowedAppCategories } from "./const.js";
 
 const { CACHE_PAGES, LIMIT } = config();
 
@@ -103,7 +104,11 @@ log.info("Clearing DB");
 await mediaColl.deleteMany({});
 await seriesColl.deleteMany({});
 for (let type of Object.keys(appearancesDrafts)) {
-  // TODO: `type` is injectable, fix (not crucial, we're deleting the entire db anyway. Fix when adding auth)
+  if (!allowedAppCategories.includes(type)) {
+    throw new Error(`Appearances category "${type}" is not allowed.`);
+  }
+}
+for (let type of Object.keys(appearancesDrafts)) {
   await db.collection(type).deleteMany({});
 }
 

@@ -48,6 +48,21 @@ export const suppressLog = {
   noSeason: ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
 };
 
+export const allowedAppCategories = [
+  "characters",
+  "dramatis personae",
+  "other characters", // When dramatis personeae exists, this does as well, see Thrawn Ascendancy
+  "creatures",
+  "droids",
+  "events",
+  "locations",
+  "organizations",
+  "species",
+  "technology",
+  "vehicles",
+  "miscellanea",
+];
+
 export const NUMBERS = {
   one: 1,
   two: 2,
