@@ -20,7 +20,12 @@ export const BUCKET = "starwarstl";
 // Suppress specific warnings for specific titles after manually confirming they're not an issue
 // TODO read these from a file
 export const suppressLog = {
-  lowConfidenceManga: ["The Banchiians"],
+  lowConfidenceManga: [
+    "The Banchiians",
+    "Star Wars Rebels, Vol. 1",
+    "Star Wars Rebels, Vol. 2",
+    "Star Wars Rebels, Vol. 3",
+  ],
   lowConfidenceAdultNovel: [
     "Star Wars: The Aftermath Trilogy",
     "The High Republic: Cataclysm",

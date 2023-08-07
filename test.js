@@ -35,21 +35,15 @@ wtf.extend((models, templates) => {
   }
 });
 
-let wt = await fs.readFile("debug/battle-of-jedha.wiki", "utf8");
+let wt = await fs.readFile("debug/test.wiki", "utf8");
 let doc = wtf(wt);
-let listStr = doc
-  .templates()
-  .find((t) => t.data.template === "app")
-  .wikitext()
-  .replaceAll(/\n{{!}}\n/g, "\n");
-let parsed = native.parse_appearances(listStr);
+console.log(doc.infobox());
+console.log(doc.sentence(0).text());
+
+// let listStr = doc
+//   .templates()
+//   .find((t) => t.data.template === "app")
+//   .wikitext()
+//   .replaceAll(/\n{{!}}\n/g, "\n");
+// let parsed = native.parse_appearances(listStr);
 // console.dir(parsed.links, { depth: 20 });
-
-let wt2 = `*[[October 13]], [[2014]] {{C|On demand}}<ref name="Insider 156" />
-*[[October 20]], 2014 {{C|[[Disney XD]]}}<ref name="Insider 156" />`;
-let doc2 = wtf(wt2);
-console.log(doc2.lists()[0].json()[1].text);
-
-// let data = doc.tables()[1].json();
-// console.dir([...data.entries()][1770], { depth: 5 });
-// console.dir([...data.entries()].find(v => v[1].Title.text.startsWith( "Star Wars: The Force Awakens Graphic Novel Adaptation")), {depth:5});
