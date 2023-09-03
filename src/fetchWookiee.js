@@ -12,7 +12,7 @@ function createUrl(titles, apiParams) {
 
   const paramsStr = Object.entries(apiParams).reduce(
     (acc, [key, value]) => acc + `&${key}=${value}`,
-    ""
+    "",
   );
 
   return (
@@ -106,7 +106,7 @@ export const fetchWookiee = async function* (titles, cache = true) {
   for await (let page of fetchWookieeHelper(
     titles,
     { prop: "revisions", rvprop: "content|timestamp", rvslots: "main" },
-    cache
+    cache,
   )) {
     if (page.invalid !== undefined) {
       log.error(`Page ${page.title} is invalid. invalid=true returned from the API.`);
