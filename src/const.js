@@ -96,6 +96,7 @@ export const seriesTypes = {
   "comic series": "comic",
   movie: "film",
   "television series": "tv",
+  "television season": "tv",
   "comic story arc": "comic",
   magazine: "comic",
   "magazine series": "comic",

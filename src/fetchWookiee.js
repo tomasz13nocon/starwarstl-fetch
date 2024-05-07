@@ -1,10 +1,12 @@
-import { fetchBuilder, FileSystemCache } from "node-fetch-cache";
+import NodeFetchCache, { FileSystemCache } from "node-fetch-cache";
 import { debug } from "./config.js";
 import { MW_API_USER_AGENT } from "./const.js";
 import { log, toHumanReadable } from "./util.js";
 import netLog from "./netLog.js";
 
-const fetchCache = fetchBuilder.withCache(new FileSystemCache());
+const fetchCache = NodeFetchCache.create({
+  cache: new FileSystemCache(),
+});
 
 // Joins titles with pipe and returns a wookieepedia API URL string
 function createUrl(titles, apiParams) {
@@ -35,7 +37,7 @@ const opts = {
 };
 
 // Code common to fetchWookiee and fetchImageInfo
-const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true) {
+const fetchWookieeHelper = async function*(titles, apiParams = {}, cache = true) {
   if (typeof titles === "string") titles = [titles];
 
   let delayed = 0;
@@ -102,7 +104,7 @@ const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true
 // yields objects containing title, pageid and wikitext
 // number of yields will be the same as the amount of titles provided
 // titles needs to be a string (single title) or a non empty array of strings
-export const fetchWookiee = async function* (titles, cache = true) {
+export const fetchWookiee = async function*(titles, cache = true) {
   for await (let page of fetchWookieeHelper(
     titles,
     { prop: "revisions", rvprop: "content|timestamp", rvslots: "main" },
@@ -133,7 +135,7 @@ export const fetchWookiee = async function* (titles, cache = true) {
   }
 };
 
-export const fetchImageInfo = async function* (titles) {
+export const fetchImageInfo = async function*(titles) {
   for await (let page of fetchWookieeHelper(titles, {
     prop: "imageinfo",
     iiprop: "url|sha1|timestamp",

@@ -24,7 +24,7 @@ function getAppearances(doc) {
 
   try {
     let appsParsed = native.parse_appearances(
-      appsTemplate.wikitext().replaceAll(/\n{{!}}\n/g, "\n")
+      appsTemplate.wikitext().replaceAll(/\n{{!}}\n/g, "\n"),
     );
     return {
       nodes: appsParsed.nodes[0].Template.parameters,
@@ -53,6 +53,7 @@ export default async function (drafts) {
     // This will be a single iteration most of the time
     // It won't be only for "chapter" entries which all link to their parent media
     for (let draft of drafts.filter((d) => (d.href ?? d.title) === page.title)) {
+      draft.pageid = page.pageid;
       let doc = await docFromPage(page, draft);
       if (doc === null) {
         let logRedlink = debug.redlinks ? log.warn : log.info;
@@ -66,7 +67,7 @@ export default async function (drafts) {
       let infobox = doc.infobox();
       if (!infobox) {
         throw new Error(
-          `No infobox! title: ${draft.title}\nwikitext:\n${page.wikitext.slice(0, 1500)}`
+          `No infobox! title: ${draft.title}\nwikitext:\n${page.wikitext.slice(0, 1500)}`,
         );
       }
 
@@ -109,8 +110,8 @@ export default async function (drafts) {
                     name: t.name,
                     ...(t.parameters.length ? { parameters: t.parameters } : {}),
                   })),
-                }
-              )
+                },
+              ),
             );
           }
         }
@@ -147,7 +148,7 @@ export default async function (drafts) {
           log.warn(
             `${draft.title} has type "tv" and belongs to multiple series.` +
               " This can cause bugs in frontend!" +
-              " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples."
+              " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples.",
           );
         }
         for (let seriesTitle of draft.series) {
