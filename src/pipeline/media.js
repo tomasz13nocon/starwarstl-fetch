@@ -46,7 +46,7 @@ function getAppearances(doc) {
         oneMatched = true;
       }
       if (category.name === "organisms") {
-        log.info("organisms found in " + doc.title());
+        // log.info("organisms found in " + doc.title());
         netLog.organismCount++;
         if (oneMatched) netLog.bothCount++;
         oneMatched = true;

@@ -37,7 +37,7 @@ const opts = {
 };
 
 // Code common to fetchWookiee and fetchImageInfo
-const fetchWookieeHelper = async function*(titles, apiParams = {}, cache = true) {
+const fetchWookieeHelper = async function* (titles, apiParams = {}, cache = true) {
   if (typeof titles === "string") titles = [titles];
 
   let delayed = 0;
@@ -52,9 +52,10 @@ const fetchWookieeHelper = async function*(titles, apiParams = {}, cache = true)
       throw "Non 2xx response status! Response:\n" + JSON.stringify(resp);
     }
 
-    let respSize = (await resp.clone().blob()).size;
-    netLog.bytesRecieved += respSize;
-    log.info(`Recieved ${toHumanReadable(respSize)} of ${apiParams.prop}`);
+    // TODO: using blob() with node-fetch-cache causes node to hang forever. Uncomment when fixed
+    // let respSize = (await resp.clone().blob()).size;
+    // netLog.bytesRecieved += respSize;
+    // log.info(`Recieved ${toHumanReadable(respSize)} of ${apiParams.prop}`);
 
     const json = await resp.json();
 
@@ -104,7 +105,7 @@ const fetchWookieeHelper = async function*(titles, apiParams = {}, cache = true)
 // yields objects containing title, pageid and wikitext
 // number of yields will be the same as the amount of titles provided
 // titles needs to be a string (single title) or a non empty array of strings
-export const fetchWookiee = async function*(titles, cache = true) {
+export const fetchWookiee = async function* (titles, cache = true) {
   for await (let page of fetchWookieeHelper(
     titles,
     { prop: "revisions", rvprop: "content|timestamp", rvslots: "main" },
@@ -135,7 +136,7 @@ export const fetchWookiee = async function*(titles, cache = true) {
   }
 };
 
-export const fetchImageInfo = async function*(titles) {
+export const fetchImageInfo = async function* (titles) {
   for await (let page of fetchWookieeHelper(titles, {
     prop: "imageinfo",
     iiprop: "url|sha1|timestamp",
