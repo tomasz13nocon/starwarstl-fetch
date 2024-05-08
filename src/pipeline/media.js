@@ -7,6 +7,8 @@ import { log } from "../util.js";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.js";
 import native from "../../native/index.cjs";
+import netLog from "../netLog.js";
+import { allowedAppCategories } from "../const.js";
 
 let { CACHE_PAGES } = config();
 
@@ -26,6 +28,37 @@ function getAppearances(doc) {
     let appsParsed = native.parse_appearances(
       appsTemplate.wikitext().replaceAll(/\n{{!}}\n/g, "\n"),
     );
+
+    // Wookieepedia changed the name of the "creatures" category to "organisms", but some articles still use "creatures"
+    // This changes the new "organisms" category of appearences into the old "creatures" as we wait for wookiepedia to finish transitioning all articles to "organisms"
+    let oneMatched = false;
+    for (let category of appsParsed.nodes[0].Template.parameters) {
+      if (!allowedAppCategories.includes(category.name.replace(/(c-)|(l-)/, ""))) {
+        log.error(`${doc.title()} contains unknown appearences category: ${category.name}`);
+      }
+      // TODO handle this maybe?
+      if (category.name === "c-organisms" || category.name === "l-organisms") {
+        throw new Error(category.name + " found");
+      }
+      if (category.name === "creatures") {
+        netLog.creatureCount++;
+        if (oneMatched) netLog.bothCount++;
+        oneMatched = true;
+      }
+      if (category.name === "organisms") {
+        log.info("organisms found in " + doc.title());
+        netLog.organismCount++;
+        if (oneMatched) netLog.bothCount++;
+        oneMatched = true;
+        category.name = "creatures";
+      }
+    }
+    if ("organisms" in appsParsed.links) {
+      // TODO what if both exist? We overwrite createres with organisms here
+      appsParsed.links.creatures = appsParsed.links.organisms;
+      delete appsParsed.links.organisms;
+    }
+
     return {
       nodes: appsParsed.nodes[0].Template.parameters,
       links: appsParsed.links,

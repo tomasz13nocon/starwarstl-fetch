@@ -96,6 +96,9 @@ validateFullTypes(drafts);
 
 cleanupDrafts(drafts, seriesDrafts);
 
+log.warn(`creature count: ${netLog.creatureCount}`);
+log.warn(`organism count: ${netLog.organismCount}`);
+log.warn(`both count: ${netLog.bothCount}`);
 
 let mediaColl = db.collection("media");
 let seriesColl = db.collection("series");
