@@ -37,8 +37,14 @@ if (process.stdout.isTTY) {
   log = logWithStatusbar();
   log.setStatusBarText([""]);
 } else {
-  console.setStatusBarText = () => {};
-  log = console;
+  log = {};
+  log.setStatusBarText = () => {};
+  log.log = (...args) => console.log(...args);
+  log.info = (...args) => console.info("INFO: ", ...args);
+  log.warn = (...args) => console.warn("WARN: ", ...args);
+  log.error = (...args) => console.error("ERROR: ", ...args);
+  // console.setStatusBarText = () => {};
+  // log = console;
 }
 
 // For dates in format yyyy-mm-dd that lack a month or day, or have question marks in their place
