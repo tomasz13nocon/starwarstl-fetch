@@ -201,6 +201,13 @@ export default async function (drafts) {
     }
   }
 
+  // Make sure no unknown appearances category was found
+  for (let type of Object.keys(appearancesDrafts)) {
+    if (!allowedAppCategories.includes(type)) {
+      throw new Error(`Appearances category "${type}" is not allowed.`);
+    }
+  }
+
   if (debug.distinctInfoboxes) {
     await writeFile("../../debug/infoboxes.txt", infoboxes);
   }

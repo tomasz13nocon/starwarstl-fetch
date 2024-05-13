@@ -110,11 +110,6 @@ log.info("Clearing DB");
 await mediaColl.deleteMany({});
 await seriesColl.deleteMany({});
 for (let type of Object.keys(appearancesDrafts)) {
-  if (!allowedAppCategories.includes(type)) {
-    throw new Error(`Appearances category "${type}" is not allowed.`);
-  }
-}
-for (let type of Object.keys(appearancesDrafts)) {
   await db.collection(type).deleteMany({});
 }
 
