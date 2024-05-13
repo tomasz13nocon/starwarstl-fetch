@@ -31,32 +31,38 @@ function getAppearances(doc) {
 
     // Wookieepedia changed the name of the "creatures" category to "organisms", but some articles still use "creatures"
     // This changes the new "organisms" category of appearences into the old "creatures" as we wait for wookiepedia to finish transitioning all articles to "organisms"
-    let oneMatched = false;
+    let creaturesFound = false,
+      organismsFound = false;
     for (let category of appsParsed.nodes[0].Template.parameters) {
+      if (["creatures", "c-creatures", "l-creatures"].includes(category.name)) {
+        netLog[category.name + "Count"]++;
+        creaturesFound = true;
+      }
+      if (["organisms", "c-organisms", "l-organisms"].includes(category.name)) {
+        netLog[category.name + "Count"]++;
+        category.name = category.name.replace("organisms", "creatures");
+        organismsFound = true;
+      }
       if (!allowedAppCategories.includes(category.name.replace(/(c-)|(l-)/, ""))) {
         log.error(`${doc.title()} contains unknown appearences category: ${category.name}`);
       }
-      // TODO handle this maybe?
-      if (category.name === "c-organisms" || category.name === "l-organisms") {
-        throw new Error(category.name + " found");
-      }
-      if (category.name === "creatures") {
-        netLog.creatureCount++;
-        if (oneMatched) netLog.bothCount++;
-        oneMatched = true;
-      }
-      if (category.name === "organisms") {
-        // log.info("organisms found in " + doc.title());
-        netLog.organismCount++;
-        if (oneMatched) netLog.bothCount++;
-        oneMatched = true;
-        category.name = "creatures";
-      }
+    }
+    if (creaturesFound && organismsFound) {
+      log.error(
+        `'organisms' and 'creatures' coexist in ${doc.title()}. Creatures will get overwritten by organisms!`,
+      );
     }
     if ("organisms" in appsParsed.links) {
-      // TODO what if both exist? We overwrite createres with organisms here
       appsParsed.links.creatures = appsParsed.links.organisms;
       delete appsParsed.links.organisms;
+    }
+    if ("c-organisms" in appsParsed.links) {
+      appsParsed.links["c-creatures"] = appsParsed.links["c-organisms"];
+      delete appsParsed.links["c-organisms"];
+    }
+    if ("l-organisms" in appsParsed.links) {
+      appsParsed.links["l-creatures"] = appsParsed.links["l-organisms"];
+      delete appsParsed.links["l-organisms"];
     }
 
     return {

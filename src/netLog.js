@@ -5,7 +5,10 @@ export default {
   requestNum: 0,
   s3read: 0,
   s3write: 0,
-  creatureCount: 0,
-  organismCount: 0,
-  bothCount: 0,
+  creaturesCount: 0,
+  organismsCount: 0,
+  "c-organismsCount": 0,
+  "l-organismsCount": 0,
+  "c-creaturesCount": 0,
+  "l-creaturesCount": 0,
 };

@@ -96,9 +96,12 @@ validateFullTypes(drafts);
 
 cleanupDrafts(drafts, seriesDrafts);
 
-log.warn(`creature count: ${netLog.creatureCount}`);
-log.warn(`organism count: ${netLog.organismCount}`);
-log.warn(`both count: ${netLog.bothCount}`);
+log.warn(`creature count: ${netLog.creaturesCount}`);
+log.warn(`c-creature count: ${netLog["c-creaturesCount"]}`);
+log.warn(`l-creature count: ${netLog["l-creaturesCount"]}`);
+log.warn(`organism count: ${netLog.organismsCount}`);
+log.warn(`c-organism count: ${netLog["c-organismsCount"]}`);
+log.warn(`l-organism count: ${netLog["l-organismsCount"]}`);
 
 let mediaColl = db.collection("media");
 let seriesColl = db.collection("series");

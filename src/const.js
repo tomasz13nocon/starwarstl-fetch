@@ -42,6 +42,7 @@ export const suppressLog = {
     "Star Wars: The High Republic Adventures: The Nameless Terror",
     "Star Wars: The High Republic (Marvel Comics 2023)",
     "Star Wars: The High Republic: Shadows of Starlight",
+    "Star Wars: The High Republic Adventures – Echoes of Fear",
   ],
   lowConfidenceAnimated: ["Hunted"],
   lowConfidenceAdaptation: [
@@ -58,7 +59,6 @@ export const allowedAppCategories = [
   "dramatis personae",
   "other characters", // When dramatis personeae exists, this does as well, see Thrawn Ascendancy
   "creatures",
-  "organisms",
   "droids",
   "events",
   "locations",
