@@ -44,7 +44,7 @@ export const suppressLog = {
     "Star Wars: The High Republic: Shadows of Starlight",
     "Star Wars: The High Republic Adventures – Echoes of Fear",
   ],
-  lowConfidenceAnimated: ["Hunted"],
+  lowConfidenceAnimated: ["Hunted", "Star Wars: Fun with Nubs"],
   lowConfidenceAdaptation: [
     "Star Wars Treasury: The Original Trilogy",
     "The Force Awakens: Rey's Story",
