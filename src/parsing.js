@@ -50,7 +50,7 @@ export async function docFromPage(page, draft) {
   // This will happen if the normalization is not exact
   if (draft === undefined) {
     throw new Error(
-      `Mismatch between timeline title and the title received from the server for: "${page.title}"`
+      `Mismatch between timeline title and the title received from the server for: "${page.title}"`,
     );
   }
 
@@ -128,6 +128,7 @@ export function fillDraftWithInfoboxData(draft, infobox) {
       .get("series")
       .links()
       ?.map((e) => decode(getPageWithAnchor(e))) || null;
+
   let seasonText = infobox.get("season").text();
   if (seasonText) {
     let seasonTextClean = seasonText.toLowerCase().trim();
@@ -149,7 +150,7 @@ export function fillDraftWithInfoboxData(draft, infobox) {
     if (!isNaN(parseInt(draft.season, 10)) && !isNaN(+draft.season)) draft.season = +draft.season;
   }
 
-  let episodeText = draft.episode;
+  let episodeText = draft.episodeDetails;
   if (episodeText) {
     if (Array.isArray(episodeText)) {
       episodeText = episodeText.reduce(reduceAstToText, "");
@@ -159,14 +160,16 @@ export function fillDraftWithInfoboxData(draft, infobox) {
     }
     // Unpractical to parse episodes to int due to double episodes written as 1-2
     // draft.episode = +draft.episode;
+
+    draft.episode = episodeText;
   }
 
   // season episode text like: "S2 E11"
   draft.se = "";
   if (draft.season) draft.se += "S" + draft.season;
   if (draft.seasonNote) draft.se += "-" + draft.seasonNote;
-  if (draft.season && episodeText) draft.se += " ";
-  if (episodeText) draft.se += "E" + episodeText;
+  if (draft.season && draft.episode) draft.se += " ";
+  if (draft.episode) draft.se += "E" + draft.episode;
 }
 
 // Takes a text node, returns an array of text and note nodes. Also removes italics/bold... (I really need a new parser...)
@@ -332,7 +335,7 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
       draft.adaptation = true;
       if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
         log.warn(
-          `Low confidence guess of adaptation for ${draft.title} from sentence: ${sentence}`
+          `Low confidence guess of adaptation for ${draft.title} from sentence: ${sentence}`,
         );
       }
     }
@@ -340,7 +343,7 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
     let seriesTitle = !draft.series
       ? draft.title
       : draft.series.find(
-          (seriesTitle) => seriesDrafts.find((sd) => sd.title === seriesTitle)?.type === "tv"
+          (seriesTitle) => seriesDrafts.find((sd) => sd.title === seriesTitle)?.type === "tv",
         );
     if (tvTypes[seriesTitle]) draft.fullType = tvTypes[seriesTitle];
     else {
@@ -368,7 +371,7 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
         log.warn(
           `Unknown TV full type, setting to live action. Title: ${
             draft.title
-          } Series: "${seriesTitle}", categories: ${seriesDoc.categories()}`
+          } Series: "${seriesTitle}", categories: ${seriesDoc.categories()}`,
         );
       }
 
@@ -399,7 +402,7 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
         log.warn(
           `Low confidence guess of manga type for ${draft.title} from sentences: ${
             doc.sentence(0).text() + doc.sentence(1).text()
-          }`
+          }`,
         );
     } else if (doc.infobox()._type === "comic strip") draft.fullType = "comic-strip";
     else if (doc.infobox()._type === "comic story") draft.fullType = "comic-story";
@@ -429,7 +432,7 @@ async function getAudience(doc) {
 title: ${doc.title()}
 series: ${seriesTitle}
 sentence: ${sentence}
-error: ${e.name}: ${e.message}`
+error: ${e.name}: ${e.message}`,
       );
     }
     return "a";
@@ -443,7 +446,7 @@ error: ${e.name}: ${e.message}`
   let regSeries = reg(seriesSentence, doc.title());
   if (!regSeries)
     log.warn(
-      `Can't figure out target audience for ${doc.title()} from sentence: ${sentence}\n nor its series' sentence: ${seriesSentence}`
+      `Can't figure out target audience for ${doc.title()} from sentence: ${sentence}\n nor its series' sentence: ${seriesSentence}`,
     );
   return regSeries;
 }

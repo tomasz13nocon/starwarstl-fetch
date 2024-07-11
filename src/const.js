@@ -132,7 +132,7 @@ export const infoboxFields = [
   "narrator",
   "developer",
   { aliases: ["season"], details: true },
-  "episode",
+  { aliases: ["episode"], details: true },
   "production",
   "guests",
   { aliases: ["director", "directors"] },

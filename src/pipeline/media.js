@@ -36,6 +36,7 @@ function getAppearances(doc) {
     for (let category of appsParsed.nodes[0].Template.parameters) {
       if (["creatures", "c-creatures", "l-creatures"].includes(category.name)) {
         netLog[category.name + "Count"]++;
+        log.info(`${doc.title()} contains ${category.name}`);
         creaturesFound = true;
       }
       if (["organisms", "c-organisms", "l-organisms"].includes(category.name)) {
