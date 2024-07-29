@@ -58,7 +58,7 @@ export const allowedAppCategories = [
   "characters",
   "dramatis personae",
   "other characters", // When dramatis personeae exists, this does as well, see Thrawn Ascendancy
-  "creatures",
+  "organisms",
   "droids",
   "events",
   "locations",

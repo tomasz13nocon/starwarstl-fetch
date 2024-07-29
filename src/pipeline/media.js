@@ -38,10 +38,10 @@ function getAppearances(doc) {
         netLog[category.name + "Count"]++;
         log.info(`${doc.title()} contains ${category.name}`);
         creaturesFound = true;
+        category.name = category.name.replace("creatures", "organisms");
       }
       if (["organisms", "c-organisms", "l-organisms"].includes(category.name)) {
         netLog[category.name + "Count"]++;
-        category.name = category.name.replace("organisms", "creatures");
         organismsFound = true;
       }
       if (!allowedAppCategories.includes(category.name.replace(/(c-)|(l-)/, ""))) {
@@ -50,20 +50,20 @@ function getAppearances(doc) {
     }
     if (creaturesFound && organismsFound) {
       log.error(
-        `'organisms' and 'creatures' coexist in ${doc.title()}. Creatures will get overwritten by organisms!`,
+        `'organisms' and 'creatures' coexist in ${doc.title()}. One will get overwritten by the other!`,
       );
     }
-    if ("organisms" in appsParsed.links) {
-      appsParsed.links.creatures = appsParsed.links.organisms;
-      delete appsParsed.links.organisms;
+    if ("creatures" in appsParsed.links) {
+      appsParsed.links.organisms = appsParsed.links.creatures;
+      delete appsParsed.links.creatures;
     }
-    if ("c-organisms" in appsParsed.links) {
-      appsParsed.links["c-creatures"] = appsParsed.links["c-organisms"];
-      delete appsParsed.links["c-organisms"];
+    if ("c-creatures" in appsParsed.links) {
+      appsParsed.links["c-organisms"] = appsParsed.links["c-creatures"];
+      delete appsParsed.links["c-creatures"];
     }
-    if ("l-organisms" in appsParsed.links) {
-      appsParsed.links["l-creatures"] = appsParsed.links["l-organisms"];
-      delete appsParsed.links["l-organisms"];
+    if ("l-creatures" in appsParsed.links) {
+      appsParsed.links["l-organisms"] = appsParsed.links["l-creatures"];
+      delete appsParsed.links["l-creatures"];
     }
 
     return {
