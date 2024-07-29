@@ -112,11 +112,9 @@ export const fetchWookiee = async function* (titles, cache = true) {
     cache,
   )) {
     if (page.invalid !== undefined) {
-      log.error(`Page ${page.title} is invalid. invalid=true returned from the API.`);
-      yield {
-        title: page.title,
-        invalid: true,
-      };
+      throw new Error(
+        `Page ${page.title} is invalid. invalid=true returned from the API. Invalid reason: ${page.invalidreason}`,
+      );
     }
     if (page.missing !== undefined) {
       yield {

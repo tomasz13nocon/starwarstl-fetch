@@ -83,7 +83,12 @@ export default async function (drafts) {
   let outOf = drafts.length;
   log.setStatusBarText([`Article: ${progress}/${outOf}`]);
 
-  let pages = fetchWookiee([...new Set(drafts.map((d) => d.href ?? d.title))], CACHE_PAGES);
+  const titles = drafts.map((d) => d.href ?? d.title);
+  for (var i = 0; i < titles.length; i++) {
+    if (!titles[i]) throw new Error(`No title! Between ${titles[i - 1]} and ${titles[i + 1]}`);
+  }
+
+  let pages = fetchWookiee([...new Set(titles)], CACHE_PAGES);
   let infoboxes = [];
   let seriesDraftsMap = {};
   let appearancesDrafts = {};

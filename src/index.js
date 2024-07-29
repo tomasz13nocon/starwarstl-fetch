@@ -15,7 +15,6 @@ import adjustBookTypes from "./pipeline/adjustBookTypes.js";
 import validateFullTypes from "./pipeline/validateFullTypes.js";
 import cleanupDrafts from "./pipeline/cleanupDrafts.js";
 import { createClient } from "redis";
-import { allowedAppCategories } from "./const.js";
 
 const { CACHE_PAGES, LIMIT } = config();
 
@@ -49,6 +48,33 @@ const { CACHE_PAGES, LIMIT } = config();
     // For appearances section (App template), which uses {{!}} as a column break
     templates["!"] = (tmpl) => {
       return tmpl;
+    };
+
+    templates.film = tmpl => {
+      let x = parse(tmpl, ["value"]);
+      switch (x.value) {
+        case "1": case "I":
+          return "[[Star Wars: Episode I The Phantom Menace|''Star Wars'': Episode I ''The Phantom Menace'']]";
+        case "2": case "II":
+          return "[[Star Wars: Episode II Attack of the Clones|''Star Wars'': Episode II ''Attack of the Clones'']]"
+        case "3": case "III":
+          return "[[Star Wars: Episode III Revenge of the Sith|''Star Wars'': Episode III ''Revenge of the Sith'']]"
+        case "4": case "IV":
+          return "[[Star Wars: Episode IV A New Hope|''Star Wars'': Episode IV ''A New Hope'']]"
+        case "5": case "V":
+          return "[[Star Wars: Episode V The Empire Strikes Back|''Star Wars'': Episode V ''The Empire Strikes Back'']]"
+        case "6": case "VI":
+          return "[[Star Wars: Episode VI Return of the Jedi|''Star Wars'': Episode VI ''Return of the Jedi'']]"
+        case "7": case "VII":
+          return "[[Star Wars: Episode VII The Force Awakens|''Star Wars'': Episode VII ''The Force Awakens'']]"
+        case "8": case "VIII":
+          return "[[Star Wars: Episode VIII The Last Jedi|''Star Wars'': Episode VIII ''The Last Jedi'']]"
+        case "9": case "IX":
+          return "[[Star Wars: Episode IX The Rise of Skywalker|''Star Wars'': Episode IX ''The Rise of Skywalker'']]"
+        default:
+          log.warn("Unknown Film template argument:", x.value);
+          return tmpl;
+      }
     };
 
     // Appearances templates. Rust parses these, so leave them be

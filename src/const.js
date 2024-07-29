@@ -43,6 +43,7 @@ export const suppressLog = {
     "Star Wars: The High Republic (Marvel Comics 2023)",
     "Star Wars: The High Republic: Shadows of Starlight",
     "Star Wars: The High Republic Adventures – Echoes of Fear",
+    "Star Wars: The High Republic – Fear of the Jedi",
   ],
   lowConfidenceAnimated: ["Hunted", "Star Wars: Fun with Nubs"],
   lowConfidenceAdaptation: [

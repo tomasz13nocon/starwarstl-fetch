@@ -20,8 +20,7 @@ export default function (table) {
     table[0].Title === undefined ||
     table[0].col2 === undefined ||
     table[0].Released === undefined ||
-    table[0].Year === undefined ||
-    table[0]["Writer(s)"] === undefined
+    table[0].Year === undefined
   ) {
     throw new Error("Timeline parsing error: Unexpected table layout. Some columns are missing.");
   }
@@ -32,7 +31,7 @@ export default function (table) {
       title: decode(item.Title.links?.[0].page),
       type: types[item.col2.text],
       releaseDate: item.Released?.text, // TODO remove optional chaining
-      writer: item["Writer(s)"].links?.map((e) => decode(e.page)) || null,
+      // writer: item["Writer(s)"].links?.map((e) => decode(e.page)) || null,
       date: decode(item.Year.text) || null,
       chronology: i,
       titleText: item.Title.text, // For finding duplicates, removed later
@@ -91,7 +90,7 @@ export default function (table) {
       log.warn(
         'Timeline parsing warning: Title is empty! setting nopage to true. Title cell:\n"' +
           item.Title.text +
-          '"'
+          '"',
       );
       draft.title = cleanupTitle(item.Title.text);
       draft.nopage = true;
