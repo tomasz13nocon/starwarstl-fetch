@@ -4,7 +4,10 @@ import { log } from "./util.js";
 
 const client = new MongoClient(DB_CONN_STRING);
 await client.connect();
+
 export const db = client.db("starwarstl");
+
+export { client };
 
 export async function closeDb() {
   log.info("Closing DB connection");

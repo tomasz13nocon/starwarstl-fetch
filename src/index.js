@@ -5,7 +5,7 @@ import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.js";
 import config, { debug } from "./config.js";
 import { fetchWookiee } from "./fetchWookiee.js";
 import netLog from "./netLog.js";
-import { closeDb, db } from "./db.js";
+import { client, closeDb, db } from "./db.js";
 import timeline from "./pipeline/timeline.js";
 import media from "./pipeline/media.js";
 import series from "./pipeline/series.js";
@@ -129,25 +129,36 @@ log.info(`organism count: ${netLog.organismsCount}`);
 log.info(`c-organism count: ${netLog["c-organismsCount"]}`);
 log.info(`l-organism count: ${netLog["l-organismsCount"]}`);
 
-let mediaColl = db.collection("media");
-let seriesColl = db.collection("series");
 
-log.info("Clearing DB");
-await mediaColl.deleteMany({});
-await seriesColl.deleteMany({});
-for (let type of Object.keys(appearancesDrafts)) {
-  await db.collection(type).deleteMany({});
+const session = client.startSession();
+try {
+  await session.withTransaction(async () => {
+    let mediaColl = db.collection("media");
+    let seriesColl = db.collection("series");
+
+    log.info("Clearing DB");
+    await mediaColl.deleteMany({});
+    await seriesColl.deleteMany({});
+    for (let type of Object.keys(appearancesDrafts)) {
+      await db.collection(type).deleteMany({});
+    }
+
+    log.info("Writing to DB");
+    await mediaColl.insertMany(drafts);
+    await seriesColl.insertMany(seriesDrafts);
+    for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
+      await db.collection(type).createIndex({ name: "text" });
+      await db.collection(type).insertMany(Object.entries(typeAppearances).map(([name, media]) => ({ name, media })));
+    }
+
+    await db.collection("meta").updateOne({}, { $set: { dataUpdateTimestamp: Date.now() } });
+  });
+}
+finally {
+  await session.endSession();
 }
 
-log.info("Writing to DB");
-await mediaColl.insertMany(drafts);
-await seriesColl.insertMany(seriesDrafts);
-for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
-  await db.collection(type).insertMany(Object.entries(typeAppearances).map(([name, media]) => ({ name, media })));
-  await db.collection(type).createIndex({ name: "text" });
-}
-
-let tvShowsNew = await mediaColl.distinct("series", { type: "tv" });
+let tvShowsNew = await db.collection("media").distinct("series", { type: "tv" });
 for (let show of tvShowsNew) {
   if (!(await fileExists(buildTvImagePath(show)))) {
     log.warn("New tv series! Its thumbnail has to be uploaded manually. title: " + show);
