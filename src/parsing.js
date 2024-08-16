@@ -34,7 +34,9 @@ export function reduceAstToText(acc, item) {
 export async function docFromTitle(title, cache) {
   let page = (await fetchWookiee(title, cache).next()).value;
   if (page.missing) return null;
-  return wtf(page.wikitext);
+  let doc = wtf(page.wikitext);
+  doc.pageID(page.pageid);
+  return doc;
 }
 
 // Returns wtf doc from a fetchWookiee page, handling normalizations.
@@ -76,6 +78,11 @@ export async function docFromPage(page, draft) {
     if (doc === null) {
       throw new Error(`Redirected from "${draft.title}" to an invalid wookieepedia article!`);
     }
+
+    // Make sure pageid always points to the final article in redirect chain.
+    // When articles get moved, their pageids remain stable,
+    // but the redirect page created under the old title has a new pageid which we don't care about.
+    draft.pageid = doc.pageID();
   }
 
   if (doc.isDisambig()) {

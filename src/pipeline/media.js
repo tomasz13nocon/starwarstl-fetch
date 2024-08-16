@@ -34,15 +34,15 @@ function getAppearances(doc) {
     let creaturesFound = false,
       organismsFound = false;
     for (let category of appsParsed.nodes[0].Template.parameters) {
-      if (["creatures", "c-creatures", "l-creatures"].includes(category.name)) {
-        netLog[category.name + "Count"]++;
-        log.info(`${doc.title()} contains ${category.name}`);
-        creaturesFound = true;
-        category.name = category.name.replace("creatures", "organisms");
-      }
       if (["organisms", "c-organisms", "l-organisms"].includes(category.name)) {
         netLog[category.name + "Count"]++;
         organismsFound = true;
+      }
+      if (["creatures", "c-creatures", "l-creatures"].includes(category.name)) {
+        netLog[category.name + "Count"]++;
+        creaturesFound = true;
+        log.warn(`${doc.title()} contains ${category.name}`);
+        category.name = category.name.replace("creatures", "organisms");
       }
       if (!allowedAppCategories.includes(category.name.replace(/(c-)|(l-)/, ""))) {
         log.error(`${doc.title()} contains unknown appearences category: ${category.name}`);
@@ -95,9 +95,17 @@ export default async function (drafts) {
 
   for await (let page of pages) {
     if (debug.article && debug.article !== page.title) continue;
+
+    const matchingDrafts = drafts.filter((d) => (d.href ?? d.title) === page.title);
+    if (matchingDrafts.length === 0) {
+      log.error(
+        `No matching draft for: "${page.title}". ${page.normalizedFrom ? 'Title was normalized from "' + page.normalizedFrom + '"' : "Title was NOT normalized."}`,
+      );
+    }
+
     // This will be a single iteration most of the time
     // It won't be only for "chapter" entries which all link to their parent media
-    for (let draft of drafts.filter((d) => (d.href ?? d.title) === page.title)) {
+    for (let draft of matchingDrafts) {
       draft.pageid = page.pageid;
       let doc = await docFromPage(page, draft);
       if (doc === null) {

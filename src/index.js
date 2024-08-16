@@ -15,6 +15,7 @@ import adjustBookTypes from "./pipeline/adjustBookTypes.js";
 import validateFullTypes from "./pipeline/validateFullTypes.js";
 import cleanupDrafts from "./pipeline/cleanupDrafts.js";
 import { createClient } from "redis";
+import validatePageIds from "./pipeline/validatePageIds.js";
 
 const { CACHE_PAGES, LIMIT } = config();
 
@@ -121,6 +122,8 @@ await images(drafts);
 validateFullTypes(drafts);
 
 cleanupDrafts(drafts, seriesDrafts);
+
+await validatePageIds(drafts);
 
 log.info(`creature count: ${netLog.creaturesCount}`);
 log.info(`c-creature count: ${netLog["c-creaturesCount"]}`);

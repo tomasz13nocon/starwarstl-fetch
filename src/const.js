@@ -30,6 +30,10 @@ export const suppressLog = {
     "Star Wars: The Aftermath Trilogy",
     "The High Republic: Cataclysm",
     "The High Republic: The Eye of Darkness",
+    "Reign of the Empire",
+    "Reign of the Empire: The Mask of Fear",
+    "''Reign of the Empire'' Book Two",
+    "''Reign of the Empire'' Book Three",
   ],
   multipleRegexMatches: [
     "Star Wars: The High Republic (Marvel Comics 2021)",
@@ -53,6 +57,8 @@ export const suppressLog = {
   ],
   noSeriesForAudience: ["Star Wars Treasury: The Original Trilogy"],
   noSeason: ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
+  migrateMissingPageid: [],
+  ignoreMissingPageid: [],
 };
 
 export const allowedAppCategories = [
