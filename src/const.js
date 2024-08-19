@@ -49,6 +49,7 @@ export const suppressLog = {
     "Star Wars: The High Republic: Shadows of Starlight",
     "Star Wars: The High Republic Adventures – Echoes of Fear",
     "Star Wars: The High Republic – Fear of the Jedi",
+    "Star Wars: The High Republic Adventures – Dispatches from the Occlusion Zone",
   ],
   lowConfidenceAnimated: ["Hunted", "Star Wars: Fun with Nubs"],
   lowConfidenceAdaptation: [
