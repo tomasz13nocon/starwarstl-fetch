@@ -1,8 +1,8 @@
 import { MongoClient } from "mongodb";
-import { DB_CONN_STRING } from "./const.js";
+import { MONGO_URI } from "./const.js";
 import { log } from "./util.js";
 
-const client = new MongoClient(DB_CONN_STRING);
+const client = new MongoClient(MONGO_URI);
 await client.connect();
 
 export const db = client.db("starwarstl");

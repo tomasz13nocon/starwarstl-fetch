@@ -13,8 +13,9 @@ export const TV_IMAGE_PATH = `../client/public/img/tv-images/thumb/`;
 export const MW_API_USER_AGENT = process.env.MW_API_USER_AGENT;
 export const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
 export const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
-export const DB_CONN_STRING =
-  process.env.DB_CONNECTION_STRING ?? "mongodb://127.0.0.1:27017/?directConnection=true";
+export const MONGO_URI =
+  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/?directConnection=true";
+export const REDIS_URI = process.env.REDIS_URI || "redis://localhost:6379";
 export const BUCKET = "starwarstl";
 
 // Suppress specific warnings for specific titles after manually confirming they're not an issue

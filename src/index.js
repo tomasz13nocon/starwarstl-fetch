@@ -16,6 +16,7 @@ import validateFullTypes from "./pipeline/validateFullTypes.js";
 import cleanupDrafts from "./pipeline/cleanupDrafts.js";
 import { createClient } from "redis";
 import validatePageIds from "./pipeline/validatePageIds.js";
+import { REDIS_URI } from "./const.js";
 
 const { CACHE_PAGES, LIMIT } = config();
 
@@ -89,7 +90,6 @@ const { CACHE_PAGES, LIMIT } = config();
 })();
 
 
-
 log.info("Fetching timeline...");
 // let timelineDoc = wtf(await fs.readFile("../client/sample_wikitext/timeline", "utf-8"));
 let timelineWikitext = (await fetchWookiee("Timeline of canon media", CACHE_PAGES).next()).value.wikitext;
@@ -154,7 +154,7 @@ try {
       await db.collection(type).insertMany(Object.entries(typeAppearances).map(([name, media]) => ({ name, media })));
     }
 
-    await db.collection("meta").updateOne({}, { $set: { dataUpdateTimestamp: Date.now() } });
+    await db.collection("meta").updateOne({}, { $set: { dataUpdateTimestamp: Date.now() } }, { upsert: true });
   });
 }
 finally {
@@ -169,7 +169,7 @@ for (let show of tvShowsNew) {
 }
 
 log.info("Invalidating redis cache");
-const redis = createClient();
+const redis = createClient({ url: REDIS_URI });
 await redis.connect();
 await redis.flushDb();
 await redis.disconnect();
