@@ -1,6 +1,7 @@
 import "./env.js";
 import { writeFile } from "fs/promises";
 import wtf from "wtf_wikipedia";
+import initWtf from "./initWtf.js";
 import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.js";
 import config, { debug } from "./config.js";
 import { fetchWookiee } from "./fetchWookiee.js";
@@ -16,79 +17,11 @@ import validateFullTypes from "./pipeline/validateFullTypes.js";
 import cleanupDrafts from "./pipeline/cleanupDrafts.js";
 import { createClient } from "redis";
 import validatePageIds from "./pipeline/validatePageIds.js";
-import { REDIS_URI } from "./const.js";
+import { REDIS_URI, knownTemplates } from "./const.js";
 
 const { CACHE_PAGES, LIMIT } = config();
 
-(() => {
-  wtf.extend((models, templates) => {
-    let parse = models.parse;
-
-    templates.c = (tmpl, list) => {
-      let x = parse(tmpl, ["value"]);
-      list.push({ template: "C", value: x.value });
-      return `{{C|${x.value}}}`;
-    };
-
-    templates.circa = (tmpl, list) => {
-      let x = parse(tmpl, ["value"]);
-      list.push({ template: "C", value: x.value });
-      return `((Approximate date))`;
-    };
-
-    // Ignore quotes found at the begining of articles so that the first paragraph is the actual article
-    templates.quote = (tmpl, list) => {
-      list.push(parse(tmpl, ["text", "author"]));
-      return "";
-    };
-
-    templates["scroll box"] = (tmpl) => {
-      // implement if causing issues
-      return tmpl;
-    };
-
-    // For appearances section (App template), which uses {{!}} as a column break
-    templates["!"] = (tmpl) => {
-      return tmpl;
-    };
-
-    templates.film = tmpl => {
-      let x = parse(tmpl, ["value"]);
-      switch (x.value) {
-        case "1": case "I":
-          return "[[Star Wars: Episode I The Phantom Menace|''Star Wars'': Episode I ''The Phantom Menace'']]";
-        case "2": case "II":
-          return "[[Star Wars: Episode II Attack of the Clones|''Star Wars'': Episode II ''Attack of the Clones'']]"
-        case "3": case "III":
-          return "[[Star Wars: Episode III Revenge of the Sith|''Star Wars'': Episode III ''Revenge of the Sith'']]"
-        case "4": case "IV":
-          return "[[Star Wars: Episode IV A New Hope|''Star Wars'': Episode IV ''A New Hope'']]"
-        case "5": case "V":
-          return "[[Star Wars: Episode V The Empire Strikes Back|''Star Wars'': Episode V ''The Empire Strikes Back'']]"
-        case "6": case "VI":
-          return "[[Star Wars: Episode VI Return of the Jedi|''Star Wars'': Episode VI ''Return of the Jedi'']]"
-        case "7": case "VII":
-          return "[[Star Wars: Episode VII The Force Awakens|''Star Wars'': Episode VII ''The Force Awakens'']]"
-        case "8": case "VIII":
-          return "[[Star Wars: Episode VIII The Last Jedi|''Star Wars'': Episode VIII ''The Last Jedi'']]"
-        case "9": case "IX":
-          return "[[Star Wars: Episode IX The Rise of Skywalker|''Star Wars'': Episode IX ''The Rise of Skywalker'']]"
-        default:
-          log.warn("Unknown Film template argument:", x.value);
-          return tmpl;
-      }
-    };
-
-    // Appearances templates. Rust parses these, so leave them be
-    const appTemplates = ["1st", "1stm", "co", "mo", "imo", "flash", "1stid", "hologram"];
-    for (let template of appTemplates) {
-      templates[template] = (tmpl) => {
-        return tmpl;
-      };
-    }
-  });
-})();
-
+initWtf();
 
 log.info("Fetching timeline...");
 // let timelineDoc = wtf(await fs.readFile("../client/sample_wikitext/timeline", "utf-8"));
@@ -99,6 +32,14 @@ if (debug.saveTimeline) {
 }
 let timelineDoc = wtf(timelineWikitext);
 let data = timelineDoc.tables()[1].json();
+
+// Verify that no unexpected templates exist in timeline
+let templates = Array.from(new Set(timelineDoc.templates().map((t) => t.json().template)));
+let unknownTemplates = templates.filter(t => !knownTemplates.has(t))
+if (unknownTemplates.length !== 0) {
+  log.error("Unknown templates:", unknownTemplates);
+  throw new Error("Unknown templates found in the timeline!");
+}
 
 if (LIMIT) {
   data = data.slice(0, LIMIT);
