@@ -157,6 +157,7 @@ export const seriesTypes = {
 export const types = {
   C: "comic",
   N: "book",
+  A: "audio-drama",
   SS: "short-story",
   YR: "yr",
   JR: "book",
