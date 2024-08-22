@@ -33,6 +33,11 @@ export default function () {
       return tmpl;
     };
 
+    templates["'s"] = (tmpl, list) => {
+      list.push(parse(tmpl));
+      return "'s";
+    };
+
     // Below are templates used in the timeline to produce links to episodes of different series.
     // They contain additional info like episode number, or magazine issue, that we could use later
 
@@ -156,6 +161,14 @@ export default function () {
       return parsed.int
         ? formatLink(parsed.int, parsed.text || parsed.list?.[1])
         : `[https://${parsed.subdomain || "www"}.ea.com/${parsed.url || parsed.list?.[0]} ${parsed.text || parsed.list?.[1]}]`;
+    };
+
+    templates.ffs = (tmpl, list) => {
+      let parsed = parse(tmpl);
+      list.push(parsed);
+
+      // https://starwars.fandom.com/wiki/Template:FFG
+      return hideParanthetical(parsed.story, parsed.stext);
     };
 
     templates.film = (tmpl) => {

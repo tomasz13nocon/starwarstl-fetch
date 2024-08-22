@@ -97,10 +97,12 @@ export const knownTemplates = new Set([
   "swresacite",
   "goc",
   "galacticpals",
+  "ffg",
   "reflist",
   "scroll box",
   "mediatimelines",
   "interlang",
+  "'s",
 ]);
 
 export const allowedAppCategories = [
