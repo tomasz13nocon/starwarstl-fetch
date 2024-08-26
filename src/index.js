@@ -64,7 +64,7 @@ validateFullTypes(drafts);
 
 cleanupDrafts(drafts, seriesDrafts);
 
-await validatePageIds(drafts);
+const missingDrafts = await validatePageIds(drafts);
 
 log.info(`creature count: ${netLog.creaturesCount}`);
 log.info(`c-creature count: ${netLog["c-creaturesCount"]}`);
@@ -81,21 +81,24 @@ try {
     let seriesColl = db.collection("series");
 
     log.info("Clearing DB");
-    await mediaColl.deleteMany({});
-    await seriesColl.deleteMany({});
+    await mediaColl.deleteMany({}, { session });
+    await seriesColl.deleteMany({}, { session });
     for (let type of Object.keys(appearancesDrafts)) {
-      await db.collection(type).deleteMany({});
+      await db.collection(type).deleteMany({}, { session });
     }
+
 
     log.info("Writing to DB");
-    await mediaColl.insertMany(drafts);
-    await seriesColl.insertMany(seriesDrafts);
+    await mediaColl.insertMany(drafts, { session });
+    await seriesColl.insertMany(seriesDrafts, { session });
     for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
-      await db.collection(type).createIndex({ name: "text" });
-      await db.collection(type).insertMany(Object.entries(typeAppearances).map(([name, media]) => ({ name, media })));
+      await db.collection(type).createIndex({ name: "text" }, { session });
+      await db.collection(type).insertMany(Object.entries(typeAppearances).map(([name, media]) => ({ name, media })), { session });
     }
+    if (missingDrafts.length)
+      await db.collection("missingMedia").insertMany(missingDrafts, { session });
 
-    await db.collection("meta").updateOne({}, { $set: { dataUpdateTimestamp: Date.now() } }, { upsert: true });
+    await db.collection("meta").updateOne({}, { $set: { dataUpdateTimestamp: Date.now() } }, { upsert: true, session });
   });
 }
 finally {

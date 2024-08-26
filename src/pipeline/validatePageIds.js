@@ -5,10 +5,9 @@ import { log } from "../util.js";
 export default async function (drafts) {
   log.info("Veryfing page IDs...");
 
-  const oldMediaArr = await db
-    .collection("media")
-    .find({}, { _id: 0, pageid: 1, title: 1 })
-    .toArray();
+  const missingDrafts = [];
+
+  const oldMediaArr = await db.collection("media").find({}).toArray();
 
   for (let oldMedia of oldMediaArr) {
     const newMedia = drafts.find((m) => m.pageid === oldMedia.pageid);
@@ -31,14 +30,23 @@ export default async function (drafts) {
         continue;
       }
 
-      throw new Error(`Pageid missing! title: "${oldMedia.title}" pageid: ${oldMedia.pageid}`);
-    }
+      // add oldMedia to missingDrafts
+      // persist missingDrafts to missingMedia in DB
+      // frontend: display message about media being gone from one of user's lists, and show it in list page under "Media removed from timeline" heading
 
-    // Don't look at notUniques since they naturally have multiple titles for one pageid
-    if (!oldMedia.notUnique && newMedia.title !== oldMedia.title)
+      missingDrafts.push(oldMedia);
       log.warn(
-        `"${oldMedia.title}" with pageid ${oldMedia.pageid} has been renamed to "${newMedia.title}"`,
+        `"${oldMedia.title}" with pageid: ${oldMedia.pageid} missing from new data. Saving to missingMedia.`,
       );
+
+      // throw new Error(`Pageid missing! title: "${oldMedia.title}" pageid: ${oldMedia.pageid}`);
+    } else {
+      // Don't look at notUniques since they naturally have multiple titles for one pageid
+      if (!oldMedia.notUnique && newMedia.title !== oldMedia.title)
+        log.warn(
+          `"${oldMedia.title}" with pageid ${oldMedia.pageid} has been renamed to "${newMedia.title}"`,
+        );
+    }
   }
 
   const oldPageids = new Set(oldMediaArr.map((m) => m.pageid));
@@ -51,4 +59,6 @@ export default async function (drafts) {
       newMedia.addedAt = new Date();
     }
   }
+
+  return missingDrafts;
 }
