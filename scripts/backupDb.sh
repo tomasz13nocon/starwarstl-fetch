@@ -1,19 +1,11 @@
 #!/bin/bash
 
-if [[ $(basename $PWD) != "fetch" ]]; then
-  echo "Must be executed in 'fetch' directory!"
-  exit 1
-fi
-
-set -a && source .env && set +a
-
-if [[ -z $MONGO_URI ]]; then
-  echo "MONGO_URI not set or not present in .env!"
-  exit 1
-fi
+[ -z $FETCH_DIR ] && echo "FETCH_DIR env var not set. Aborting." && exit 1
+[ -z $DUMP_DIR ] && echo "DUMP_DIR env var not set. Aborting." && exit 1
+[ -z $MONGO_URI ] && echo "MONGO_URI env var not set. Aborting." && exit 1
 
 timestamp=$(date '+%Y-%m-%d_%H:%M:%S')
-outDir=../dump/$timestamp
+outDir=$DUMP_DIR$timestamp
 cmd="mongodump"
 
 if [[ $1 == "--docker" ]]; then
@@ -25,7 +17,7 @@ for coll in users sessions lists missingMedia emailVerificationTokens meta; do
   $cmd --uri="$MONGO_URI" --db=starwarstl -c=$coll --out=$outDir
 done
 
-cd ../dump
+cd $DUMP_DIR
 tar -czf "${timestamp}.tar.gz" "$timestamp" --force-local
 rm -rf $timestamp
 
