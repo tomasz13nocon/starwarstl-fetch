@@ -14,9 +14,15 @@ fi
 
 timestamp=$(date '+%Y-%m-%d_%H:%M:%S')
 outDir=../dump/$timestamp
+cmd="mongodump"
+
+if [[ $1 == "--docker" ]]; then
+  outDir=/dump/$timestamp
+  cmd="docker exec starwarstl-mongodb-1 mongodump"
+fi
 
 for coll in users sessions lists missingMedia emailVerificationTokens meta; do
-  mongodump --uri="$MONGO_URI" --db=starwarstl -c=$coll --out=$outDir
+  $cmd --uri="$MONGO_URI" --db=starwarstl -c=$coll --out=$outDir
 done
 
 cd ../dump
