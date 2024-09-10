@@ -35,6 +35,7 @@ export const suppressLog = {
     "Reign of the Empire: The Mask of Fear",
     "''Reign of the Empire'' Book Two",
     "''Reign of the Empire'' Book Three",
+    "Star Wars: Reign of the Empire",
   ],
   multipleRegexMatches: [
     "Star Wars: The High Republic (Marvel Comics 2021)",
@@ -50,6 +51,7 @@ export const suppressLog = {
     "Star Wars: The High Republic Adventures – Echoes of Fear",
     "Star Wars: The High Republic – Fear of the Jedi",
     "Star Wars: The High Republic Adventures – Dispatches from the Occlusion Zone",
+    "Star Wars: The High Republic Adventures – The Nameless Terror",
   ],
   lowConfidenceAnimated: ["Hunted", "Star Wars: Fun with Nubs"],
   lowConfidenceAdaptation: [
