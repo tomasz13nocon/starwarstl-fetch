@@ -52,6 +52,9 @@ export const suppressLog = {
     "Star Wars: The High Republic – Fear of the Jedi",
     "Star Wars: The High Republic Adventures – Dispatches from the Occlusion Zone",
     "Star Wars: The High Republic Adventures – The Nameless Terror",
+    "Star Wars: The High Republic (2021)",
+    "Star Wars: The High Republic Adventures (2021)",
+    "Star Wars: The High Republic (2023)",
   ],
   lowConfidenceAnimated: ["Hunted", "Star Wars: Fun with Nubs"],
   lowConfidenceAdaptation: [
