@@ -359,7 +359,10 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
       let seriesDoc = doc;
       if (!seriesDoc) draft.fullType = "tv-live-action";
       // If problematic, change sentence(0) to paragraph(0)
-      else if (/micro[- ]series/i.test(seriesDoc.sentence(0).text()))
+      else if (
+        /micro[- ]series/i.test(seriesDoc.sentence(0).text()) ||
+        seriesDoc.categories().includes("Canon animated micro series")
+      )
         draft.fullType = "tv-micro-series";
       else if (seriesDoc.categories().includes("Canon animated television series"))
         draft.fullType = "tv-animated";

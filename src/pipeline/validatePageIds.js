@@ -42,7 +42,13 @@ export default async function (drafts) {
       // throw new Error(`Pageid missing! title: "${oldMedia.title}" pageid: ${oldMedia.pageid}`);
     } else {
       // Don't look at notUniques since they naturally have multiple titles for one pageid
-      if (!oldMedia.notUnique && newMedia.title !== oldMedia.title)
+      // Don't look at items without pageIDs, since they're not allowed to be added to lists anyway
+      if (
+        !oldMedia.notUnique &&
+        newMedia.title !== oldMedia.title &&
+        !Number.isInteger(oldMedia.pageid) &&
+        !Number.isInteger(newMedia.pageid)
+      )
         log.warn(
           `"${oldMedia.title}" with pageid ${oldMedia.pageid} has been renamed to "${newMedia.title}"`,
         );
