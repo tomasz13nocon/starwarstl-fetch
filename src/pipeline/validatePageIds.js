@@ -46,8 +46,8 @@ export default async function (drafts) {
       if (
         !oldMedia.notUnique &&
         newMedia.title !== oldMedia.title &&
-        !Number.isInteger(oldMedia.pageid) &&
-        !Number.isInteger(newMedia.pageid)
+        Number.isInteger(oldMedia.pageid) &&
+        Number.isInteger(newMedia.pageid)
       )
         log.warn(
           `"${oldMedia.title}" with pageid ${oldMedia.pageid} has been renamed to "${newMedia.title}"`,
