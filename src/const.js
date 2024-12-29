@@ -103,6 +103,7 @@ export const knownTemplates = new Set([
   "goc",
   "galacticpals",
   "grogucutest",
+  "jtc",
   "ffg",
   "reflist",
   "scroll box",

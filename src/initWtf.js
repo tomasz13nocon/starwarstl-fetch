@@ -115,6 +115,7 @@ export default function () {
     templates.goc = seriesCite;
     templates.galacticpals = seriesCite;
     templates.grogucutest = seriesCite;
+    templates.jtc = seriesCite;
 
     templates["idwadventurescite-2020"] = idwCite;
     templates["idwadventurescite-2017"] = idwCite;
