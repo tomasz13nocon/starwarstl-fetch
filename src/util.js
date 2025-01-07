@@ -50,6 +50,7 @@ if (process.stdout.isTTY) {
 // For dates in format yyyy-mm-dd that lack a month or day, or have question marks in their place
 // return the latest possible date e.g. 2022-??-?? => 2022-12-31
 export const unscuffDate = (date) => {
+  if (!date) return date;
   date = date.replaceAll("–", "-"); // endash
   if (/^\d{4}[-?xX]*$/.test(date)) {
     return `${date.slice(0, 4)}-12-31`;
