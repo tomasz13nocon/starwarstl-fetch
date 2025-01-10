@@ -215,7 +215,7 @@ export default function () {
       list.push(parsed);
 
       let episode = `Episode ${parsed.list[0]} (Star Wars: Jedi Temple Challenge)`;
-      return formatLink(episode, hideParanthetical(episode));
+      return formatLink(episode);
     };
 
     // Appearances templates. Rust parses these, so leave them be
