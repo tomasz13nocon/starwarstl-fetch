@@ -47,6 +47,8 @@ export default function () {
 
     // This is based on a scuffed template used by some Cite templates.
     // It recreates that template's behavior exactly.
+    // Update: They changed this to #invoke a lua function via the Scribunto extension https://www.mediawiki.org/wiki/Extension:Scribunto
+    // Therefore this reimplementation is out of date
     function hideParanthetical(page, text, italics = false) {
       // https://starwars.fandom.com/wiki/Template:HideParanthetical
       if (text) return `[[${page}|${text}]]`;
@@ -115,7 +117,6 @@ export default function () {
     templates.goc = seriesCite;
     templates.galacticpals = seriesCite;
     templates.grogucutest = seriesCite;
-    templates.jtc = seriesCite;
 
     templates["idwadventurescite-2020"] = idwCite;
     templates["idwadventurescite-2017"] = idwCite;
@@ -207,6 +208,14 @@ export default function () {
           log.warn("Unknown Film template argument:", x.value);
           return tmpl;
       }
+    };
+
+    templates.jtc = (tmpl, list) => {
+      let parsed = parse(tmpl);
+      list.push(parsed);
+
+      let episode = `Episode ${parsed.list[0]} (Star Wars: Jedi Temple Challenge)`;
+      return formatLink(episode, hideParanthetical(episode));
     };
 
     // Appearances templates. Rust parses these, so leave them be
