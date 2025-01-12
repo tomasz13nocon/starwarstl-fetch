@@ -1,4 +1,3 @@
-import _ from "lodash";
 import config, { debug } from "../config.js";
 import { fetchWookiee } from "../fetchWookiee.js";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.js";
