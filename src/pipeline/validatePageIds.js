@@ -8,7 +8,10 @@ export default async function (drafts) {
   const missingDrafts = [];
   const missingMediaNoLongerMissing = [];
 
-  const oldMediaArr = await db.collection("media").find({}).toArray();
+  const oldMediaArr = await db
+    .collection("media")
+    .find({}, { title: 1, pageid: 1, notUnique: 1 })
+    .toArray();
 
   for (let oldMedia of oldMediaArr) {
     const newMedia = drafts.find((m) => m.pageid === oldMedia.pageid);
@@ -35,7 +38,7 @@ export default async function (drafts) {
       // persist missingDrafts to missingMedia in DB
       // frontend: display message about media being gone from one of user's lists, and show it in list page under "Media removed from timeline" heading
 
-      missingDrafts.push(oldMedia);
+      missingDrafts.push(await db.collection("media").findOne({ pageid: oldMedia.pageid }));
       log.warn(
         `"${oldMedia.title}" with pageid: ${oldMedia.pageid} missing from new data. Saving to missingMedia.`,
       );
