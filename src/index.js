@@ -64,7 +64,7 @@ validateFullTypes(drafts);
 
 cleanupDrafts(drafts, seriesDrafts);
 
-const missingDrafts = await validatePageIds(drafts);
+const { missingDrafts, missingMediaNoLongerMissing } = await validatePageIds(drafts);
 
 log.info(`creature count: ${netLog.creaturesCount}`);
 log.info(`c-creature count: ${netLog["c-creaturesCount"]}`);
@@ -97,6 +97,8 @@ try {
     }
     if (missingDrafts.length)
       await db.collection("missingMedia").insertMany(missingDrafts, { session });
+    if (missingMediaNoLongerMissing.length)
+      await db.collection("missingMedia").deleteMany({ pageid: { $in: missingMediaNoLongerMissing.map(m => m.pageid) } });
 
     await db.collection("meta").updateOne({}, { $set: { dataUpdateTimestamp: Date.now() } }, { upsert: true, session });
   });

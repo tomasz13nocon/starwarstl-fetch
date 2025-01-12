@@ -6,6 +6,7 @@ export default async function (drafts) {
   log.info("Veryfing page IDs...");
 
   const missingDrafts = [];
+  const missingMediaNoLongerMissing = [];
 
   const oldMediaArr = await db.collection("media").find({}).toArray();
 
@@ -56,6 +57,10 @@ export default async function (drafts) {
   }
 
   const oldPageids = new Set(oldMediaArr.map((m) => m.pageid));
+  const missingMediaArr = await db
+    .collection("missingMedia")
+    .find({}, { pageid: 1, title: 1 })
+    .toArray();
 
   for (let newMedia of drafts) {
     if (!oldPageids.has(newMedia.pageid)) {
@@ -64,7 +69,18 @@ export default async function (drafts) {
       );
       newMedia.addedAt = new Date();
     }
+
+    const missingMedia = missingMediaArr.find((m) => m.pageid === newMedia.pageid);
+    if (missingMedia) {
+      missingMediaNoLongerMissing.push(newMedia);
+      log.warn(
+        `Media with pageid ${newMedia.pageid} was missing, but it's present in the timeline again. Will delete from missingMedia.
+Old title: ${missingMedia.title}
+New title: ${newMedia.title}
+Titles ${missingMedia.title === newMedia.title ? "are identical" : "differ"}.`,
+      );
+    }
   }
 
-  return missingDrafts;
+  return { missingDrafts, missingMediaNoLongerMissing };
 }
