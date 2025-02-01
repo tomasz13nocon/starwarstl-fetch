@@ -28,7 +28,7 @@ export default async function (drafts) {
 
       // WARN:pageid If we end up using pageids for stuff other than lists, this needs to be updated
       if (!pageidsInUse.includes(oldMedia.pageid)) {
-        log.warn(
+        log.info(
           `"${oldMedia.title}" with pageid: ${oldMedia.pageid} missing from new data, but it's safe to delete, due to not being in any list.`,
         );
         continue;
@@ -53,7 +53,7 @@ export default async function (drafts) {
         Number.isInteger(oldMedia.pageid) &&
         Number.isInteger(newMedia.pageid)
       )
-        log.warn(
+        log.info(
           `"${oldMedia.title}" with pageid ${oldMedia.pageid} has been renamed to "${newMedia.title}"`,
         );
     }

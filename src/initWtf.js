@@ -114,9 +114,6 @@ export default function () {
     templates.ahsoka = seriesCite;
     templates.skeletoncrew = seriesCite;
     templates.resistance = seriesCite;
-    templates.goc = seriesCite;
-    templates.galacticpals = seriesCite;
-    templates.grogucutest = seriesCite;
 
     templates["idwadventurescite-2020"] = idwCite;
     templates["idwadventurescite-2017"] = idwCite;
@@ -216,6 +213,58 @@ export default function () {
 
       let episode = `Episode ${parsed.list[0]} (Star Wars: Jedi Temple Challenge)`;
       return formatLink(episode);
+    };
+
+    templates.grogucutest = (tmpl, list) => {
+      let parsed = parse(tmpl);
+      list.push(parsed);
+
+      let episode = `Episode ${parsed.list[0]} (Grogu Cutest In The Galaxy)`;
+      return formatLink(episode, parsed.list[1]);
+    };
+
+    templates.galacticpals = (tmpl, list) => {
+      // https://starwars.fandom.com/wiki/Template:GalacticPals?action=edit
+
+      let parsed = parse(tmpl);
+      list.push(parsed);
+
+      let episode;
+      if (parsed.list[0] === "Porgs") {
+        episode = "Porgs (Galactic Pals)";
+      } else if (parsed.list[0] === "Rancor") {
+        episode = "Rancor (Galactic Pals)";
+      } else if (parsed.list[0] === "Tauntaun") {
+        episode = "Tauntaun (Galactic Pals)";
+      } else if (parsed.list[0].includes("(")) {
+        episode = parsed.list[0];
+      } else {
+        episode = parsed.list[0] + " (episode)";
+      }
+
+      return formatLink(episode, parsed.list[1]);
+    };
+
+    templates.goc = (tmpl, list) => {
+      // https://starwars.fandom.com/wiki/Template:GoC?action=edit
+
+      let parsed = parse(tmpl);
+      list.push(parsed);
+
+      let episode;
+      if (parsed.list[0] === "Porgs") {
+        episode = "Porgs (Galaxy of Creatures)";
+      } else if (parsed.list[0] === "Rancor") {
+        episode = "Rancor (Galaxy of Creatures)";
+      } else if (parsed.list[0] === "Tauntaun") {
+        episode = "Tauntaun (Galaxy of Creatures)";
+      } else if (parsed.list[0].includes("(")) {
+        episode = parsed.list[0];
+      } else {
+        episode = parsed.list[0] + " (episode)";
+      }
+
+      return formatLink(episode, parsed.list[1]);
     };
 
     // Appearances templates. Rust parses these, so leave them be

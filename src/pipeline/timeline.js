@@ -30,7 +30,7 @@ export default function (table) {
       _id: i,
       title: decode(item.Title.links?.[0].page),
       type: types[item.col2.text],
-      releaseDate: item.Released?.text, // TODO remove optional chaining
+      releaseDate: item.Released.text,
       // writer: item["Writer(s)"].links?.map((e) => decode(e.page)) || null,
       date: decode(item.Year.text) || null,
       chronology: i,
