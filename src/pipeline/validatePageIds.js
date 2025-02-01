@@ -54,7 +54,7 @@ export default async function (drafts) {
         Number.isInteger(newMedia.pageid)
       )
         log.info(
-          `"${oldMedia.title}" with pageid ${oldMedia.pageid} has been renamed to "${newMedia.title}"`,
+          `Renamed: "${oldMedia.title}" with pageid ${oldMedia.pageid} to "${newMedia.title}"`,
         );
     }
   }
