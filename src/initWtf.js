@@ -97,6 +97,9 @@ export default function () {
     templates.swrmcite = magazineCite;
     templates.swracite = magazineCite;
     templates.swresacite = magazineCite;
+    templates.rebelsmagcite = magazineCite;
+    templates.rebelsanimationcite = magazineCite;
+    templates.resistanceanimationcite = magazineCite;
 
     templates.yja = seriesCite;
     templates.funwithnubs = seriesCite;
