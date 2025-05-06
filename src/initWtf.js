@@ -108,6 +108,7 @@ export default function () {
     templates.goa = seriesCite;
     templates.fod = seriesCite;
     templates.tote = seriesCite;
+    templates.totu = seriesCite;
     templates.tbb = seriesCite;
     templates.kenobi = seriesCite;
     templates.andor = seriesCite;
