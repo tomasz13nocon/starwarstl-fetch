@@ -414,7 +414,8 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
             doc.sentence(0).text() + doc.sentence(1).text()
           }`,
         );
-    } else if (doc.infobox()._type === "comic strip") draft.fullType = "comic-strip";
+    } else if (doc.infobox()._type === "comic strip" || doc.infobox()._type === "comicstrip")
+      draft.fullType = "comic-strip";
     else if (doc.infobox()._type === "comic story" || doc.infobox()._type === "comicstory")
       draft.fullType = "comic-story";
     else draft.fullType = "comic";
