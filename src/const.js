@@ -113,6 +113,7 @@ export const knownTemplates = new Set([
   "mediatimelines",
   "interlang",
   "'s",
+  "totu",
 ]);
 
 export const allowedAppCategories = [
