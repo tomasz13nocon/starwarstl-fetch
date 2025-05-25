@@ -27,6 +27,7 @@ let initialized = false;
 const config = {
   CACHE_PAGES: false,
   LIMIT: 0,
+  LEGENDS: false,
   Image: FsImage,
 };
 
@@ -66,6 +67,8 @@ export default function () {
       config.Image = FsImage;
     } else if (arg === "--s3") {
       config.Image = S3Image;
+    } else if (arg === "--legends") {
+      config.LEGENDS = true;
     } else {
       log.error(`Unknown argument: ${arg}`);
       process.exit(1);

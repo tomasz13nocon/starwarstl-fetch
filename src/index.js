@@ -19,13 +19,15 @@ import { createClient } from "redis";
 import validatePageIds from "./pipeline/validatePageIds.js";
 import { REDIS_URI, knownTemplates } from "./const.js";
 
-const { CACHE_PAGES, LIMIT } = config();
+const { CACHE_PAGES, LIMIT, LEGENDS } = config();
 
 initWtf();
 
-log.info("Fetching timeline...");
+const timelinePage = `Timeline of ${LEGENDS ? "legends" : "canon"} media`;
+log.info(`Fetching ${timelinePage}...`);
+
 // let timelineDoc = wtf(await fs.readFile("../client/sample_wikitext/timeline", "utf-8"));
-let timelineWikitext = (await fetchWookiee("Timeline of canon media", CACHE_PAGES).next()).value.wikitext;
+let timelineWikitext = (await fetchWookiee(timelinePage, CACHE_PAGES).next()).value.wikitext;
 if (debug.saveTimeline) {
   await writeFile("debug/timeline", timelineWikitext);
   log.info("Saving timeline wikitext to debug/timeline due to debug.saveTimeline");
