@@ -64,7 +64,7 @@ export const suppressLog = {
     "Star Wars: Tales of the Underworld",
     "Star Wars: Tales of the Empire",
   ],
-  lowConfidenceTvOther: ["qwe"],
+  lowConfidenceTvOther: ["Star Wars: Jedi Temple Challenge"],
   lowConfidenceAdaptation: [
     "Star Wars Treasury: The Original Trilogy",
     "The Force Awakens: Rey's Story",
