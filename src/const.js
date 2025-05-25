@@ -158,13 +158,19 @@ export const NUMBERS = {
 
 export const seriesTypes = {
   "book series": "book",
+  bookseries: "book",
   "comic series": "comic",
+  comicseries: "comic",
   movie: "film",
   "television series": "tv",
+  televisionseries: "tv",
   "television season": "tv",
+  televisionseason: "tv",
   "comic story arc": "comic",
+  comicstoryarc: "comic",
   magazine: "comic",
   "magazine series": "comic",
+  magazineseries: "comic",
 };
 
 export const types = {
