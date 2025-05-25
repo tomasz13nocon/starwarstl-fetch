@@ -110,6 +110,7 @@ export const knownTemplates = new Set([
   "ffg",
   "reflist",
   "scroll box",
+  "scrollbox",
   "mediatimelines",
   "interlang",
   "'s",
