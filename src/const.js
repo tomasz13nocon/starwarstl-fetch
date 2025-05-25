@@ -57,7 +57,14 @@ export const suppressLog = {
     "Star Wars: The High Republic (2023)",
     "Star Wars: The High Republic – Shadows of Starlight",
   ],
-  lowConfidenceAnimated: ["Hunted", "Star Wars: Fun with Nubs"],
+  lowConfidenceAnimated: [
+    "Hunted",
+    "Star Wars: Fun with Nubs",
+    "Justice",
+    "The Good Life",
+    "The Path of Fear",
+  ],
+  lowConfidenceTvOther: ["qwe"],
   lowConfidenceAdaptation: [
     "Star Wars Treasury: The Original Trilogy",
     "The Force Awakens: Rey's Story",

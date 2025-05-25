@@ -374,7 +374,16 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
       ) {
         draft.fullType = "tv-animated";
         if (!suppressLog.lowConfidenceAnimated.includes(seriesTitle)) {
-          log.warn(`Inferring animated type from sentence: ${seriesDoc.sentence(0).text()}`);
+          log.warn(
+            `Inferring animated type for "${seriesTitle}" from sentence: ${seriesDoc.sentence(0).text()}`,
+          );
+        }
+      } else if (/game[- ]?show/.test(seriesDoc.sentence(0).text())) {
+        draft.fullType = "tv-other";
+        if (!suppressLog.lowConfidenceTvOther.includes(seriesTitle)) {
+          log.warn(
+            `Inferring TV-other type for "${seriesTitle}" from sentence: ${seriesDoc.sentence(0).text()}`,
+          );
         }
       } else {
         draft.fullType = "tv-live-action";
