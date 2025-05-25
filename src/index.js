@@ -98,7 +98,7 @@ try {
       await db.collection(type).insertMany(Object.entries(typeAppearances).map(([name, media]) => ({ name, media })), { session });
     }
     if (missingDrafts.length)
-      await db.collection("missingMedia").updateMany(missingDrafts, { session, upsert: true });
+      await db.collection("missingMedia").insertMany(missingDrafts, { session, ordered: false });
     if (missingMediaNoLongerMissing.length)
       await db.collection("missingMedia").deleteMany({ pageid: { $in: missingMediaNoLongerMissing.map(m => m.pageid) } });
 
