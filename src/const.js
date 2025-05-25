@@ -60,9 +60,9 @@ export const suppressLog = {
   lowConfidenceAnimated: [
     "Hunted",
     "Star Wars: Fun with Nubs",
-    "Justice",
-    "The Good Life",
-    "The Path of Fear",
+    "Star Wars: Tales of the Jedi (television series)",
+    "Star Wars: Tales of the Underworld",
+    "Star Wars: Tales of the Empire",
   ],
   lowConfidenceTvOther: ["qwe"],
   lowConfidenceAdaptation: [

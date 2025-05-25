@@ -38,6 +38,8 @@ export default async function (drafts) {
       // persist missingDrafts to missingMedia in DB
       // frontend: display message about media being gone from one of user's lists, and show it in list page under "Media removed from timeline" heading
 
+      let oldMissing = await db.collection("missingMedia").findOne({ pageid: oldMedia.pageid });
+      if (oldMissing) continue; // media is already in missingMedia
       missingDrafts.push(await db.collection("media").findOne({ pageid: oldMedia.pageid }));
       log.warn(
         `"${oldMedia.title}" with pageid: ${oldMedia.pageid} missing from new data. Saving to missingMedia.`,
