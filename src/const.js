@@ -55,6 +55,7 @@ export const suppressLog = {
     "Star Wars: The High Republic (2021)",
     "Star Wars: The High Republic Adventures (2021)",
     "Star Wars: The High Republic (2023)",
+    "Star Wars: The High Republic – Shadows of Starlight",
   ],
   lowConfidenceAnimated: ["Hunted", "Star Wars: Fun with Nubs"],
   lowConfidenceAdaptation: [
