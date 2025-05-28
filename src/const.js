@@ -175,6 +175,7 @@ export const seriesTypes = {
   televisionseason: "tv",
   "comic story arc": "comic",
   comicstoryarc: "comic",
+  comicarc: "comic",
   magazine: "comic",
   "magazine series": "comic",
   magazineseries: "comic",
