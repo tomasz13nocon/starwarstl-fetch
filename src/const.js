@@ -123,6 +123,7 @@ export const knownTemplates = new Set([
   "interlang",
   "'s",
   "totu",
+  "holonetnewstumblr",
 ]);
 
 export const allowedAppCategories = [

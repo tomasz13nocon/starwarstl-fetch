@@ -271,6 +271,13 @@ export default function () {
       return formatLink(episode, parsed.list[1]);
     };
 
+    templates.holonetnewstumblr = (tmpl, list) => {
+      let parsed = parse(tmpl);
+      list.push(parsed);
+
+      return `[[${parsed.int}]]`;
+    };
+
     // Appearances templates. Rust parses these, so leave them be
     const appTemplates = ["1st", "1stm", "co", "mo", "imo", "flash", "1stid", "hologram"];
     for (let template of appTemplates) {
