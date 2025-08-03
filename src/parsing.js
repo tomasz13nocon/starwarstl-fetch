@@ -336,9 +336,15 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
 
     // Adaptaions
     let sentence = doc?.sentence(0).text();
-    if (sentence && /adaptation|novelization/.test(sentence)) {
+    let paragraph = doc?.paragraph(0).text();
+    const adaptationReg = /adaptation|novelization/;
+    const adaptationRegLowConf = /adapting|adapts|retells|retelling/;
+    if (sentence && adaptationReg.test(sentence)) {
       draft.adaptation = true;
-    } else if (sentence && /adapts|retells|retelling/.test(sentence)) {
+    } else if (
+      (sentence && adaptationRegLowConf.test(sentence)) ||
+      (paragraph && (adaptationReg.test(paragraph) || adaptationRegLowConf.test(paragraph)))
+    ) {
       draft.adaptation = true;
       if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
         log.warn(
