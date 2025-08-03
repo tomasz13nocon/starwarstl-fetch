@@ -345,11 +345,13 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
       (sentence && adaptationRegLowConf.test(sentence)) ||
       (paragraph && (adaptationReg.test(paragraph) || adaptationRegLowConf.test(paragraph)))
     ) {
-      draft.adaptation = true;
-      if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
-        log.warn(
-          `Low confidence guess of adaptation for ${draft.title} from sentence: ${sentence}`,
-        );
+      if (!suppressLog.notAdaptation.includes(draft.title)) {
+        draft.adaptation = true;
+        if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
+          log.warn(
+            `Low confidence guess of adaptation for ${draft.title} from sentence: ${sentence}\nOr paragraph: ${paragraph}`,
+          );
+        }
       }
     }
   } else if (draft.type === "tv" /* && (draft.series?.length || series)*/) {

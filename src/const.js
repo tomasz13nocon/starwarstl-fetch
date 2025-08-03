@@ -36,6 +36,7 @@ export const suppressLog = {
     "''Reign of the Empire'' Book Two",
     "''Reign of the Empire'' Book Three",
     "Star Wars: Reign of the Empire",
+    "Outlaws: Low Red Moon",
   ],
   multipleRegexMatches: [
     "Star Wars: The High Republic (Marvel Comics 2021)",
@@ -69,11 +70,29 @@ export const suppressLog = {
     "Star Wars Treasury: The Original Trilogy",
     "The Force Awakens: Rey's Story",
     "The Force Awakens: Finn's Story",
+    "Battle to the End",
+    "A New Hope: The Princess, the Scoundrel, and the Farm Boy",
+    "The Empire Strikes Back: So You Want to Be a Jedi?",
+    "Return of the Jedi: Beware the Power of the Dark Side!",
+    "Star Wars Resistance: Le Nouvel Espion",
+    "Star Wars Resistance: Triples Ténèbres",
+    "Star Wars Resistance: Le Secret de Yeager",
+    "Star Wars Resistance: La Rescapée",
   ],
   noSeriesForAudience: ["Star Wars Treasury: The Original Trilogy"],
   noSeason: ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
   migrateMissingPageid: [],
   ignoreMissingPageid: [],
+  notAdaptation: [
+    "The High Republic: Light of the Jedi",
+    "Thrawn Ascendancy: Chaos Rising",
+    "Thrawn Ascendancy: Greater Good",
+    "Thrawn Ascendancy: Lesser Evil",
+    "Rebel Rising",
+    "The Odyssey of Star Wars: An Epic Poem",
+    "The Weapon of a Jedi: A Luke Skywalker Adventure",
+    "Forces of Destiny: The Rey Chronicles",
+  ],
 };
 
 export const knownTemplates = new Set([
