@@ -326,18 +326,11 @@ export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) 
   if (draft.type === "book" || draft.type === "yr") {
     let sentence = doc?.sentence(0).text();
     let paragraph = doc?.paragraph(0).text();
-    const adaptationReg = /adaptation|novelization/;
-    const adaptationRegLowConf = /adapting|adapts|retells|retelling/;
-    if (draft.title === "Galaxy of Creatures book") {
-      log.error(sentence);
-      log.error(adaptationRegLowConf.test(sentence));
-    }
+    const adaptationReg = /adaptation|novelization|adapting|adapts|retells|retelling/;
+
     if (sentence && adaptationReg.test(sentence)) {
       draft.adaptation = true;
-    } else if (
-      (sentence && adaptationRegLowConf.test(sentence)) ||
-      (paragraph && (adaptationReg.test(paragraph) || adaptationRegLowConf.test(paragraph)))
-    ) {
+    } else if (paragraph && adaptationReg.test(paragraph)) {
       if (!suppressLog.notAdaptation.includes(draft.title)) {
         draft.adaptation = true;
         if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
