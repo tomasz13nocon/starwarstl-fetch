@@ -322,26 +322,29 @@ function getInfoboxData(infobox, keys) {
 // series - whether the draft is for a series
 export async function figureOutFullTypes(draft, doc, series, seriesDrafts = []) {
   // Adaptaions
-  let sentence = doc?.sentence(0).text();
-  let paragraph = doc?.paragraph(0).text();
-  const adaptationReg = /adaptation|novelization/;
-  const adaptationRegLowConf = /adapting|adapts|retells|retelling/;
-  if (draft.title === "Galaxy of Creatures book") {
-    log.error(sentence);
-    log.error(adaptationRegLowConf.test(sentence));
-  }
-  if (sentence && adaptationReg.test(sentence)) {
-    draft.adaptation = true;
-  } else if (
-    (sentence && adaptationRegLowConf.test(sentence)) ||
-    (paragraph && (adaptationReg.test(paragraph) || adaptationRegLowConf.test(paragraph)))
-  ) {
-    if (!suppressLog.notAdaptation.includes(draft.title)) {
+  // TODO: also other types can be adapatations (especially comics)
+  if (draft.type === "book" || draft.type === "yr") {
+    let sentence = doc?.sentence(0).text();
+    let paragraph = doc?.paragraph(0).text();
+    const adaptationReg = /adaptation|novelization/;
+    const adaptationRegLowConf = /adapting|adapts|retells|retelling/;
+    if (draft.title === "Galaxy of Creatures book") {
+      log.error(sentence);
+      log.error(adaptationRegLowConf.test(sentence));
+    }
+    if (sentence && adaptationReg.test(sentence)) {
       draft.adaptation = true;
-      if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
-        log.warn(
-          `Low confidence guess of adaptation for ${draft.title} from sentence: ${sentence}\nOr paragraph: ${paragraph}`,
-        );
+    } else if (
+      (sentence && adaptationRegLowConf.test(sentence)) ||
+      (paragraph && (adaptationReg.test(paragraph) || adaptationRegLowConf.test(paragraph)))
+    ) {
+      if (!suppressLog.notAdaptation.includes(draft.title)) {
+        draft.adaptation = true;
+        if (!suppressLog.lowConfidenceAdaptation.includes(draft.title)) {
+          log.warn(
+            `Low confidence guess of adaptation for ${draft.title} from sentence: ${sentence}\nOr paragraph: ${paragraph}`,
+          );
+        }
       }
     }
   }
