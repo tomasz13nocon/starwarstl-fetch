@@ -118,6 +118,7 @@ export default function () {
     templates.ahsoka = seriesCite;
     templates.skeletoncrew = seriesCite;
     templates.resistance = seriesCite;
+    templates.droiddiaries = seriesCite;
 
     templates["idwadventurescite-2020"] = idwCite;
     templates["idwadventurescite-2017"] = idwCite;

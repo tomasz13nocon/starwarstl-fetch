@@ -143,6 +143,7 @@ export const knownTemplates = new Set([
   "'s",
   "totu",
   "holonetnewstumblr",
+  "droiddiaries",
 ]);
 
 export const allowedAppCategories = [
