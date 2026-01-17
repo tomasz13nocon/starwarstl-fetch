@@ -12,7 +12,7 @@ Runs daily via cron. Sister modules are `../client` (React SPA) and `../server` 
 
 The module is effectively a pure function mapping wikitext input to database data.
 
-To run the main script run `npm run fetch`
+To run the main script run `npm run fetch -- --local`
 
 ### wtf_wikipedia Structure
 

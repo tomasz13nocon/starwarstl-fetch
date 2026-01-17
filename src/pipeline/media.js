@@ -70,12 +70,14 @@ function getAppearances(doc) {
       links: appsParsed.links,
     };
   } catch (e) {
-    log.error(`Error parsing appearances for ${doc.title()}\n${e.message}`);
+    log.error(
+      `Error parsing appearances for ${doc.title()}\n${e.message}\nFirst paragraph of the page: ${doc.paragraph(0).text()}`,
+    );
     return;
   }
 }
 
-export default async function (drafts) {
+export default async function(drafts) {
   log.info("Fetching articles...");
 
   let progress = 0;
@@ -199,8 +201,8 @@ export default async function (drafts) {
         if (draft.type === "tv" && draft.series.length > 1) {
           log.warn(
             `${draft.title} has type "tv" and belongs to multiple series.` +
-              " This can cause bugs in frontend!" +
-              " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples.",
+            " This can cause bugs in frontend!" +
+            " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples.",
           );
         }
         for (let seriesTitle of draft.series) {

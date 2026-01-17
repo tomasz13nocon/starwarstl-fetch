@@ -186,6 +186,7 @@ fn parse_appearances(mut cx: FunctionContext) -> JsResult<JsValue> {
                 ret.links
                     .insert(name.to_string(), collect_links_from_nodes(&param.value));
             } else {
+                eprintln!("{:#?}", param);
                 return cx.throw_error("Incorrect input. Template parameter name was expected. (App had an unnamed parameter)");
             }
         }
