@@ -28,6 +28,7 @@ const config = {
   CACHE_PAGES: false,
   LIMIT: 0,
   LEGENDS: false,
+  LOCAL: false,
   Image: FsImage,
 };
 
@@ -69,10 +70,16 @@ export default function () {
       config.Image = S3Image;
     } else if (arg === "--legends") {
       config.LEGENDS = true;
+    } else if (arg === "--local" || arg === "--offline") {
+      config.LOCAL = true;
     } else {
       log.error(`Unknown argument: ${arg}`);
       process.exit(1);
     }
+  }
+
+  if (config.LOCAL) {
+    log.info("Using local fixtures (offline mode)");
   }
 
   if (config.Image === S3Image) {

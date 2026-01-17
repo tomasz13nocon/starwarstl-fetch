@@ -70,10 +70,10 @@ src/
 
 ### 0.2 Local Data Source
 
-- [ ] Add `--local` / `--offline` flag to config
-- [ ] Create `src/fetchLocal.js` - reads from `fixtures/` instead of API
-- [ ] Modify `fetchWookiee.js` to delegate to local or remote based on config
-- [ ] Same interface as current async generators
+- [x] Add `--local` / `--offline` flag to config
+- [x] Create `src/fetchLocal.js` - reads from `fixtures/` instead of API
+- [x] Modify `fetchWookiee.js` to delegate to local or remote based on config
+- [x] Same interface as current async generators
 
 ### 0.3 Comprehensive Test Suite
 
