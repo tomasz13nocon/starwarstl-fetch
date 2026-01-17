@@ -12,6 +12,8 @@ Runs daily via cron. Sister modules are `../client` (React SPA) and `../server` 
 
 The module is effectively a pure function mapping wikitext input to database data.
 
+To run the main script run `npm run fetch`
+
 ### wtf_wikipedia Structure
 
 The `wtf_wikipedia/` directory contains a custom fork of the wikitext parser. Key locations:
