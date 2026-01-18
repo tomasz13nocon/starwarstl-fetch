@@ -135,10 +135,12 @@ scripts/
 
 ### 1.1 TypeScript Configuration
 
-- [ ] Add `tsconfig.json` with strict settings
-- [ ] Configure ES modules output (preserve current module system)
-- [ ] Set up path aliases for cleaner imports
-- [ ] Add build scripts to `package.json`. Use modern tooling
+- [x] Add `tsconfig.json` with strict settings, including no non-null assertions
+- [x] Configure ES modules output (preserve current module system)
+- [x] ~~Set up path aliases for cleaner imports~~ (skipped - using relative imports)
+- [x] Add build scripts to `package.json`. Use modern tooling
+
+**Completed:** Using Node.js 24 native TypeScript support (type stripping). No build step needed - `.ts` files run directly with `node`. Type-checking via `npm run check`. Key tsconfig settings: `strict`, `noUncheckedIndexedAccess`, `erasableSyntaxOnly`, `verbatimModuleSyntax`.
 
 ### 1.2 Type Definitions
 

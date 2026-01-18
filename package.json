@@ -8,6 +8,7 @@
     "fetch": "node src/index.js",
     "capture": "node scripts/capture-api-data.js",
     "baseline": "node scripts/generate-baseline.js",
+    "check": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -37,6 +38,7 @@
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "prettier": "^3.0.3",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.17"
   }
 }
