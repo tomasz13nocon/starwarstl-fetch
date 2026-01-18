@@ -14,6 +14,8 @@ The module is effectively a pure function mapping wikitext input to database dat
 
 To run the main script run `npm run fetch -- --local`
 
+If you need to see what the actual input data we're dealing with looks like, poke around the files in `fixtures`.
+
 ## Testing
 
 Vitest version 4
