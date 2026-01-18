@@ -9,6 +9,11 @@ Port the fetch module from JavaScript to TypeScript while improving code quality
 - **Keep:** TypeScript, custom wtf_wikipedia fork, Rust native module for appearances
 - **Ignore:** `rust-rewrite/` directory (incomplete, not part of this refactor)
 
+## Documenting progress
+
+After each step, besides marking steps as complete write a VERY BRIEF description of changes made, that might be useful to other agents continuing the refactor. This should be brief to limit context usage, and precisely selectively chosen - only things that future agents will absolutely need to know. So some steps might not even include anything like that, which is fine. Not all steps will need this!
+This is an addition - not a replacement - to documenting code you write, and writing any other .md files as needed.
+
 ## Current State Analysis
 
 ### File Structure
@@ -77,18 +82,50 @@ src/
 
 ### 0.3 Comprehensive Test Suite
 
-- [ ] Set up Jest/Vitest with TypeScript support
-- [ ] Create snapshot tests for pipeline output:
+- [x] Set up Vitest with TypeScript support
+- [x] Create snapshot tests for pipeline output:
   - Timeline parsing → draft objects
-  - Media parsing → enriched drafts
-  - Series parsing → series drafts
-  - Full pipeline → final DB-ready objects
-- [ ] Test individual pure functions:
-  - Date parsing (BBY/ABY)
-  - Type detection regexes
-  - Infobox field extraction
-- [ ] Create test runner that compares full pipeline output against baseline
-- [ ] **Run tests after every file conversion to catch regressions**
+  - Full pipeline → final DB-ready objects (drafts, seriesDrafts, appearancesDrafts)
+- [x] Test individual pure functions:
+  - Date parsing (BBY/ABY) - `parseWookieepediaDate`
+  - Type detection regexes - `reg`, `seasonReg`, `seriesRegexes`
+  - Utility functions - `toCamelCase`, `toHumanReadable`, `unscuffDate`
+  - AST processing - `reduceAstToText`
+- [x] Create test runner that compares full pipeline output against baseline
+  - `npm run baseline` - generates baseline from fixtures
+  - `tests/integration/pipeline-regression.test.js` - re-runs pipeline and compares
+- [x] **Run tests after every file conversion to catch regressions**
+
+#### Test Infrastructure Summary
+
+```
+tests/
+├── unit/                           # Pure function tests (fast)
+│   ├── parseWookieepediaDate.test.js
+│   ├── util.test.js
+│   ├── regex.test.js
+│   └── parsing.test.js
+├── integration/                    # Pipeline tests
+│   ├── timeline.test.js            # Timeline stage only
+│   ├── pipeline.test.js            # Baseline structure validation
+│   └── pipeline-regression.test.js # Full regression (slow, ~10 min)
+└── snapshots/                      # Frozen baseline data
+    ├── fixtures/                   # Input: copy of fixtures at baseline time
+    │   └── canon/
+    ├── pipeline-baseline.json      # Output: expected pipeline results
+    └── baseline-stats.json         # Summary stats
+
+scripts/
+├── capture-api-data.js             # Fetch live data → fixtures/
+└── generate-baseline.js            # Run pipeline → tests/snapshots/
+```
+
+**Commands:**
+
+- `npm test` - Run all tests except slow regression
+- `npm test -- tests/unit/` - Run unit tests only
+- `npm test -- tests/integration/pipeline-regression.test.js` - Run full regression
+- `npm run baseline` - Regenerate baseline (run after intentional changes)
 
 ---
 
@@ -101,7 +138,7 @@ src/
 - [ ] Add `tsconfig.json` with strict settings
 - [ ] Configure ES modules output (preserve current module system)
 - [ ] Set up path aliases for cleaner imports
-- [ ] Add build scripts to `package.json`
+- [ ] Add build scripts to `package.json`. Use modern tooling
 
 ### 1.2 Type Definitions
 

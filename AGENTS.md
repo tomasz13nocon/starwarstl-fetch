@@ -14,6 +14,19 @@ The module is effectively a pure function mapping wikitext input to database dat
 
 To run the main script run `npm run fetch -- --local`
 
+## Testing
+
+Vitest version 4
+
+See `tests/README.md` for full details.
+
+```bash
+npm test                         # Run all tests
+npm test -- --project unit       # Run unit tests only
+npm test -- --project integration # Run integration tests (excludes regression)
+npm test -- --project regression # Run regression test only
+```
+
 ### wtf_wikipedia Structure
 
 The `wtf_wikipedia/` directory contains a custom fork of the wikitext parser. Key locations:

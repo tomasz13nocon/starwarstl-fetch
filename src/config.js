@@ -14,8 +14,6 @@ export const debug = {
   normTitles: true,
   // log normalizations of image filenames
   normImages: false,
-  // saves timeline wikitext to file
-  saveTimeline: true,
   // only process one article
   // article: "Fighter Flight",
 };
@@ -34,7 +32,7 @@ const config = {
 
 // Process env vars and command line args on the first invocation
 // Returns config object
-export default function () {
+export default function() {
   if (initialized) return config;
 
   for (let env of requiredEnv) {

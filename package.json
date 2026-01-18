@@ -7,7 +7,11 @@
   "scripts": {
     "fetch": "node src/index.js",
     "capture": "node scripts/capture-api-data.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "baseline": "node scripts/generate-baseline.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:update": "vitest run --update"
   },
   "author": "",
   "license": "ISC",
@@ -29,8 +33,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.3.0",
+    "@vitest/coverage-v8": "^4.0.17",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "vitest": "^4.0.17"
   }
 }

@@ -13,10 +13,14 @@ import { log } from "./util.js";
  * Get the fixtures directory for the current continuity.
  * @param {boolean} legends - Whether to use legends continuity
  * @returns {string} Path to fixtures directory
+ *
+ * The base path can be overridden via FIXTURES_PATH environment variable.
+ * This is useful for testing against snapshotted fixtures.
  */
 function getFixturesDir(legends = false) {
   const continuity = legends ? "legends" : "canon";
-  return path.join(process.cwd(), "fixtures", continuity);
+  const basePath = process.env.FIXTURES_PATH || path.join(process.cwd(), "fixtures");
+  return path.join(basePath, continuity);
 }
 
 /**
@@ -60,6 +64,17 @@ let seriesIndex = null;
 let imageInfoIndex = null;
 let fixturesDir = null;
 let currentLegends = null;
+
+/**
+ * Reset cached indexes. Call this when switching fixture sources (e.g., in tests).
+ */
+export function resetLocalIndexes() {
+  mediaIndex = null;
+  seriesIndex = null;
+  imageInfoIndex = null;
+  fixturesDir = null;
+  currentLegends = null;
+}
 
 /**
  * Initialize or get cached indexes.
