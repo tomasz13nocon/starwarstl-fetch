@@ -1,7 +1,7 @@
 import wtf from "wtf_wikipedia";
 import { log } from "./util.js";
 
-export default function () {
+export default function() {
   wtf.extend((models, templates) => {
     let parse = models.parse;
 
@@ -119,6 +119,7 @@ export default function () {
     templates.skeletoncrew = seriesCite;
     templates.resistance = seriesCite;
     templates.droiddiaries = seriesCite;
+    templates.msl = seriesCite;
 
     templates["idwadventurescite-2020"] = idwCite;
     templates["idwadventurescite-2017"] = idwCite;

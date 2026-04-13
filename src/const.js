@@ -130,6 +130,7 @@ export const knownTemplates = new Set([
   "goc",
   "galacticpals",
   "grogucutest",
+  "msl",
   "jtc",
   "rebelsmagcite",
   "rebelsanimationcite",
