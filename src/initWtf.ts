@@ -1,9 +1,23 @@
 import wtf from "wtf_wikipedia";
 import { log } from "./util.ts";
 
-export default function () {
+import type { WtfTemplateParseResult, WtfTemplateParser } from "wtf_wikipedia";
+
+function value(value: WtfTemplateParseResult[string]): string | undefined {
+  return value as string | undefined;
+}
+
+function requiredList(parsed: WtfTemplateParseResult): string[] {
+  return parsed.list as string[];
+}
+
+function optionalList(parsed: WtfTemplateParseResult): string[] {
+  return parsed.list ?? [];
+}
+
+export default function initWtf(): void {
   wtf.extend((models, templates) => {
-    let parse = models.parse;
+    let parse: WtfTemplateParser = models.parse;
 
     templates.c = (tmpl, list) => {
       let x = parse(tmpl, ["value"]);
@@ -41,7 +55,7 @@ export default function () {
     // Below are templates used in the timeline to produce links to episodes of different series.
     // They contain additional info like episode number, or magazine issue, that we could use later
 
-    function formatLink(page, name) {
+    function formatLink(page: string | undefined, name?: string) {
       return `[[${page}${name ? "|" + name : ""}]]`;
     }
 
@@ -49,7 +63,7 @@ export default function () {
     // It recreates that template's behavior exactly.
     // Update: They changed this to #invoke a lua function via the Scribunto extension https://www.mediawiki.org/wiki/Extension:Scribunto
     // Therefore this reimplementation is out of date
-    function hideParanthetical(page, text, italics = false) {
+    function hideParanthetical(page: string, text?: string, italics = false) {
       // https://starwars.fandom.com/wiki/Template:HideParanthetical
       if (text) return `[[${page}|${text}]]`;
 
@@ -69,28 +83,34 @@ export default function () {
       return rv;
     }
 
-    function seriesCite(tmpl, list) {
+    function seriesCite(tmpl: string, templateList: WtfTemplateParseResult[]) {
       let parsed = parse(tmpl);
-      list.push(parsed);
+      templateList.push(parsed);
 
-      return formatLink(parsed.list[0], parsed.list[1]);
+      return formatLink(requiredList(parsed)[0], requiredList(parsed)[1]);
     }
 
-    function magazineCite(tmpl, list) {
+    function magazineCite(tmpl: string, templateList: WtfTemplateParseResult[]) {
       let parsed = parse(tmpl);
-      list.push(parsed);
+      templateList.push(parsed);
 
-      return formatLink(parsed.list[parsed.issue1 ? 0 : 1], parsed.list[parsed.issue1 ? 1 : 2]);
+      return formatLink(
+        requiredList(parsed)[value(parsed.issue1) ? 0 : 1],
+        requiredList(parsed)[value(parsed.issue1) ? 1 : 2],
+      );
     }
 
-    function idwCite(tmpl, list) {
+    function idwCite(tmpl: string, templateList: WtfTemplateParseResult[]) {
       let parsed = parse(tmpl);
-      list.push(parsed);
+      templateList.push(parsed);
 
       // https://starwars.fandom.com/wiki/Template:IDWAdventuresCite-2017
       // https://starwars.fandom.com/wiki/Template:IDWAdventuresCite-2020
       // TODO: these are issues containing two stories. We should include the name of the issue in the title, like Wookieepedia does, instead of just the story titles.
-      return hideParanthetical(parsed.list?.[1] || parsed.story, parsed.list?.[2] || parsed.stext);
+      return hideParanthetical(
+        optionalList(parsed)[1] || value(parsed.story)!,
+        optionalList(parsed)[2] || value(parsed.stext),
+      );
     }
 
     templates.insidercite = magazineCite;
@@ -129,9 +149,9 @@ export default function () {
 
       // https://starwars.fandom.com/wiki/Template:StoryCite
       if (parsed.stext || parsed.sformatted) {
-        return formatLink(parsed.story, parsed.stext || parsed.sformatted);
+        return formatLink(value(parsed.story), value(parsed.stext) || value(parsed.sformatted));
       } else {
-        return hideParanthetical(parsed.story);
+        return hideParanthetical(value(parsed.story)!);
       }
     };
 
@@ -141,8 +161,10 @@ export default function () {
 
       // https://starwars.fandom.com/wiki/Template:TCW
       let title =
-        parsed.list[0] === "Destiny" ? "Destiny (Star Wars: The Clone Wars)" : parsed.list[0];
-      return formatLink(title, parsed.list[1]);
+        requiredList(parsed)[0] === "Destiny"
+          ? "Destiny (Star Wars: The Clone Wars)"
+          : requiredList(parsed)[0];
+      return formatLink(title, requiredList(parsed)[1]);
     };
 
     templates.easwyoutube = (tmpl, list) => {
@@ -151,9 +173,9 @@ export default function () {
 
       // https://starwars.fandom.com/wiki/Template:EASWYouTube
       if (parsed.int) {
-        return formatLink(parsed.int, parsed.list?.[1] || parsed.text);
+        return formatLink(value(parsed.int), optionalList(parsed)[1] || value(parsed.text));
       } else {
-        return `[https://www.youtube.com/${parsed.parameter || "watch?v"}=${parsed.list?.[0] || parsed.video} ${parsed.list?.[1] || parsed.text}]`;
+        return `[https://www.youtube.com/${value(parsed.parameter) || "watch?v"}=${optionalList(parsed)[0] || value(parsed.video)} ${optionalList(parsed)[1] || value(parsed.text)}]`;
       }
     };
 
@@ -164,8 +186,8 @@ export default function () {
       // https://starwars.fandom.com/wiki/Template:EA
       // TODO {{PAGENAME}} magic word is used as default if template args not present. Not sure what it expands to in the timeline, but surely it's "Timeline of canon media" which would mean no one would use it there
       return parsed.int
-        ? formatLink(parsed.int, parsed.text || parsed.list?.[1])
-        : `[https://${parsed.subdomain || "www"}.ea.com/${parsed.url || parsed.list?.[0]} ${parsed.text || parsed.list?.[1]}]`;
+        ? formatLink(value(parsed.int), value(parsed.text) || optionalList(parsed)[1])
+        : `[https://${value(parsed.subdomain) || "www"}.ea.com/${value(parsed.url) || optionalList(parsed)[0]} ${value(parsed.text) || optionalList(parsed)[1]}]`;
     };
 
     templates.ffs = (tmpl, list) => {
@@ -173,7 +195,7 @@ export default function () {
       list.push(parsed);
 
       // https://starwars.fandom.com/wiki/Template:FFG
-      return hideParanthetical(parsed.story, parsed.stext);
+      return hideParanthetical(value(parsed.story)!, value(parsed.stext));
     };
 
     templates.film = (tmpl) => {
@@ -216,7 +238,7 @@ export default function () {
       let parsed = parse(tmpl);
       list.push(parsed);
 
-      let episode = `Episode ${parsed.list[0]} (Star Wars: Jedi Temple Challenge)`;
+      let episode = `Episode ${requiredList(parsed)[0]} (Star Wars: Jedi Temple Challenge)`;
       return formatLink(episode);
     };
 
@@ -224,8 +246,8 @@ export default function () {
       let parsed = parse(tmpl);
       list.push(parsed);
 
-      let episode = `Episode ${parsed.list[0]} (Grogu Cutest In The Galaxy)`;
-      return formatLink(episode, parsed.list[1]);
+      let episode = `Episode ${requiredList(parsed)[0]} (Grogu Cutest In The Galaxy)`;
+      return formatLink(episode, requiredList(parsed)[1]);
     };
 
     templates.galacticpals = (tmpl, list) => {
@@ -235,19 +257,20 @@ export default function () {
       list.push(parsed);
 
       let episode;
-      if (parsed.list[0] === "Porgs") {
+      const parsedList = requiredList(parsed);
+      if (parsedList[0] === "Porgs") {
         episode = "Porgs (Galactic Pals)";
-      } else if (parsed.list[0] === "Rancor") {
+      } else if (parsedList[0] === "Rancor") {
         episode = "Rancor (Galactic Pals)";
-      } else if (parsed.list[0] === "Tauntaun") {
+      } else if (parsedList[0] === "Tauntaun") {
         episode = "Tauntaun (Galactic Pals)";
-      } else if (parsed.list[0].includes("(")) {
-        episode = parsed.list[0];
+      } else if (parsedList[0]!.includes("(")) {
+        episode = parsedList[0];
       } else {
-        episode = parsed.list[0] + " (episode)";
+        episode = parsedList[0] + " (episode)";
       }
 
-      return formatLink(episode, parsed.list[1]);
+      return formatLink(episode, parsedList[1]);
     };
 
     templates.goc = (tmpl, list) => {
@@ -257,19 +280,20 @@ export default function () {
       list.push(parsed);
 
       let episode;
-      if (parsed.list[0] === "Porgs") {
+      const parsedList = requiredList(parsed);
+      if (parsedList[0] === "Porgs") {
         episode = "Porgs (Galaxy of Creatures)";
-      } else if (parsed.list[0] === "Rancor") {
+      } else if (parsedList[0] === "Rancor") {
         episode = "Rancor (Galaxy of Creatures)";
-      } else if (parsed.list[0] === "Tauntaun") {
+      } else if (parsedList[0] === "Tauntaun") {
         episode = "Tauntaun (Galaxy of Creatures)";
-      } else if (parsed.list[0].includes("(")) {
-        episode = parsed.list[0];
+      } else if (parsedList[0]!.includes("(")) {
+        episode = parsedList[0];
       } else {
-        episode = parsed.list[0] + " (episode)";
+        episode = parsedList[0] + " (episode)";
       }
 
-      return formatLink(episode, parsed.list[1]);
+      return formatLink(episode, parsedList[1]);
     };
 
     templates.holonetnewstumblr = (tmpl, list) => {

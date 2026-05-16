@@ -282,8 +282,10 @@ scripts/
 
 ### 5.1 Template Handlers
 
-- [ ] `src/initWtf.ts` - type custom template registration
-- [ ] Consider extracting template definitions to config
+- [x] `src/initWtf.ts` - type custom template registration
+- [x] Consider extracting template definitions to config
+
+**Completed:** Converted `initWtf` to TypeScript using the existing narrow `wtf_wikipedia` extension types. Template extraction was considered and intentionally deferred: these handlers encode executable Wookieepedia-specific rendering behavior and fallbacks rather than static configuration, so moving them now would add risk without simplifying the refactor.
 
 ---
 
@@ -376,21 +378,3 @@ scripts/
 
 1. Should pipeline stages return new objects instead of mutating? (use best judgment)
 2. Consider adding a proper CLI framework (commander, yargs)? (yes, do it)
-
----
-
-## Timeline Estimate
-
-| Phase                        | Estimated Effort |
-| ---------------------------- | ---------------- |
-| Phase 0: Test Infrastructure | 2-3 days         |
-| Phase 1: Foundation          | 1-2 days         |
-| Phase 2: Core Modules        | 2-3 days         |
-| Phase 3: Parsing Refactor    | 2-3 days         |
-| Phase 4: Pipeline            | 3-4 days         |
-| Phase 5: wtf_wikipedia       | 1 day            |
-| Phase 6: Integration         | 1-2 days         |
-| Phase 7: Quality             | 2-3 days         |
-| **Total**                    | **14-21 days**   |
-
-_Estimates assume focused work; actual time may vary based on discovered complexity._

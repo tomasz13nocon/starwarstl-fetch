@@ -16,7 +16,7 @@
  */
 
 import wtf from "wtf_wikipedia";
-import initWtf from "./initWtf.js";
+import initWtf from "./initWtf.ts";
 import { log } from "./util.ts";
 import config from "./config.ts";
 import { fetchWookiee } from "./fetchWookiee.ts";
