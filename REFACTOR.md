@@ -332,6 +332,42 @@ scripts/
 
 ---
 
+## Phase 8: Refactor Cleanup & Handoff Readiness
+
+**Goal:** Remove refactor-only scaffolding and leave the project in a clear, current, development-ready state for future contributors and agents.
+
+### 8.1 Remove Refactor Artifacts
+
+- [ ] Remove obsolete migration shims, temporary declarations, compatibility wrappers, and TODOs that only existed to support the JS → TS transition
+- [ ] Delete or archive stale refactor-only scripts, notes, and generated files that are no longer useful after the migration
+- [ ] Review comments added during the refactor and remove anything that describes temporary process instead of lasting code behavior
+- [ ] Ensure remaining TODO/FIXME comments describe real future work, not completed refactor steps
+
+### 8.2 Update Project Documentation
+
+- [ ] Rewrite README.md to describe the current TypeScript architecture, runtime requirements, commands, offline fixture workflow, and daily fetch behavior
+- [ ] Update `AGENTS.md` with current codebase guidance for future agents, removing obsolete refactor-era instructions where appropriate
+- [ ] Update `tests/README.md` and related docs to match the final test projects, baseline workflow, fixture layout, and expected slow/known-failure cases
+- [ ] Document the final pipeline architecture, core domain types, data flow, and extension points for future development
+- [ ] Update package scripts/documentation comments so command descriptions match the final implementation
+
+### 8.3 Architecture & Maintenance Review
+
+- [ ] Verify project descriptions no longer refer to the codebase as mid-migration unless that remains true
+- [ ] Ensure source comments explain non-obvious Wookieepedia/wtf_wikipedia/native-parser behavior rather than historical refactor decisions
+- [ ] Confirm new code organization is discoverable: entry point, config, fetchers, parsing modules, pipeline stages, image storage, and DB layer
+- [ ] Document operational requirements: environment variables, MongoDB expectations, image storage modes, local fixtures, and cron usage
+
+### 8.4 Final Readiness Checks
+
+- [ ] Run the full test suite, including regression tests
+- [ ] Run the local fetch pipeline (`npm run fetch -- --local`) and confirm it completes with only documented expected parsing errors
+- [ ] Run type checking and any available lint/format checks
+- [ ] Review `git status` for stray generated files, local-only artifacts, or accidental fixture/baseline changes
+- [ ] Make a final pass over docs from the perspective of a future agent starting with no conversation context
+
+---
+
 ## Migration Strategy
 
 ### Approach: Incremental Conversion
