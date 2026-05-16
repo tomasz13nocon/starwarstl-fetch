@@ -229,11 +229,11 @@ scripts/
 
 ### 3.1 Split `parsing.js` (482 lines) into:
 
-- [ ] `src/parsing/infobox.ts` - infobox extraction and field mapping
-- [ ] `src/parsing/categories.ts` - category parsing
-- [ ] `src/parsing/firstSentence.ts` - first sentence type detection
-- [ ] `src/parsing/appearances.ts` - wrapper around Rust native module
-- [ ] `src/parsing/index.ts` - re-exports
+- [x] `src/parsing/infobox.ts` - infobox extraction and field mapping
+- [x] `src/parsing/categories.ts` - category parsing
+- [x] `src/parsing/firstSentence.ts` - first sentence type detection
+- [x] `src/parsing/appearances.ts` - wrapper around Rust native module
+- [x] `src/parsing/index.ts` - re-exports
 
 ### 3.2 Type the Parsing Layer
 

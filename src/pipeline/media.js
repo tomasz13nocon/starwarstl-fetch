@@ -1,81 +1,13 @@
 import config, { debug } from "../config.ts";
 import { fetchWookiee } from "../fetchWookiee.ts";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.ts";
-import { docFromPage, fillDraftWithInfoboxData, reduceAstToText } from "../parsing.js";
+import { docFromPage, fillDraftWithInfoboxData, getAppearances, reduceAstToText } from "../parsing.js";
 import { log } from "../util.ts";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.js";
-import native from "../../native/index.cjs";
-import netLog from "../netLog.ts";
 import { allowedAppCategories } from "../const.ts";
 
 let { CACHE_PAGES } = config();
-
-function getAppearances(doc) {
-  let appsTemplate = doc.templates().find((t) => t.data.template === "app");
-
-  // No appearances template
-  if (!appsTemplate) {
-    if (doc.wikitext().includes("{{App")) {
-      // The template is there but there's a syntax error inside it, which makes wtf fail to parse it
-      log.error(`Malformed appearances template in ${doc.title()}`);
-    }
-    return;
-  }
-
-  try {
-    let appsParsed = native.parse_appearances(
-      appsTemplate.wikitext().replaceAll(/\n{{!}}\n/g, "\n"),
-    );
-
-    // Wookieepedia changed the name of the "creatures" category to "organisms", but some articles still use "creatures"
-    // This changes the new "organisms" category of appearences into the old "creatures" as we wait for wookiepedia to finish transitioning all articles to "organisms"
-    let creaturesFound = false,
-      organismsFound = false;
-    for (let category of appsParsed.nodes[0].Template.parameters) {
-      if (["organisms", "c-organisms", "l-organisms"].includes(category.name)) {
-        netLog[category.name + "Count"]++;
-        organismsFound = true;
-      }
-      if (["creatures", "c-creatures", "l-creatures"].includes(category.name)) {
-        netLog[category.name + "Count"]++;
-        creaturesFound = true;
-        log.warn(`${doc.title()} contains ${category.name}`);
-        category.name = category.name.replace("creatures", "organisms");
-      }
-      if (!allowedAppCategories.includes(category.name.replace(/(c-)|(l-)/, ""))) {
-        log.error(`${doc.title()} contains unknown appearences category: ${category.name}`);
-      }
-    }
-    if (creaturesFound && organismsFound) {
-      log.error(
-        `'organisms' and 'creatures' coexist in ${doc.title()}. One will get overwritten by the other!`,
-      );
-    }
-    if ("creatures" in appsParsed.links) {
-      appsParsed.links.organisms = appsParsed.links.creatures;
-      delete appsParsed.links.creatures;
-    }
-    if ("c-creatures" in appsParsed.links) {
-      appsParsed.links["c-organisms"] = appsParsed.links["c-creatures"];
-      delete appsParsed.links["c-creatures"];
-    }
-    if ("l-creatures" in appsParsed.links) {
-      appsParsed.links["l-organisms"] = appsParsed.links["l-creatures"];
-      delete appsParsed.links["l-creatures"];
-    }
-
-    return {
-      nodes: appsParsed.nodes[0].Template.parameters,
-      links: appsParsed.links,
-    };
-  } catch (e) {
-    log.error(
-      `Error parsing appearances for ${doc.title()}\n${e.message}\nFirst paragraph of the page: ${doc.paragraph(0).text()}`,
-    );
-    return;
-  }
-}
 
 export default async function(drafts) {
   log.info("Fetching articles...");
