@@ -237,9 +237,9 @@ scripts/
 
 ### 3.2 Type the Parsing Layer
 
-- [ ] Define `ParsedArticle` type
-- [ ] Type infobox field mappings
-- [ ] Type appearance structures (from Rust module)
+- [x] Define `ParsedArticle` type
+- [x] Type infobox field mappings
+- [x] Type appearance structures (from Rust module)
 
 ---
 

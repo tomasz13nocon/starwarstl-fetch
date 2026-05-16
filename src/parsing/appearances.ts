@@ -6,9 +6,10 @@ import { log } from "../util.ts";
 
 import type {
   AppearanceTemplateParameter,
+  ArticleAppearances,
   ParsedAppearances,
   ParsedAppearanceLink,
-} from "../types/appearances.ts";
+} from "../types/index.ts";
 import type { WtfDocument } from "../types/wtf.ts";
 
 type NativeAppearanceParser = {
@@ -20,11 +21,6 @@ type NativeAppearanceParser = {
 
 const require = createRequire(import.meta.url);
 const appearancesParser = require("../../native/index.cjs") as NativeAppearanceParser;
-
-export type ArticleAppearances = {
-  nodes: AppearanceTemplateParameter[];
-  links: ParsedAppearances["links"];
-};
 
 export function getAppearances(doc: WtfDocument): ArticleAppearances | undefined {
   const appsTemplate = doc.templates().find((t) => t.data.template === "app");

@@ -5,10 +5,14 @@ import { seasonReg, seasonRegWordBound } from "../regex.ts";
 import { log, toCamelCase } from "../util.ts";
 
 import type { AstNode, TextNode } from "../types/ast.ts";
+import type { InfoboxField } from "../const.ts";
 import type { MediaDraft, SeriesDraft } from "../types/draft.ts";
+import type { InfoboxData } from "../types/parsing.ts";
 import type { WtfInfobox, WtfInfoboxValue, WtfLink } from "../types/wtf.ts";
 
 type MutableDraft = MediaDraft & SeriesDraft & Record<string, unknown>;
+
+export type InfoboxFieldMapping = InfoboxField;
 
 function flattenAst(nodes: AstNode[]): AstNode[] {
   return nodes.flatMap((node) => (node.type === "list" ? flattenAst(node.data.flat()) : [node]));
@@ -186,13 +190,11 @@ function processAst(sentence: WtfInfoboxValue): string | AstNode[] | null | WtfI
   return newAst.length === 1 && newAst[0]?.type === "text" ? newAst[0].text : newAst;
 }
 
-type InfoboxField = string | { aliases: readonly string[]; details?: boolean; name?: string };
-
 function getInfoboxData(
   infobox: WtfInfobox,
   keys: readonly InfoboxField[],
-): Record<string, WtfInfoboxValue> {
-  const ret: Record<string, WtfInfoboxValue> = {};
+): InfoboxData {
+  const ret: InfoboxData = {};
   for (let key of keys) {
     if (typeof key === "string") key = { aliases: [key] };
     let value: WtfInfoboxValue | undefined;
