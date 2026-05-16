@@ -1,5 +1,5 @@
 import { suppressLog } from "../const.ts";
-import { db } from "../db.js";
+import { db } from "../db.ts";
 import { log } from "../util.ts";
 
 export default async function (drafts) {

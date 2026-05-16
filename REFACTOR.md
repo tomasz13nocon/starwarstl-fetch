@@ -200,9 +200,11 @@ scripts/
 
 ### 2.3 Database Layer
 
-- [ ] `src/db.ts` - type MongoDB collections
-- [ ] Fix blocking top-level await (use lazy connection)
+- [x] `src/db.ts` - type MongoDB collections
+- [x] Fix blocking top-level await (use lazy connection)
 - [ ] Define collection schemas/types
+
+**Completed:** Converted the DB module to TypeScript and removed the top-level `client.connect()`; MongoDB operations now use the driver's lazy connection behavior via the exported client/db handles. Detailed collection schemas remain for a later pass once pipeline output types are fully settled.
 
 ### 2.4 API Client
 

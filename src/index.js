@@ -3,7 +3,7 @@ import { runPipeline } from "./runPipeline.js";
 import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.ts";
 import config from "./config.ts";
 import netLog from "./netLog.ts";
-import { client, closeDb, db } from "./db.js";
+import { client, closeDb, db } from "./db.ts";
 import { createClient } from "redis";
 import { REDIS_URI } from "./const.ts";
 
