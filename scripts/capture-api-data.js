@@ -27,14 +27,14 @@
  * to a sanitized version of the title. These files contain { title, missing: true }.
  */
 
-import "../src/env.js";
+import "../src/env.ts";
 import fs from "node:fs/promises";
 import path from "node:path";
 import wtf from "wtf_wikipedia";
 import initWtf from "../src/initWtf.js";
 import { fetchWookiee, fetchImageInfo } from "../src/fetchWookiee.js";
 import { log } from "../src/util.js";
-import { types } from "../src/const.js";
+import { types } from "../src/const.ts";
 import { decode } from "html-entities";
 
 // Parse CLI args

@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import sharp from "sharp";
 import { fileExists, log } from "../util.js";
-import { Size, IMAGE_PATH } from "../const.js";
+import { Size, IMAGE_PATH } from "../const.ts";
 
 export class FsImage {
   constructor(filename) {

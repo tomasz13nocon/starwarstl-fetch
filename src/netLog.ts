@@ -1,4 +1,4 @@
-export default {
+const netLog = {
   redirectNum: 0,
   bytesRecieved: 0,
   imageBytesRecieved: 0,
@@ -12,3 +12,5 @@ export default {
   "c-creaturesCount": 0,
   "l-creaturesCount": 0,
 };
+
+export default netLog;

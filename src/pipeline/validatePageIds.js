@@ -1,4 +1,4 @@
-import { suppressLog } from "../const.js";
+import { suppressLog } from "../const.ts";
 import { db } from "../db.js";
 import { log } from "../util.js";
 

@@ -1,7 +1,9 @@
-import { NUMBERS, suppressLog } from "./const.js";
+import { NUMBERS, suppressLog } from "./const.ts";
 import { log } from "./util.js";
 
-export function reg(str, title) {
+export type BookAudienceRegexMatch = "jr" | "ya" | "a";
+
+export function reg(str: string, title: string): BookAudienceRegexMatch | null {
   const jr = /junior|middle[ -]grade|chapter book|young[ -]reader|young children/i;
   const ya = /young[ -]adult/i;
   const a = /adult|canon novel/i;
@@ -33,4 +35,4 @@ export const seriesRegexes = {
   "short-story": /short stor(y|ies)/i,
   game: /video game/i,
   // "yr": /((series of books|book series).*?young children|young[- ]reader.*?(book series|series of books))/i,
-};
+} as const satisfies Record<string, RegExp>;

@@ -6,8 +6,8 @@ import { log } from "../util.js";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.js";
 import native from "../../native/index.cjs";
-import netLog from "../netLog.js";
-import { allowedAppCategories } from "../const.js";
+import netLog from "../netLog.ts";
+import { allowedAppCategories } from "../const.ts";
 
 let { CACHE_PAGES } = config();
 

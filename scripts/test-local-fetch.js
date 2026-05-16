@@ -7,7 +7,7 @@
  * MongoDB or other infrastructure.
  */
 
-import "../src/env.js";
+import "../src/env.ts";
 import config from "../src/config.js";
 import { fetchWookieeLocal, fetchImageInfoLocal } from "../src/fetchLocal.js";
 

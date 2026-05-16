@@ -1,8 +1,8 @@
 import config from "../config.js";
-import { Size } from "../const.js";
+import { Size } from "../const.ts";
 import { db } from "../db.js";
 import { fetchImageInfo } from "../fetchWookiee.js";
-import netLog from "../netLog.js";
+import netLog from "../netLog.ts";
 import { log, toHumanReadable } from "../util.js";
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";

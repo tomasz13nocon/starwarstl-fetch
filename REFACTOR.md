@@ -168,10 +168,12 @@ scripts/
 
 ### 1.4 Initial Conversion (Low-Risk Files)
 
-- [ ] `src/env.ts` - trivial, just dotenv
-- [ ] `src/const.ts` - constants and enums
-- [ ] `src/regex.ts` - regex patterns
-- [ ] `src/netLog.ts` - network stats
+- [x] `src/env.ts` - trivial, just dotenv
+- [x] `src/const.ts` - constants and enums
+- [x] `src/regex.ts` - regex patterns
+- [x] `src/netLog.ts` - network stats
+
+**Completed:** Converted the low-risk leaf modules and updated consumers to import the new `.ts` paths. Added a minimal `src/util.d.ts` shim only so converted TypeScript can import the still-JavaScript `util.js`; remove it when `src/util.ts` is converted in 2.1.
 
 ---
 

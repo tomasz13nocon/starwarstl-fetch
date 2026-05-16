@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { MONGO_URI } from "./const.js";
+import { MONGO_URI } from "./const.ts";
 import { log } from "./util.js";
 
 const client = new MongoClient(MONGO_URI);

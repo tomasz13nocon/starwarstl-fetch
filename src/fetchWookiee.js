@@ -1,8 +1,8 @@
 import NodeFetchCache, { FileSystemCache } from "node-fetch-cache";
 import config, { debug } from "./config.js";
-import { MW_API_USER_AGENT } from "./const.js";
+import { MW_API_USER_AGENT } from "./const.ts";
 import { log, toHumanReadable } from "./util.js";
-import netLog from "./netLog.js";
+import netLog from "./netLog.ts";
 import { fetchWookieeLocal, fetchImageInfoLocal } from "./fetchLocal.js";
 
 const fetchCache = NodeFetchCache.create({

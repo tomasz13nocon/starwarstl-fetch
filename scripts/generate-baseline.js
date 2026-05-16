@@ -48,7 +48,7 @@ for (let i = 2; i < process.argv.length; i++) {
 // Now we can use dynamic imports to ensure --local is set first
 async function main() {
   // Dynamic imports happen AFTER process.argv is modified
-  const { default: envModule } = await import("../src/env.js");
+  const { default: envModule } = await import("../src/env.ts");
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
   const { runPipeline } = await import("../src/runPipeline.js");

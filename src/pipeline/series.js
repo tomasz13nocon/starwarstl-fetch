@@ -1,9 +1,9 @@
 import { writeFile } from "fs/promises";
 import config, { debug } from "../config.js";
-import { seriesTypes, suppressLog } from "../const.js";
+import { seriesTypes, suppressLog } from "../const.ts";
 import { fetchWookiee } from "../fetchWookiee.js";
 import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing.js";
-import { seriesRegexes } from "../regex.js";
+import { seriesRegexes } from "../regex.ts";
 import { log } from "../util.js";
 import { cleanupDraft } from "./cleanupDrafts.js";
 

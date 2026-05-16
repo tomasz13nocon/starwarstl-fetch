@@ -1,11 +1,11 @@
-import "./env.js";
+import "./env.ts";
 import { runPipeline } from "./runPipeline.js";
 import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.js";
 import config from "./config.js";
-import netLog from "./netLog.js";
+import netLog from "./netLog.ts";
 import { client, closeDb, db } from "./db.js";
 import { createClient } from "redis";
-import { REDIS_URI } from "./const.js";
+import { REDIS_URI } from "./const.ts";
 
 const { LIMIT } = config();
 

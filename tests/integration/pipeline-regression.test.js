@@ -15,7 +15,7 @@
  *   npm run baseline
  */
 
-import "../../src/env.js";
+import "../../src/env.ts";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";

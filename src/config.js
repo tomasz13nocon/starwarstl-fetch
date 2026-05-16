@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { S3Image } from "./image/s3Image.js";
 import { FsImage } from "./image/fsImage.js";
 import { log } from "./util.js";
-import { MW_API_USER_AGENT, AWS_ACCESS_KEY, AWS_SECRET_KEY, IMAGE_PATH, Size } from "./const.js";
+import { MW_API_USER_AGENT, AWS_ACCESS_KEY, AWS_SECRET_KEY, IMAGE_PATH, Size } from "./const.ts";
 
 export const debug = {
   // Write a list of distinct infobox templates to file

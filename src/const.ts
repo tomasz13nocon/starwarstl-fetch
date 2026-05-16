@@ -1,11 +1,13 @@
 import process from "node:process";
+import type { ImageSize } from "./types/config.ts";
+import type { MediaType, SeriesType } from "./types/media.ts";
 
 export const Size = Object.freeze({
   THUMB: "thumb/",
   MEDIUM: "medium/",
   SMALL: "small/",
   FULL: "full/",
-});
+} as const satisfies Record<string, ImageSize>);
 
 export const IMAGE_PATH = process.env.IMAGE_PATH ?? "../client/public/img/covers/";
 export const S3_IMAGE_PATH = "img/covers/";
@@ -93,7 +95,7 @@ export const suppressLog = {
     "The Weapon of a Jedi: A Luke Skywalker Adventure",
     "Forces of Destiny: The Rey Chronicles",
   ],
-};
+} satisfies Record<string, readonly string[]>;
 
 export const knownTemplates = new Set([
   "top",
@@ -144,7 +146,7 @@ export const knownTemplates = new Set([
   "totu",
   "holonetnewstumblr",
   "droiddiaries",
-]);
+] as const);
 
 export const allowedAppCategories = [
   "characters",
@@ -159,7 +161,7 @@ export const allowedAppCategories = [
   "technology",
   "vehicles",
   "miscellanea",
-];
+] as const;
 
 export const NUMBERS = {
   one: 1,
@@ -182,7 +184,7 @@ export const NUMBERS = {
   eighteen: 18,
   nineteen: 19,
   twenty: 20,
-};
+} as const;
 
 export const seriesTypes = {
   "book series": "book",
@@ -200,7 +202,7 @@ export const seriesTypes = {
   magazine: "comic",
   "magazine series": "comic",
   magazineseries: "comic",
-};
+} as const satisfies Record<string, Exclude<SeriesType, "multimedia" | "unknown">>;
 
 export const types = {
   C: "comic",
@@ -212,7 +214,15 @@ export const types = {
   TV: "tv",
   F: "film",
   VG: "game",
-};
+} as const satisfies Record<string, MediaType>;
+
+export type InfoboxField =
+  | string
+  | {
+      name?: string;
+      aliases: readonly string[];
+      details?: true;
+    };
 
 export const infoboxFields = [
   {
@@ -281,4 +291,4 @@ export const infoboxFields = [
   "upc",
   "isbn",
   // { name: "coverWook", aliases: ["image"] },
-];
+] as const satisfies readonly InfoboxField[];

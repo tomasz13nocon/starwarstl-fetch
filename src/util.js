@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import logWithStatusbar from "log-with-statusbar";
-import { TV_IMAGE_PATH } from "./const.js";
+import { TV_IMAGE_PATH } from "./const.ts";
 
 export const buildTvImagePath = (seriesTitle) =>
   TV_IMAGE_PATH + seriesTitle.replaceAll(" ", "_") + ".webp";

@@ -18,7 +18,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{js,ts}"],
-      exclude: ["src/**/*.test.{js,ts}", "src/env.js"],
+      exclude: ["src/**/*.test.{js,ts}", "src/env.ts"],
     },
 
     // Run tests sequentially for snapshot tests to avoid race conditions

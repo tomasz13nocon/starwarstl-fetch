@@ -1,10 +1,10 @@
 import wtf from "wtf_wikipedia";
 import { fetchWookiee } from "./fetchWookiee.js";
 import { log, toCamelCase } from "./util.js";
-import netLog from "./netLog.js";
-import { NUMBERS, infoboxFields, suppressLog } from "./const.js";
+import netLog from "./netLog.ts";
+import { NUMBERS, infoboxFields, suppressLog } from "./const.ts";
 import { decode } from "html-entities";
-import { reg, seasonReg, seasonRegWordBound } from "./regex.js";
+import { reg, seasonReg, seasonRegWordBound } from "./regex.ts";
 import _ from "lodash";
 
 const tvTypes = {};
