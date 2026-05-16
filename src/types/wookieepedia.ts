@@ -11,6 +11,12 @@ export type WookieepediaMissingPage = {
   missing: true;
 };
 
+export type WookieepediaInvalidPage = {
+  title: string;
+  invalid: true;
+  invalidreason?: string;
+};
+
 export type WookieepediaPageResult = WookieepediaPage | WookieepediaMissingPage;
 
 export type WookieepediaImageInfo = {

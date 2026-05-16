@@ -9,7 +9,7 @@
 
 import "../src/env.ts";
 import config from "../src/config.ts";
-import { fetchWookieeLocal, fetchImageInfoLocal } from "../src/fetchLocal.js";
+import { fetchWookieeLocal, fetchImageInfoLocal } from "../src/fetchLocal.ts";
 
 const cfg = config();
 const legends = cfg.LEGENDS;

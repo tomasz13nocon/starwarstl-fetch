@@ -1,7 +1,7 @@
 import config from "../config.ts";
 import { Size } from "../const.ts";
 import { db } from "../db.ts";
-import { fetchImageInfo } from "../fetchWookiee.js";
+import { fetchImageInfo } from "../fetchWookiee.ts";
 import netLog from "../netLog.ts";
 import { log, toHumanReadable } from "../util.ts";
 import sharp from "sharp";

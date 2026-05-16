@@ -208,10 +208,12 @@ scripts/
 
 ### 2.4 API Client
 
-- [ ] `src/fetchWookiee.ts` - type async generator yields
-- [ ] `src/fetchLocal.ts` - local filesystem data source
-- [ ] Type API response shapes
+- [x] `src/fetchWookiee.ts` - type async generator yields
+- [x] `src/fetchLocal.ts` - local filesystem data source
+- [x] Type API response shapes
 - [ ] Add proper error types
+
+**Completed:** Converted remote and local Wookieepedia fetchers to TypeScript with typed title inputs, async generator yields, local fixture indexes, and narrow MediaWiki API response shapes. Dedicated custom error classes are still deferred to the Phase 7 error-handling pass.
 
 ### 2.5 Date Parsing
 

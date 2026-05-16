@@ -66,7 +66,7 @@ describe("pipeline regression - full run", { timeout: 600000 }, () => {
     }
 
     // Reset the local fixture indexes to pick up the new path
-    const { resetLocalIndexes } = await import("../../src/fetchLocal.js");
+    const { resetLocalIndexes } = await import("../../src/fetchLocal.ts");
     resetLocalIndexes();
 
     // Run the pipeline

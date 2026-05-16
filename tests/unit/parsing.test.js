@@ -16,7 +16,7 @@ vi.mock("../../src/util.ts", () => ({
       .replace(/\s+/g, ""),
 }));
 
-vi.mock("../../src/fetchWookiee.js", () => ({
+vi.mock("../../src/fetchWookiee.ts", () => ({
   fetchWookiee: vi.fn(),
 }));
 

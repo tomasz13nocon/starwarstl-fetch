@@ -8,6 +8,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { log } from "./util.ts";
+import type { WookieepediaImageInfoResult, WookieepediaPageResult } from "./types/wookieepedia.ts";
+
+type TitleInput = string | string[];
+type FixtureResult = WookieepediaPageResult | WookieepediaImageInfoResult;
 
 /**
  * Get the fixtures directory for the current continuity.
@@ -17,7 +21,7 @@ import { log } from "./util.ts";
  * The base path can be overridden via FIXTURES_PATH environment variable.
  * This is useful for testing against snapshotted fixtures.
  */
-function getFixturesDir(legends = false) {
+function getFixturesDir(legends = false): string {
   const continuity = legends ? "legends" : "canon";
   const basePath = process.env.FIXTURES_PATH || path.join(process.cwd(), "fixtures");
   return path.join(basePath, continuity);
@@ -28,8 +32,8 @@ function getFixturesDir(legends = false) {
  * @param {string} dir - Directory to index
  * @returns {Promise<Map<string, string>>} Map of title/pageid -> filename
  */
-async function buildIndex(dir) {
-  const index = new Map();
+async function buildIndex(dir: string): Promise<Map<string, string>> {
+  const index = new Map<string, string>();
 
   try {
     const files = await fs.readdir(dir);
@@ -38,7 +42,7 @@ async function buildIndex(dir) {
 
       const filePath = path.join(dir, file);
       const content = await fs.readFile(filePath, "utf-8");
-      const data = JSON.parse(content);
+      const data = JSON.parse(content) as Partial<FixtureResult>;
 
       // Index by title (primary key for lookups)
       if (data.title) {
@@ -46,12 +50,12 @@ async function buildIndex(dir) {
       }
 
       // Also index by pageid for redundancy
-      if (data.pageid) {
+      if ("pageid" in data && data.pageid) {
         index.set(String(data.pageid), filePath);
       }
     }
   } catch (err) {
-    if (err.code !== "ENOENT") throw err;
+    if (!(err instanceof Error && "code" in err && err.code === "ENOENT")) throw err;
     // Directory doesn't exist - empty index
   }
 
@@ -59,11 +63,11 @@ async function buildIndex(dir) {
 }
 
 // Cached indexes for each fixture type
-let mediaIndex = null;
-let seriesIndex = null;
-let imageInfoIndex = null;
-let fixturesDir = null;
-let currentLegends = null;
+let mediaIndex: Map<string, string> | null = null;
+let seriesIndex: Map<string, string> | null = null;
+let imageInfoIndex: Map<string, string> | null = null;
+let fixturesDir: string | null = null;
+let currentLegends: boolean | null = null;
 
 /**
  * Reset cached indexes. Call this when switching fixture sources (e.g., in tests).
@@ -80,7 +84,7 @@ export function resetLocalIndexes() {
  * Initialize or get cached indexes.
  * @param {boolean} legends - Whether to use legends continuity
  */
-async function ensureIndexes(legends = false) {
+async function ensureIndexes(legends = false): Promise<void> {
   const dir = getFixturesDir(legends);
 
   // Rebuild indexes if continuity changed or not initialized
@@ -107,8 +111,13 @@ async function ensureIndexes(legends = false) {
  * @param {string} title - Title to normalize
  * @returns {string} Normalized title
  */
-function normalizeTitle(title) {
+function normalizeTitle(title: string): string {
   return title.replace(/_/g, " ");
+}
+
+function requireIndex(index: Map<string, string> | null, name: string): Map<string, string> {
+  if (!index) throw new Error(`${name} fixture index is not initialized`);
+  return index;
 }
 
 /**
@@ -117,7 +126,10 @@ function normalizeTitle(title) {
  * @param {Map<string, string>[]} indexes - Indexes to search in order
  * @returns {Promise<object|null>} Fixture data or null if not found
  */
-async function loadFixture(title, indexes) {
+async function loadFixture<T extends FixtureResult>(
+  title: string,
+  indexes: Map<string, string>[],
+): Promise<T | null> {
   // Try both the original title and normalized version (underscores -> spaces)
   const normalized = normalizeTitle(title);
 
@@ -130,7 +142,7 @@ async function loadFixture(title, indexes) {
     }
     if (filePath) {
       const content = await fs.readFile(filePath, "utf-8");
-      return JSON.parse(content);
+      return JSON.parse(content) as T;
     }
   }
   return null;
@@ -141,15 +153,15 @@ async function loadFixture(title, indexes) {
  * @param {boolean} legends - Whether to use legends continuity
  * @returns {Promise<object>} Timeline page data
  */
-export async function fetchTimelineLocal(legends = false) {
+export async function fetchTimelineLocal(legends = false): Promise<WookieepediaPageResult> {
   const dir = getFixturesDir(legends);
   const timelinePath = path.join(dir, "timeline.json");
 
   try {
     const content = await fs.readFile(timelinePath, "utf-8");
-    return JSON.parse(content);
+    return JSON.parse(content) as WookieepediaPageResult;
   } catch (err) {
-    if (err.code === "ENOENT") {
+    if (err instanceof Error && "code" in err && err.code === "ENOENT") {
       throw new Error(
         `Timeline fixture not found at ${timelinePath}. Run 'node scripts/capture-api-data.js' first.`,
       );
@@ -165,7 +177,11 @@ export async function fetchTimelineLocal(legends = false) {
  * @param {boolean} legends - Whether to use legends continuity
  * @yields {object} Page data with title, pageid, wikitext, timestamp
  */
-export async function* fetchWookieeLocal(titles, _cache = true, legends = false) {
+export async function* fetchWookieeLocal(
+  titles: TitleInput,
+  _cache = true,
+  legends = false,
+): AsyncGenerator<WookieepediaPageResult> {
   if (typeof titles === "string") titles = [titles];
 
   await ensureIndexes(legends);
@@ -179,7 +195,10 @@ export async function* fetchWookieeLocal(titles, _cache = true, legends = false)
     }
 
     // Search in media, then series indexes
-    const data = await loadFixture(title, [mediaIndex, seriesIndex]);
+    const data = await loadFixture<WookieepediaPageResult>(title, [
+      requireIndex(mediaIndex, "media"),
+      requireIndex(seriesIndex, "series"),
+    ]);
 
     if (data) {
       yield data;
@@ -199,13 +218,18 @@ export async function* fetchWookieeLocal(titles, _cache = true, legends = false)
  * @param {boolean} legends - Whether to use legends continuity
  * @yields {object} Image info with title, pageid, sha1, timestamp, url
  */
-export async function* fetchImageInfoLocal(titles, legends = false) {
+export async function* fetchImageInfoLocal(
+  titles: TitleInput,
+  legends = false,
+): AsyncGenerator<WookieepediaImageInfoResult> {
   if (typeof titles === "string") titles = [titles];
 
   await ensureIndexes(legends);
 
   for (const title of titles) {
-    const data = await loadFixture(title, [imageInfoIndex]);
+    const data = await loadFixture<WookieepediaImageInfoResult>(title, [
+      requireIndex(imageInfoIndex, "imageinfo"),
+    ]);
 
     if (data) {
       yield data;

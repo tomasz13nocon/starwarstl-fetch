@@ -1,5 +1,5 @@
 import wtf from "wtf_wikipedia";
-import { fetchWookiee } from "./fetchWookiee.js";
+import { fetchWookiee } from "./fetchWookiee.ts";
 import { log, toCamelCase } from "./util.ts";
 import netLog from "./netLog.ts";
 import { NUMBERS, infoboxFields, suppressLog } from "./const.ts";
