@@ -2,22 +2,23 @@ import { writeFile } from "fs/promises";
 import config, { debug } from "../config.ts";
 import { seriesTypes, suppressLog } from "../const.ts";
 import { fetchWookiee } from "../fetchWookiee.ts";
-import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing.js";
+import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing/index.ts";
 import { seriesRegexes } from "../regex.ts";
 import { log } from "../util.ts";
 import { cleanupDraft } from "./cleanupDrafts.js";
+import type { FullType, MediaDraft, SeriesDraft, SeriesType } from "../types/index.ts";
 
 const { CACHE_PAGES } = config();
 
-const hardcodedSeriesTypes = {
+const hardcodedSeriesTypes: Partial<Record<string, SeriesType>> = {
   "Golden Books": "yr",
   "Disney Die-Cut Classics": "yr",
 };
 
-export default async function (drafts, seriesDrafts) {
+export default async function series(drafts: MediaDraft[], seriesDrafts: SeriesDraft[]): Promise<void> {
   log.info("Fetching series...");
 
-  let seriesInfoboxes = [];
+  let seriesInfoboxes: string[] = [];
   let progress = 0;
   let outOf = seriesDrafts.length;
 
@@ -32,8 +33,9 @@ export default async function (drafts, seriesDrafts) {
       let seriesDoc = await docFromPage(page, seriesDraft);
       let episodes = drafts.filter((e) => e.series?.includes(seriesDraft.title));
 
-      if (hardcodedSeriesTypes[seriesDraft.title]) {
-        seriesDraft.type = hardcodedSeriesTypes[seriesDraft.title];
+      const hardcodedType = hardcodedSeriesTypes[seriesDraft.title];
+      if (hardcodedType) {
+        seriesDraft.type = hardcodedType;
       }
 
       if (seriesDoc === null) {
@@ -42,17 +44,18 @@ export default async function (drafts, seriesDrafts) {
         }
         // infer series type from episodes
         log.info(`Inferring series type from episodes of a redlink series: ${seriesDraft.title}`);
-        let epType;
+        let epType: MediaDraft["type"] | undefined;
         if (episodes.every((e, index) => (index === 0 ? (epType = e.type) : epType === e.type))) {
           seriesDraft.type = epType;
           log.info(`Inferred type: ${epType}`);
+          let fullType: FullType | undefined;
           if (
             episodes.every((e, index) =>
-              index === 0 ? (epType = e.fullType) : epType === e.fullType
+              index === 0 ? (fullType = e.fullType) : fullType === e.fullType
             )
           ) {
-            seriesDraft.fullType = epType;
-            log.info(`Inferred full type: ${epType}`);
+            seriesDraft.fullType = fullType;
+            log.info(`Inferred full type: ${fullType}`);
           }
         } else {
           seriesDraft.type = "unknown";
@@ -85,13 +88,13 @@ Matched for: ${seriesDraft.type} and ${type} (latter takes priority).
 Sentence: ${firstSentence}`
                 );
             }
-            seriesDraft.type = type;
+            seriesDraft.type = type as SeriesType;
           }
         }
       }
       if (seriesInfobox !== null) {
         if (!seriesDraft.type) {
-          seriesDraft.type = seriesTypes[seriesInfobox._type];
+          seriesDraft.type = (seriesTypes as Partial<Record<string, SeriesType>>)[seriesInfobox._type];
           if (seriesDraft.type === undefined)
             throw new Error(
               `Can't infer type.
@@ -123,6 +126,6 @@ Series comprises: ${episodes.map((e) => e.title).join("\n")}`
   }
 
   if (debug.distinctInfoboxes) {
-    await writeFile("../../debug/seriesInfoboxes.txt", seriesInfoboxes);
+    await writeFile("../../debug/seriesInfoboxes.txt", seriesInfoboxes.join(""));
   }
 }

@@ -10,7 +10,10 @@ import type { WtfDocument } from "../types/wtf.ts";
 
 const tvTypes: Record<string, FullType | undefined> = {};
 
-type MutableDraft = MediaDraft & SeriesDraft;
+type MutableDraft = (MediaDraft | SeriesDraft) & {
+  adaptation?: boolean;
+  audiobook?: boolean;
+};
 
 // series - whether the draft is for a series
 export async function figureOutFullTypes(

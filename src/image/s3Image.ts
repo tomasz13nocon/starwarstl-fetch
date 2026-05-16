@@ -5,40 +5,43 @@ import {
   DeleteObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
+import type { Readable } from "node:stream";
 import sharp from "sharp";
 import { log } from "../util.ts";
 import { Size, S3_IMAGE_PATH, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET } from "../const.ts";
 import netLog from "../netLog.ts";
+import type { ImageSize, ImageStorage } from "../types/index.ts";
 // import "./env.js"; // TODO confirm not needed
 
 const s3client = new S3Client({
   region: "us-east-1",
-  credentials: { accessKeyId: AWS_ACCESS_KEY, secretAccessKey: AWS_SECRET_KEY },
+  credentials: { accessKeyId: AWS_ACCESS_KEY ?? "", secretAccessKey: AWS_SECRET_KEY ?? "" },
 });
 
-export class S3Image {
-  static #existsCache = {};
+export class S3Image implements ImageStorage {
+  static #existsCache: Partial<Record<ImageSize, Record<string, boolean>>> = {};
+  filename: string;
 
-  constructor(filename) {
+  constructor(filename: string) {
     this.filename = filename;
   }
 
   /** Returns true if any size variant is missing */
-  async anyMissing() {
-    let exists = {};
+  async anyMissing(): Promise<boolean> {
+    let exists: Record<string, boolean> = {};
     for (const [key, value] of Object.entries(Size)) {
       exists[key] = await this.exists(value);
     }
     return Object.values(exists).some((e) => !e);
   }
 
-  async exists(size = Size.FULL) {
+  async exists(size: ImageSize = Size.FULL): Promise<boolean> {
     if (S3Image.#existsCache[size] !== undefined) {
-      return S3Image.#existsCache[size][this.filename];
+      return S3Image.#existsCache[size][this.filename] ?? false;
     }
 
     let truncated = true;
-    let continuationToken;
+    let continuationToken: string | undefined;
     S3Image.#existsCache[size] = {};
     while (truncated) {
       const response = await s3client.send(
@@ -50,18 +53,20 @@ export class S3Image {
       );
       netLog.s3read++;
 
-      for (let item of response.Contents) {
-        S3Image.#existsCache[size][item.Key.split("/").pop()] = true;
+      for (let item of response.Contents ?? []) {
+        const key = item.Key?.split("/").pop();
+        if (key) S3Image.#existsCache[size][key] = true;
       }
 
-      truncated = response.IsTruncated;
+      truncated = response.IsTruncated ?? false;
       if (truncated) {
         continuationToken = response.NextContinuationToken;
       }
     }
+    return S3Image.#existsCache[size]?.[this.filename] ?? false;
   }
 
-  async read(size = Size.FULL) {
+  async read(size: ImageSize = Size.FULL): Promise<Buffer> {
     let data = (
       await s3client.send(
         new GetObjectCommand({
@@ -71,15 +76,17 @@ export class S3Image {
       )
     ).Body;
     netLog.s3read++;
-    return new Promise((resolve, reject) => {
-      const chunks = [];
-      data.on("data", (chunk) => chunks.push(chunk));
-      data.once("end", () => resolve(Buffer.concat(chunks)));
-      data.once("error", reject);
+    if (!data || !("on" in data)) throw new Error(`S3 object body is not readable: ${this.filename}`);
+    const stream = data as Readable;
+    return new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+      stream.once("end", () => resolve(Buffer.concat(chunks)));
+      stream.once("error", reject);
     });
   }
 
-  async write(buffer, size = Size.FULL) {
+  async write(buffer: Buffer, size: ImageSize = Size.FULL): Promise<void> {
     await s3client.send(
       new PutObjectCommand({
         Bucket: BUCKET,
@@ -92,8 +99,8 @@ export class S3Image {
     log.info(`Wrote ${this.filename} at size ${size} to S3.`);
   }
 
-  async writeVariantsIfMissing(buffer) {
-    let b;
+  async writeVariantsIfMissing(buffer: Buffer): Promise<void> {
+    let b: Buffer;
     let resized = "";
     if (!(await this.exists(Size.MEDIUM))) {
       b = await sharp(buffer).resize(500, null, { withoutEnlargement: true }).toBuffer();
@@ -116,7 +123,7 @@ export class S3Image {
   }
 
   /** If size is undefined delete all sizes. */
-  async delete(size) {
+  async delete(size?: ImageSize): Promise<void> {
     if (size === undefined) {
       for (const s of Object.values(Size)) {
         await this.#deleteHelper(s);
@@ -126,7 +133,7 @@ export class S3Image {
     }
   }
 
-  async #deleteHelper(size) {
+  async #deleteHelper(size: ImageSize): Promise<void> {
     await s3client.send(
       new DeleteObjectCommand({
         Bucket: BUCKET,

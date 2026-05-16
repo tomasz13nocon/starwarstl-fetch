@@ -7,10 +7,21 @@ import { log, toHumanReadable } from "../util.ts";
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 import { encode, isBlurhashValid } from "blurhash";
+import type { MediaDraft, WookieepediaImageInfoResult } from "../types/index.ts";
 
 const { Image } = config();
 
-export default async function (drafts) {
+type CurrentCover = {
+  title: string;
+  cover?: string;
+  coverTimestamp?: string;
+  coverWidth?: number;
+  coverHeight?: number;
+  coverSha1?: string;
+  coverHash?: string;
+};
+
+export default async function images(drafts: MediaDraft[]): Promise<void> {
   let docs = await db
     .collection("media")
     .find(
@@ -27,17 +38,17 @@ export default async function (drafts) {
         },
       }
     )
-    .toArray();
+    .toArray() as unknown as CurrentCover[];
 
-  let currentCovers = {};
+  let currentCovers: Record<string, CurrentCover> = {};
   for (let doc of docs) {
     currentCovers[doc.title] = doc;
   }
 
   // We need a map of cover filenames to article titles in order to check for existing covers
-  let titlesDict = {};
+  let titlesDict: Record<string, string> = {};
   for (let v of drafts) {
-    titlesDict[v.coverWook] = v.title;
+    if (v.coverWook) titlesDict[v.coverWook] = v.title;
   }
 
   let covers = drafts.filter((o) => o.coverWook).map((draft) => "File:" + draft.coverWook);
@@ -49,13 +60,16 @@ export default async function (drafts) {
 
   let imageinfos = fetchImageInfo(covers);
 
-  for await (let imageinfo of imageinfos) {
+  for await (let imageinfo of imageinfos as AsyncGenerator<WookieepediaImageInfoResult>) {
     // Keep in mind imageinfo.title is a filename of the image, not the article title
-    let articleTitle = titlesDict[(imageinfo.normalizedFrom ?? imageinfo.title).slice(5)];
+    const imageTitle = ("normalizedFrom" in imageinfo && imageinfo.normalizedFrom ? imageinfo.normalizedFrom : imageinfo.title);
+    const coverTitle = imageTitle.slice(5);
+    let articleTitle = titlesDict[coverTitle];
+    if (!articleTitle) throw new Error(`No article title found for image ${imageinfo.title}`);
     let draftsWithThisCover = drafts.filter(
-      (d) => d.coverWook === (imageinfo.normalizedFrom ?? imageinfo.title).slice(5)
+      (d) => d.coverWook === coverTitle
     );
-    if (!imageinfo.url) {
+    if (!("url" in imageinfo) || !imageinfo.url) {
       log.warn(`Image file is 404 for image "${imageinfo.title}" in article "${articleTitle}".`);
       continue;
     }
@@ -72,10 +86,10 @@ export default async function (drafts) {
     if (
       !current || // new media (not in DB yet)
       !current.cover || // cover got added
-      current.coverTimestamp < imageinfo.timestamp || // cover got updated
+      (current.coverTimestamp !== undefined && current.coverTimestamp < imageinfo.timestamp) || // cover got updated
       (await image.anyMissing()) // any cover variant missing
     ) {
-      let buffer;
+      let buffer: Buffer;
 
       // TODO: Handle cover updates (timestamp).
       // Read cover if we have it, else fetch it
@@ -148,10 +162,12 @@ export default async function (drafts) {
       }
     }
 
-    let blurhashValid = isBlurhashValid(draftsWithThisCover[0].coverHash);
+    const firstDraft = draftsWithThisCover[0];
+    if (!firstDraft) throw new Error(`No draft matched cover ${imageinfo.title}`);
+    let blurhashValid = isBlurhashValid(firstDraft.coverHash ?? "");
     if (!blurhashValid.result) {
       log.error(
-        `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${draftsWithThisCover[0].coverHash}" Reason: ` +
+          `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${firstDraft.coverHash}" Reason: ` +
           blurhashValid.errorReason
       );
     }

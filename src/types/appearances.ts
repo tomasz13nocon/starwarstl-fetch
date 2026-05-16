@@ -63,7 +63,10 @@ export type DraftAppearance = {
 
 export type AppearanceEntry = {
   id: number;
-  t?: AppearanceTemplate[];
+  t?: Array<{
+    name: string;
+    parameters?: AppearanceTemplateParameter[];
+  }>;
 };
 
 export type AppearancesDrafts = Partial<Record<AppearanceCategory | string, Record<string, AppearanceEntry[]>>>;

@@ -10,7 +10,7 @@ import type { MediaDraft, SeriesDraft } from "../types/draft.ts";
 import type { InfoboxData } from "../types/parsing.ts";
 import type { WtfInfobox, WtfInfoboxValue, WtfLink } from "../types/wtf.ts";
 
-type MutableDraft = MediaDraft & SeriesDraft & Record<string, unknown>;
+type MutableDraft = (MediaDraft | SeriesDraft) & Record<string, unknown>;
 
 export type InfoboxFieldMapping = InfoboxField;
 

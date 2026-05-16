@@ -8,6 +8,8 @@ After every step commit the changes with msg like "refactor 2.3", and a brief de
 
 After every step run full test suite, it MUST pass before any further work.
 
+The phases and steps outlined in this file, are rough ideas. Each step needs to be considered, whether it even needs to be done, and how.
+
 ## Constraints
 
 - **Keep:** TypeScript, custom wtf_wikipedia fork, Rust native module for appearances
@@ -249,26 +251,28 @@ scripts/
 
 ### 4.1 Define Pipeline Types
 
-- [ ] `PipelineContext` - shared state across stages
-- [ ] Stage input/output contracts
+- [x] `PipelineContext` - shared state across stages
+- [x] Stage input/output contracts
 
 ### 4.2 Convert Pipeline Stages
 
-- [ ] `pipeline/timeline.ts`
-- [ ] `pipeline/media.ts`
-- [ ] `pipeline/series.ts`
-- [ ] `pipeline/mediaTypes.ts`
-- [ ] `pipeline/adjustBookTypes.ts`
-- [ ] `pipeline/images.ts`
-- [ ] `pipeline/validateFullTypes.ts`
-- [ ] `pipeline/cleanupDrafts.ts`
-- [ ] `pipeline/validatePageIds.ts`
+- [x] `pipeline/timeline.ts`
+- [x] `pipeline/media.ts`
+- [x] `pipeline/series.ts`
+- [x] `pipeline/mediaTypes.ts`
+- [x] `pipeline/adjustBookTypes.ts`
+- [x] `pipeline/images.ts`
+- [x] `pipeline/validateFullTypes.ts`
+- [x] `pipeline/cleanupDrafts.ts`
+- [x] `pipeline/validatePageIds.ts`
 
 ### 4.3 Image Handling
 
-- [ ] `image/fsImage.ts`
-- [ ] `image/s3Image.ts`
-- [ ] Define common `ImageStorage` interface
+- [x] `image/fsImage.ts`
+- [x] `image/s3Image.ts`
+- [x] Define common `ImageStorage` interface
+
+**Completed:** Converted pipeline stages and image storage to TypeScript while preserving the mutable stage flow. Added pipeline result/stage types and used the existing `ImageStorage` contract from config types for both filesystem and S3 implementations. Kept `runPipeline.js` as JavaScript for Phase 6 but updated its imports to the converted `.ts` stages.
 
 ---
 

@@ -21,15 +21,15 @@ import { log } from "./util.ts";
 import config from "./config.ts";
 import { fetchWookiee } from "./fetchWookiee.ts";
 import { knownTemplates } from "./const.ts";
-import timeline from "./pipeline/timeline.js";
-import media from "./pipeline/media.js";
-import series from "./pipeline/series.js";
-import mediaTypes from "./pipeline/mediaTypes.js";
-import adjustBookTypes from "./pipeline/adjustBookTypes.js";
-import images from "./pipeline/images.js";
-import validateFullTypes from "./pipeline/validateFullTypes.js";
-import cleanupDrafts from "./pipeline/cleanupDrafts.js";
-import validatePageIds from "./pipeline/validatePageIds.js";
+import timeline from "./pipeline/timeline.ts";
+import media from "./pipeline/media.ts";
+import series from "./pipeline/series.ts";
+import mediaTypes from "./pipeline/mediaTypes.ts";
+import adjustBookTypes from "./pipeline/adjustBookTypes.ts";
+import images from "./pipeline/images.ts";
+import validateFullTypes from "./pipeline/validateFullTypes.ts";
+import cleanupDrafts from "./pipeline/cleanupDrafts.ts";
+import validatePageIds from "./pipeline/validatePageIds.ts";
 
 /**
  * @typedef {Object} PipelineOptions

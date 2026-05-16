@@ -2,23 +2,27 @@ import fs from "fs/promises";
 import sharp from "sharp";
 import { fileExists, log } from "../util.ts";
 import { Size, IMAGE_PATH } from "../const.ts";
+import type { ImageSize, ImageStorage } from "../types/index.ts";
 
-export class FsImage {
-  constructor(filename) {
+export class FsImage implements ImageStorage {
+  filename: string;
+  existsCache: Partial<Record<ImageSize, boolean>>;
+
+  constructor(filename: string) {
     this.filename = filename;
     this.existsCache = {};
   }
 
   /** Returns true if any size variant is missing */
-  async anyMissing() {
-    let exists = {};
+  async anyMissing(): Promise<boolean> {
+    let exists: Record<string, boolean> = {};
     for (const [key, value] of Object.entries(Size)) {
       exists[key] = await this.exists(value);
     }
     return Object.values(exists).some((e) => !e);
   }
 
-  async exists(size = Size.FULL) {
+  async exists(size: ImageSize = Size.FULL): Promise<boolean> {
     if (this.existsCache[size] !== undefined) {
       return this.existsCache[size];
     }
@@ -26,15 +30,15 @@ export class FsImage {
     return this.existsCache[size];
   }
 
-  async read(size = Size.FULL) {
+  async read(size: ImageSize = Size.FULL): Promise<Buffer> {
     return await fs.readFile(`${IMAGE_PATH}${size}${this.filename}`);
   }
 
-  async write(buffer, size = Size.FULL) {
+  async write(buffer: Buffer, size: ImageSize = Size.FULL): Promise<void> {
     await fs.writeFile(`${IMAGE_PATH}${size}${this.filename}`, buffer);
   }
 
-  async writeVariantsIfMissing(buffer) {
+  async writeVariantsIfMissing(buffer: Buffer): Promise<void> {
     let resized = "";
     if (!(await this.exists(Size.MEDIUM))) {
       await sharp(buffer)
@@ -60,7 +64,7 @@ export class FsImage {
   }
 
   /** If size is undefined delete all sizes. */
-  async delete(size) {
+  async delete(size?: ImageSize): Promise<void> {
     if (size === undefined) {
       for (const s of Object.values(Size)) {
         await this.#deleteHelper(s);
@@ -70,12 +74,12 @@ export class FsImage {
     }
   }
 
-  async #deleteHelper(size) {
+  async #deleteHelper(size: ImageSize): Promise<void> {
     try {
       await fs.unlink(`${IMAGE_PATH}${size}${this.filename}`);
     } catch (e) {
       // If it doesn't exist, we're chilling
-      if (e.code !== "ENOENT") {
+      if (!(e instanceof Error && "code" in e && e.code === "ENOENT")) {
         throw e;
       }
     }

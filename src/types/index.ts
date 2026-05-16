@@ -4,5 +4,6 @@ export * from "./config.ts";
 export * from "./draft.js";
 export * from "./media.js";
 export * from "./parsing.js";
+export * from "./pipeline.js";
 export * from "./wookieepedia.js";
 export * from "./wtf.js";

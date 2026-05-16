@@ -1,25 +1,37 @@
 import { suppressLog } from "../const.ts";
 import { db } from "../db.ts";
 import { log } from "../util.ts";
+import type { MediaDraft, ValidatePageIdsResult } from "../types/index.ts";
 
-export default async function (drafts) {
+type OldMedia = {
+  title: string;
+  pageid?: number;
+  notUnique?: boolean;
+};
+
+type MissingMedia = {
+  title: string;
+  pageid?: number;
+};
+
+export default async function validatePageIds(drafts: MediaDraft[]): Promise<ValidatePageIdsResult> {
   log.info("Veryfing page IDs...");
 
-  const missingDrafts = [];
-  const missingMediaNoLongerMissing = [];
+  const missingDrafts: unknown[] = [];
+  const missingMediaNoLongerMissing: MediaDraft[] = [];
 
   const oldMediaArr = await db
     .collection("media")
-    .find({}, { title: 1, pageid: 1, notUnique: 1 })
-    .toArray();
+    .find({}, { projection: { title: 1, pageid: 1, notUnique: 1 } })
+    .toArray() as unknown as OldMedia[];
 
   for (let oldMedia of oldMediaArr) {
     const newMedia = drafts.find((m) => m.pageid === oldMedia.pageid);
 
     if (newMedia === undefined) {
-      if (suppressLog.ignoreMissingPageid.includes(oldMedia.title)) continue;
+      if ((suppressLog.ignoreMissingPageid as readonly string[]).includes(oldMedia.title)) continue;
 
-      if (suppressLog.migrateMissingPageid.includes(oldMedia.title)) {
+      if ((suppressLog.migrateMissingPageid as readonly string[]).includes(oldMedia.title)) {
         // TODO implement or remove from suppress log
         throw new Error("Not implemented");
       }
@@ -62,8 +74,8 @@ export default async function (drafts) {
   const oldPageids = new Set(oldMediaArr.map((m) => m.pageid));
   const missingMediaArr = await db
     .collection("missingMedia")
-    .find({}, { pageid: 1, title: 1 })
-    .toArray();
+    .find({}, { projection: { pageid: 1, title: 1 } })
+    .toArray() as unknown as MissingMedia[];
 
   for (let newMedia of drafts) {
     if (!oldPageids.has(newMedia.pageid)) {

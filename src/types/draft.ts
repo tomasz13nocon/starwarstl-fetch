@@ -1,4 +1,4 @@
-import type { DraftAppearance } from "./appearances.js";
+import type { AppearanceTemplateParameter } from "./appearances.js";
 import type { AstNode, ParsedDate, RichText } from "./ast.js";
 import type { FullType, MediaType, SeriesType } from "./media.js";
 import type { WtfDocument } from "./wtf.js";
@@ -104,7 +104,8 @@ export type MediaDraft = ArticleMetadata &
     fullType?: FullType;
     audiobook?: boolean;
     dateParsed?: ParsedDate[];
-    appearances?: DraftAppearance[];
+    appearances?: AppearanceTemplateParameter[];
+    addedAt?: Date;
 
     /** Temporary pipeline fields removed before DB insertion. */
     doc?: WtfDocument;

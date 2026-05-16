@@ -1,15 +1,16 @@
 import config, { debug } from "../config.ts";
 import { fetchWookiee } from "../fetchWookiee.ts";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.ts";
-import { docFromPage, fillDraftWithInfoboxData, getAppearances, reduceAstToText } from "../parsing.js";
+import { docFromPage, fillDraftWithInfoboxData, getAppearances, reduceAstToText } from "../parsing/index.ts";
 import { log } from "../util.ts";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.js";
 import { allowedAppCategories } from "../const.ts";
+import type { AppearanceEntry, AppearanceTemplate, AppearancesDrafts, MediaDraft, MediaStageResult, SeriesDraft } from "../types/index.ts";
 
 let { CACHE_PAGES } = config();
 
-export default async function(drafts) {
+export default async function media(drafts: MediaDraft[]): Promise<MediaStageResult> {
   log.info("Fetching articles...");
 
   let progress = 0;
@@ -22,14 +23,15 @@ export default async function(drafts) {
   }
 
   let pages = fetchWookiee([...new Set(titles)], CACHE_PAGES);
-  let infoboxes = [];
-  let seriesDraftsMap = {};
-  let appearancesDrafts = {};
+  let infoboxes: string[] = [];
+  let seriesDraftsMap: Record<string, SeriesDraft> = {};
+  let appearancesDrafts: AppearancesDrafts = {};
 
   for await (let page of pages) {
     if (debug.article && debug.article !== page.title) continue;
 
-    const matchingDrafts = drafts.filter((d) => (d.href ?? d.title) === page.title);
+      if (!("wikitext" in page)) continue;
+      const matchingDrafts = drafts.filter((d) => (d.href ?? d.title) === page.title);
     if (matchingDrafts.length === 0) {
       log.error(
         `No matching draft for: "${page.title}". ${page.normalizedFrom ? 'Title was normalized from "' + page.normalizedFrom + '"' : "Title was NOT normalized."}`,
@@ -72,9 +74,10 @@ export default async function(drafts) {
           if (type.startsWith("c-")) type = type.slice(2);
           for (let link of links) {
             if (!(type in appearancesDrafts)) appearancesDrafts[type] = {};
+            const appearancesForType = appearancesDrafts[type]!;
             let linkName = link.name;
             if (linkName.endsWith("/Legends")) linkName = linkName.slice(0, -8);
-            if (!(linkName in appearancesDrafts[type])) appearancesDrafts[type][linkName] = [];
+            if (!(linkName in appearancesForType)) appearancesForType[linkName] = [];
             // Log repeat appearances
             // if (appearancesDrafts[type][linkName].find((o) => o.id === draft._id)) {
             //   console.error(`Repeat appearance of ${type}: ${linkName} in ${draft.title}`);
@@ -86,19 +89,16 @@ export default async function(drafts) {
             //     );
             //   }
             // }
-            appearancesDrafts[type][linkName].push(
-              Object.assign(
-                {
-                  id: draft._id,
-                },
-                link.templates && {
-                  t: link.templates.map((t) => ({
-                    name: t.name,
-                    ...(t.parameters.length ? { parameters: t.parameters } : {}),
-                  })),
-                },
-              ),
-            );
+            const appearanceEntry: AppearanceEntry = {
+              id: draft._id,
+              ...(link.templates && {
+                t: link.templates.map((t: AppearanceTemplate) => ({
+                  name: t.name,
+                  ...(t.parameters.length ? { parameters: t.parameters } : {}),
+                })),
+              }),
+            };
+            appearancesForType[linkName]!.push(appearanceEntry);
           }
         }
       }
@@ -150,13 +150,13 @@ export default async function(drafts) {
 
   // Make sure no unknown appearances category was found
   for (let type of Object.keys(appearancesDrafts)) {
-    if (!allowedAppCategories.includes(type)) {
+    if (!(allowedAppCategories as readonly string[]).includes(type)) {
       throw new Error(`Appearances category "${type}" is not allowed.`);
     }
   }
 
   if (debug.distinctInfoboxes) {
-    await writeFile("../../debug/infoboxes.txt", infoboxes);
+    await writeFile("../../debug/infoboxes.txt", infoboxes.join(""));
   }
 
   return { seriesDrafts: Object.values(seriesDraftsMap), appearancesDrafts };

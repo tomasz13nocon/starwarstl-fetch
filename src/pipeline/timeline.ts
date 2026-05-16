@@ -1,35 +1,48 @@
 import { decode } from "html-entities";
 import { log, unscuffDate } from "../util.ts";
 import { types } from "../const.ts";
+import type { FullType, ListNode, MediaDraft, MediaType, TimelineRow } from "../types/index.ts";
 
-function cleanupTitle(str) {
+function cleanupTitle(str: string): string {
   return decode(str)
-    .split("*")[0]
+    .split("*")[0]!
     .replace("†", "")
     .trim()
     .replace(/^"(.*)"$/, "$1");
 }
 
-export default function (table) {
+type TimelineDraft = MediaDraft & { titleText?: string };
+
+export default function timeline(table: TimelineRow[]): MediaDraft[] {
   log.info("Processing timeline...");
 
-  let drafts = [];
-  let draftMap = {}; // Used to find duplicates
+  let drafts: TimelineDraft[] = [];
+  let draftMap: Record<string, TimelineDraft> = {}; // Used to find duplicates
+
+  const firstRow = table[0];
 
   if (
-    table[0].Title === undefined ||
-    table[0].col2 === undefined ||
-    table[0].Released === undefined ||
-    table[0].Year === undefined
+    firstRow?.Title === undefined ||
+    firstRow.col2 === undefined ||
+    firstRow.Released === undefined ||
+    firstRow.Year === undefined
   ) {
     throw new Error("Timeline parsing error: Unexpected table layout. Some columns are missing.");
   }
 
   for (let [i, item] of table.entries()) {
-    let draft = {
+    const titleLink = item.Title.links?.[0]?.page ?? "";
+    const type = (types as Partial<Record<string, MediaType>>)[item.col2.text];
+    if (type === undefined) {
+      if (item.col2.text !== "P")
+        log.warn("Timeline parsing warning: Unknown type, skipping. type: " + item.col2.text);
+      continue;
+    }
+
+    let draft: TimelineDraft = {
       _id: i,
-      title: decode(item.Title.links?.[0].page),
-      type: types[item.col2.text],
+      title: decode(titleLink),
+      type,
       releaseDate: item.Released.text,
       // writer: item["Writer(s)"].links?.map((e) => decode(e.page)) || null,
       date: decode(item.Year.text) || null,
@@ -37,24 +50,20 @@ export default function (table) {
       titleText: item.Title.text, // For finding duplicates, removed later
     };
 
-    if (item.col2.text === "JR") draft.fullType = "book-jr";
-    if (draft.type === undefined) {
-      if (item.col2.text !== "P")
-        log.warn("Timeline parsing warning: Unknown type, skipping. type: " + item.col2.text);
-      continue;
-    }
+    if (item.col2.text === "JR") draft.fullType = "book-jr" as FullType;
     let notes = item.Title.text.split("*");
     if (notes.length > 1) {
-      draft.timelineNotes = [
-        {
-          type: "list",
-          data: notes.slice(1).map((s) => [{ type: "text", text: s.trim() }]),
-        },
-      ]; // TODO:parser get links and such, not just text
+      const timelineNote: ListNode = {
+        type: "list",
+        data: notes.slice(1).map((s) => [{ type: "text", text: s.trim() }]),
+      };
+      draft.timelineNotes = [timelineNote]; // TODO:parser get links and such, not just text
 
       // Check if adaptation
-      for (let s of draft.timelineNotes[0].data) {
-        let note = s[0].text.toLowerCase();
+      for (let s of timelineNote.data) {
+        const first = s[0];
+        if (first?.type !== "text") continue;
+        let note = first.text.toLowerCase();
         if (note.includes("adaptation") || note.includes("novelization")) draft.adaptation = true;
       }
     }
@@ -62,26 +71,26 @@ export default function (table) {
 
     // Check for duplicate titles - these are usually "chapter" entries, that link to their parent media
     if (draftMap[draft.title]) {
-      let first = draftMap[draft.title];
+      let first = draftMap[draft.title]!;
       if (!first.href) {
         first.href = first.title;
-        first.title = cleanupTitle(first.titleText);
+        first.title = cleanupTitle(first.titleText ?? first.title);
         first.notUnique = true;
       }
       draft.href = draft.title;
-      draft.title = cleanupTitle(draft.titleText);
+      draft.title = cleanupTitle(draft.titleText ?? draft.title);
       draft.notUnique = true;
     }
 
-    let unscuffedDate = unscuffDate(draft.releaseDate);
+    let unscuffedDate = unscuffDate(draft.releaseDate) ?? draft.releaseDate;
     if (unscuffedDate === draft.releaseDate) {
       draft.releaseDateEffective = unscuffedDate;
     }
     let d = new Date(draft.releaseDate);
-    if (isNaN(d) || d > Date.now()) {
+    if (isNaN(d.getTime()) || d.getTime() > Date.now()) {
       draft.unreleased = true;
     }
-    if (draft.releaseDate && isNaN(new Date(unscuffedDate))) {
+    if (draft.releaseDate && isNaN(new Date(unscuffedDate).getTime())) {
       log.error(`Release date format invalid for ${draft.title} Date: ${draft.releaseDate}`);
     }
 
