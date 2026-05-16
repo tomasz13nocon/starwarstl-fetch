@@ -1,7 +1,7 @@
 import wtf from "wtf_wikipedia";
 import fs from "fs/promises";
 import util from "util";
-import initWtf from "./src/initWtf.js";
+import initWtf from "./src/initWtf.ts";
 import native from "./native/index.cjs";
 
 initWtf();

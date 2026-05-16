@@ -2,10 +2,10 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "fetch": "node src/index.js",
+    "fetch": "node src/index.ts",
     "capture": "node scripts/capture-api-data.js",
     "baseline": "node scripts/generate-baseline.js",
     "check": "tsc",

@@ -70,7 +70,7 @@ describe("pipeline regression - full run", { timeout: 600000 }, () => {
     resetLocalIndexes();
 
     // Run the pipeline
-    const { runPipeline } = await import("../../src/runPipeline.js");
+    const { runPipeline } = await import("../../src/runPipeline.ts");
     pipelineResult = await runPipeline({
       skipImages: true,
       skipValidatePageIds: true,

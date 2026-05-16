@@ -31,7 +31,7 @@ import "../src/env.ts";
 import fs from "node:fs/promises";
 import path from "node:path";
 import wtf from "wtf_wikipedia";
-import initWtf from "../src/initWtf.js";
+import initWtf from "../src/initWtf.ts";
 import { fetchWookiee, fetchImageInfo } from "../src/fetchWookiee.ts";
 import { log } from "../src/util.ts";
 import { types } from "../src/const.ts";

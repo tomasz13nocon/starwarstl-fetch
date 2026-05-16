@@ -22,7 +22,7 @@ timestamp=$(date '+%Y-%m-%d_%H:%M:%S')
 log_file="logs/$timestamp"
 log_file_err="${log_file}.err"
 
-node src/index.js -c > "$log_file" 2> "$log_file_err"
+node src/index.ts -c > "$log_file" 2> "$log_file_err"
 
 if [ -s "$log_file_err" ]; then
   curl --url "$MAILBOT_SERVER" \
@@ -32,4 +32,3 @@ if [ -s "$log_file_err" ]; then
        --user "$MAILBOT_FROM:$MAILBOT_PASS" \
        -T <(echo -e "Subject: Errors during fetching timeline\n" | cat - "$log_file_err")
 fi
-

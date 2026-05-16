@@ -57,7 +57,7 @@ async function main() {
   const { default: envModule } = await import("../src/env.ts");
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
-  const { runPipeline } = await import("../src/runPipeline.js");
+  const { runPipeline } = await import("../src/runPipeline.ts");
   const { log } = await import("../src/util.ts");
 
   const SNAPSHOTS_DIR = path.join(process.cwd(), "tests", "snapshots");

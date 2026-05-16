@@ -26,7 +26,7 @@ vi.mock("../../src/util.ts", async (importOriginal) => {
 
 // Import after mocking
 import timeline from "../../src/pipeline/timeline.ts";
-import initWtf from "../../src/initWtf.js";
+import initWtf from "../../src/initWtf.ts";
 
 describe("timeline pipeline stage", () => {
   let timelineData;

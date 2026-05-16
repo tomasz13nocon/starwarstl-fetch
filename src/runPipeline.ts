@@ -1,6 +1,6 @@
 /**
  * Runs the fetch pipeline and returns the processed data.
- * This module extracts the pipeline logic from index.js for testability.
+ * This module extracts the pipeline logic from index.ts for testability.
  *
  * The pipeline processes Wookieepedia data through these stages:
  * 1. timeline - Parse timeline table into draft objects
@@ -31,21 +31,10 @@ import validateFullTypes from "./pipeline/validateFullTypes.ts";
 import cleanupDrafts from "./pipeline/cleanupDrafts.ts";
 import validatePageIds from "./pipeline/validatePageIds.ts";
 
-/**
- * @typedef {Object} PipelineOptions
- * @property {boolean} [skipImages=false] - Skip image processing (useful for tests)
- * @property {boolean} [skipValidatePageIds=false] - Skip page ID validation (requires DB access)
- * @property {number} [limit=0] - Limit number of items to process (0 = no limit)
- */
-
-/**
- * @typedef {Object} PipelineResult
- * @property {Array} drafts - Processed media draft objects
- * @property {Array} seriesDrafts - Processed series draft objects
- * @property {Object} appearancesDrafts - Appearances organized by type
- * @property {Array} missingDrafts - Media that was in DB but no longer in timeline
- * @property {Array} missingMediaNoLongerMissing - Previously missing media now back in timeline
- */
+import type { MediaDraft } from "./types/draft.ts";
+import type { PipelineOptions, PipelineResult, TimelineRow, ValidatePageIdsResult } from "./types/pipeline.ts";
+import type { WtfTemplate } from "./types/wtf.ts";
+import { isPageMissing } from "./types/wookieepedia.ts";
 
 /**
  * Run the fetch pipeline.
@@ -53,7 +42,7 @@ import validatePageIds from "./pipeline/validatePageIds.ts";
  * @param {PipelineOptions} [options={}] - Pipeline options
  * @returns {Promise<PipelineResult>} Processed pipeline data
  */
-export async function runPipeline(options = {}) {
+export async function runPipeline(options: PipelineOptions = {}): Promise<PipelineResult> {
   const { skipImages = false, skipValidatePageIds = false, limit = 0 } = options;
   const { CACHE_PAGES, LEGENDS } = config();
 
@@ -65,13 +54,26 @@ export async function runPipeline(options = {}) {
   const timelinePage = `Timeline of ${LEGENDS ? "legends" : "canon"} media`;
   log.info(`Fetching ${timelinePage}...`);
 
-  const timelineWikitext = (await fetchWookiee(timelinePage, CACHE_PAGES).next()).value.wikitext;
+  const timelineResult = await fetchWookiee(timelinePage, CACHE_PAGES).next();
+  if (timelineResult.done) {
+    throw new Error(`No page returned for ${timelinePage}`);
+  }
+
+  if (isPageMissing(timelineResult.value)) {
+    throw new Error(`Timeline page not found: ${timelinePage}`);
+  }
+
+  const timelineWikitext = timelineResult.value.wikitext;
   const timelineDoc = wtf(timelineWikitext);
-  let data = timelineDoc.tables()[1].json();
+  const timelineTable = timelineDoc.tables()[1];
+  if (timelineTable === undefined) {
+    throw new Error(`Timeline table not found on ${timelinePage}`);
+  }
+  let data = timelineTable.json() as TimelineRow[];
 
   // Verify no unexpected templates
-  const templates = Array.from(new Set(timelineDoc.templates().map((t) => t.json().template)));
-  const unknownTemplates = templates.filter((t) => !knownTemplates.has(t));
+  const templates = Array.from(new Set(timelineDoc.templates().map((t: WtfTemplate) => t.json().template)));
+  const unknownTemplates = templates.filter((t): t is string => typeof t === "string" && !knownTemplates.has(t as never));
   if (unknownTemplates.length !== 0) {
     log.error("Unknown templates:", unknownTemplates);
     throw new Error("Unknown templates found in the timeline!");
@@ -101,8 +103,8 @@ export async function runPipeline(options = {}) {
 
   cleanupDrafts(drafts, seriesDrafts);
 
-  let missingDrafts = [];
-  let missingMediaNoLongerMissing = [];
+  let missingDrafts: ValidatePageIdsResult["missingDrafts"] = [];
+  let missingMediaNoLongerMissing: MediaDraft[] = [];
   if (!skipValidatePageIds) {
     ({ missingDrafts, missingMediaNoLongerMissing } = await validatePageIds(drafts));
   }

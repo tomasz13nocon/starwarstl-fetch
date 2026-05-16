@@ -295,14 +295,16 @@ scripts/
 
 ### 6.1 Main Entry Point
 
-- [ ] `src/index.ts` - orchestration logic
-- [ ] Type the full pipeline flow
-- [ ] Improve error handling
+- [x] `src/index.ts` - orchestration logic
+- [x] Type the full pipeline flow
+- [x] Improve error handling
 
 ### 6.2 Scripts
 
-- [ ] Update `scripts/run.sh` for TypeScript build
-- [ ] Convert `scripts/resizeTvImages.js` to TypeScript
+- [x] Update `scripts/run.sh` for TypeScript build
+- [x] Convert `scripts/resizeTvImages.js` to TypeScript
+
+**Completed:** Converted `runPipeline` and `index` to TypeScript, with `runPipeline` remaining the typed testable pipeline entry and `index` owning DB/Redis side effects. Error handling improvement was intentionally limited to ensuring the DB connection closes via the typed entrypoint wrapper; broader custom errors remain Phase 7 work. `scripts/run.sh` now targets `src/index.ts` but intentionally keeps the existing Node version behavior unchanged.
 
 ---
 
@@ -345,7 +347,6 @@ scripts/
 
 ### 8.2 Update Project Documentation
 
-- [ ] Rewrite README.md to describe the current TypeScript architecture, runtime requirements, commands, offline fixture workflow, and daily fetch behavior
 - [ ] Update `AGENTS.md` with current codebase guidance for future agents, removing obsolete refactor-era instructions where appropriate
 - [ ] Update `tests/README.md` and related docs to match the final test projects, baseline workflow, fixture layout, and expected slow/known-failure cases
 - [ ] Document the final pipeline architecture, core domain types, data flow, and extension points for future development
