@@ -4,6 +4,10 @@
 
 Port the fetch module from JavaScript to TypeScript while improving code quality, maintainability, and structure. **No functional regressions allowed.**
 
+After every step commit the changes with msg like "refactor 2.3", and a brief description. This description is for humans to read.
+
+After every step run full test suite, it MUST pass before any further work.
+
 ## Constraints
 
 - **Keep:** TypeScript, custom wtf_wikipedia fork, Rust native module for appearances

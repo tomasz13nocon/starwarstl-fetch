@@ -70,7 +70,6 @@ The module is being refactored from JavaScript to TypeScript. The codebase has s
 - Port all JS to TypeScript with proper types
 - No functional regressions
 - Improve code quality, structure, and maintainability
-- Perform one refactoring step at a time after one user prompt (e.g 1.2, then finish and wait for prompt, then start 1.3 etc.)
 - See `REFACTOR.md` for detailed plan
 
 ### Learning about the codebase
