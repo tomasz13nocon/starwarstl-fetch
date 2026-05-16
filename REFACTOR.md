@@ -159,10 +159,12 @@ scripts/
 
 ### 1.3 wtf_wikipedia Types
 
-- [ ] Create minimal `src/types/wtf_wikipedia.d.ts`
-- [ ] Only type the functions/methods we actually use
-- [ ] Use type assertions where needed rather than fully typing the library
-- [ ] Document which wtf_wikipedia APIs we depend on
+- [x] Create minimal `src/types/wtf_wikipedia.d.ts`
+- [x] Only type the functions/methods we actually use
+- [x] Use type assertions where needed rather than fully typing the library
+- [x] Document which wtf_wikipedia APIs we depend on
+
+**Completed:** Added a narrow module declaration for the custom `wtf_wikipedia` package. `src/types/wtf.ts` remains the structural document/table/infobox/link surface; `src/types/wtf_wikipedia.d.ts` only declares package import shape plus the dynamic `extend` template hook used by `initWtf`.
 
 ### 1.4 Initial Conversion (Low-Risk Files)
 
