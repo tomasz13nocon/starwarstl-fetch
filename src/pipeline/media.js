@@ -1,6 +1,6 @@
 import config, { debug } from "../config.ts";
 import { fetchWookiee } from "../fetchWookiee.ts";
-import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.js";
+import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.ts";
 import { docFromPage, fillDraftWithInfoboxData, reduceAstToText } from "../parsing.js";
 import { log } from "../util.ts";
 import { writeFile } from "fs/promises";

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseWookieepediaDate, UnsupportedDateFormat } from "../../src/parseWookieepediaDate.js";
+import { parseWookieepediaDate, UnsupportedDateFormat } from "../../src/parseWookieepediaDate.ts";
 
 describe("parseWookieepediaDate", () => {
   describe("null/undefined/empty handling", () => {

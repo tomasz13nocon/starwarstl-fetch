@@ -217,7 +217,9 @@ scripts/
 
 ### 2.5 Date Parsing
 
-- [ ] `src/parseWookieepediaDate.ts` - already pure, easy to type
+- [x] `src/parseWookieepediaDate.ts` - already pure, easy to type
+
+**Completed:** Converted date parsing to TypeScript with an explicit parsed-date result type while preserving the existing parsing behavior.
 
 ---
 
