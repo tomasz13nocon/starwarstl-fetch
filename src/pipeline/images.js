@@ -1,4 +1,4 @@
-import config from "../config.js";
+import config from "../config.ts";
 import { Size } from "../const.ts";
 import { db } from "../db.js";
 import { fetchImageInfo } from "../fetchWookiee.js";

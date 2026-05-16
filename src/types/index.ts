@@ -1,6 +1,6 @@
 export * from "./appearances.js";
 export * from "./ast.js";
-export * from "./config.js";
+export * from "./config.ts";
 export * from "./draft.js";
 export * from "./media.js";
 export * from "./wookieepedia.js";

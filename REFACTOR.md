@@ -193,8 +193,10 @@ scripts/
 
 ### 2.2 Configuration
 
-- [ ] `src/config.ts` - type the config object and CLI args
-- [ ] Add `--local` flag for offline mode
+- [x] `src/config.ts` - type the config object and CLI args
+- [x] Add `--local` flag for offline mode
+
+**Completed:** Converted config to TypeScript with typed debug/config objects and added temporary declarations for JS image storage constructors until image modules are converted in Phase 4.
 
 ### 2.3 Database Layer
 

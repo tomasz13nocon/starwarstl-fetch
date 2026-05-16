@@ -8,7 +8,7 @@
  */
 
 import "../src/env.ts";
-import config from "../src/config.js";
+import config from "../src/config.ts";
 import { fetchWookieeLocal, fetchImageInfoLocal } from "../src/fetchLocal.js";
 
 const cfg = config();

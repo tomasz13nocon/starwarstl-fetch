@@ -1,4 +1,4 @@
-import config, { debug } from "../config.js";
+import config, { debug } from "../config.ts";
 import { fetchWookiee } from "../fetchWookiee.js";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.js";
 import { docFromPage, fillDraftWithInfoboxData, reduceAstToText } from "../parsing.js";

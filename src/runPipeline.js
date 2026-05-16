@@ -18,7 +18,7 @@
 import wtf from "wtf_wikipedia";
 import initWtf from "./initWtf.js";
 import { log } from "./util.ts";
-import config from "./config.js";
+import config from "./config.ts";
 import { fetchWookiee } from "./fetchWookiee.js";
 import { knownTemplates } from "./const.ts";
 import timeline from "./pipeline/timeline.js";
