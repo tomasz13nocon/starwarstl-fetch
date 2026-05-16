@@ -11,7 +11,23 @@ export type ParsedWookieepediaDate = {
 };
 
 /**
- * Parse all dates or ranges of dates from a Wookieepedia string.
+ * Parse all dates or ranges of dates from a Wookieepedia string
+ * If null or undefined or empty string, undefined is returned.
+ * Supported formats:
+ *   - 41 BBY
+ *   - 32 BBY–4 ABY
+ *   - 4–5 ABY
+ *   - c. 40 BBY
+ *   - c. 21 BBY–34 ABY
+ *   - c. 15–2 BBY
+ *   - c. 231 BBY–c. 230 BBY
+ *   - During or prior to 146 BBY
+ *   - During or after 5 ABY
+ *   - Between 44–32 BBY
+ *   - Between 20 BBY and 19 BBY
+ *   - 9 BBY or 8 BBY
+ *   - 3 BBY & 4 ABY
+ * @throws {UnsupportedDateFormat} if date cannot be parsed
  */
 export const parseWookieepediaDate = (
   date: string | null | undefined,

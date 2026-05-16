@@ -6,11 +6,11 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: ["wtf_wikipedia/**"],
+    ignores: ["wtf_wikipedia/**", "tests/**"],
   },
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
-  tseslint.configs.stylisticTypeChecked,
+  // tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
       ecmaVersion: "latest",
@@ -28,6 +28,7 @@ export default defineConfig(
       "no-unused-vars": "warn",
       "require-await": "error",
       "@typescript-eslint/prefer-nullish-coalescing": "off",
+      "@typescript-eslint/consistent-type-definitions": "off",
     },
   },
   prettier,

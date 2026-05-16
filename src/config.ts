@@ -7,10 +7,15 @@ import { MW_API_USER_AGENT, AWS_ACCESS_KEY, AWS_SECRET_KEY, IMAGE_PATH, Size } f
 import type { Config, DebugConfig } from "./types/config.ts";
 
 export const debug: DebugConfig = {
+  // Write a list of distinct infobox templates to file
   distinctInfoboxes: false,
+  // Warn on redlinks
   redlinks: false,
+  // log normalizations of article titles
   normTitles: true,
+  // log normalizations of image filenames
   normImages: false,
+  // only process one article
   // article: "Fighter Flight",
 };
 
@@ -30,6 +35,8 @@ const config: Config = {
   Image: FsImage,
 };
 
+// Process env vars and command line args on the first invocation
+// Returns config object
 export default function getConfig(): Config {
   if (initialized) return config;
 
@@ -46,6 +53,7 @@ export default function getConfig(): Config {
     config.Image = S3Image;
   }
 
+  // Command line args
   for (let i = 2; i < process.argv.length; i++) {
     const arg = process.argv[i];
 
