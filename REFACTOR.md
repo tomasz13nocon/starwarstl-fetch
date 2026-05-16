@@ -11,8 +11,9 @@ Port the fetch module from JavaScript to TypeScript while improving code quality
 
 ## Documenting progress
 
-After each step, besides marking steps as complete write a VERY BRIEF description of changes made, that might be useful to other agents continuing the refactor. This should be brief to limit context usage, and precisely selectively chosen - only things that future agents will absolutely need to know. So some steps might not even include anything like that, which is fine. Not all steps will need this!
-This is an addition - not a replacement - to documenting code you write, and writing any other .md files as needed.
+After each step, besides marking steps as complete, write a VERY BRIEF completion note for future agents when useful. Include only information a future agent genuinely needs and cannot infer from repository state, branch contents, git history, or existing markdown docs: hidden context, decisions, caveats, or user intent that would otherwise be lost. Do not include test results unless they reveal a non-obvious blocker, summaries of code already present, which experimental branch inspired which code, obvious current branch/status facts, or general process notes. Some steps will not need a note. This is an addition - not a replacement - to documenting code you write, and writing any other .md files as needed.
+
+Before starting the next step be sure to read the notes left by previous agents.
 
 ## Current State Analysis
 
@@ -144,8 +145,8 @@ scripts/
 
 ### 1.2 Type Definitions
 
-- [ ] Create `src/types/` directory
-- [ ] Define core domain types:
+- [x] Create `src/types/` directory
+- [x] Define core domain types:
   - `MediaDraft` - draft objects flowing through pipeline
   - `SeriesDraft` - series draft objects
   - `MediaType`, `FullType` - union types for media classification
@@ -153,6 +154,8 @@ scripts/
   - `Infobox` - parsed infobox structure
   - `Appearance` - character/location appearances
   - `Config` - configuration object shape
+
+**Completed:** Added type-only modules for AST/rich text, media taxonomy, mutable media/series drafts, native appearance parser output, Wookieepedia API/fixture shapes, config/image storage, and the minimal wtf document/infobox surface currently used by the pipeline. Appearance nodes intentionally model the Rust native output as `{ List }`/`{ Template }`/`{ Link }`/`{ Text }` key-discriminated objects. For 1.3, avoid duplicating `src/types/wtf.ts`; decide whether the `wtf_wikipedia` work should be a module declaration, an expansion/rename of that file, or both.
 
 ### 1.3 wtf_wikipedia Types
 
