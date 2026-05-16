@@ -1,0 +1,74 @@
+{
+  "lowConfidenceManga": [
+    "The Banchiians",
+    "Star Wars Rebels, Vol. 1",
+    "Star Wars Rebels, Vol. 2",
+    "Star Wars Rebels, Vol. 3"
+  ],
+  "lowConfidenceAdultNovel": [
+    "Star Wars: The Aftermath Trilogy",
+    "The High Republic: Cataclysm",
+    "The High Republic: The Eye of Darkness",
+    "Reign of the Empire",
+    "Reign of the Empire: The Mask of Fear",
+    "''Reign of the Empire'' Book Two",
+    "''Reign of the Empire'' Book Three",
+    "Star Wars: Reign of the Empire",
+    "Outlaws: Low Red Moon"
+  ],
+  "multipleRegexMatches": [
+    "Star Wars: The High Republic (Marvel Comics 2021)",
+    "Star Wars: The High Republic Adventures",
+    "Star Wars: The High Republic: The Edge of Balance",
+    "Star Wars: The High Republic: Trail of Shadows",
+    "Star Wars: The High Republic: Eye of the Storm",
+    "Star Wars: The High Republic Adventures (IDW Publishing 2021)",
+    "Star Wars: The High Republic — The Blade",
+    "Star Wars: The High Republic Adventures: The Nameless Terror",
+    "Star Wars: The High Republic (Marvel Comics 2023)",
+    "Star Wars: The High Republic: Shadows of Starlight",
+    "Star Wars: The High Republic Adventures – Echoes of Fear",
+    "Star Wars: The High Republic – Fear of the Jedi",
+    "Star Wars: The High Republic Adventures – Dispatches from the Occlusion Zone",
+    "Star Wars: The High Republic Adventures – The Nameless Terror",
+    "Star Wars: The High Republic (2021)",
+    "Star Wars: The High Republic Adventures (2021)",
+    "Star Wars: The High Republic (2023)",
+    "Star Wars: The High Republic – Shadows of Starlight"
+  ],
+  "lowConfidenceAnimated": [
+    "Hunted",
+    "Star Wars: Fun with Nubs",
+    "Star Wars: Tales of the Jedi (television series)",
+    "Star Wars: Tales of the Underworld",
+    "Star Wars: Tales of the Empire"
+  ],
+  "lowConfidenceTvOther": ["Star Wars: Jedi Temple Challenge"],
+  "lowConfidenceAdaptation": [
+    "Star Wars Treasury: The Original Trilogy",
+    "The Force Awakens: Rey's Story",
+    "The Force Awakens: Finn's Story",
+    "Battle to the End",
+    "A New Hope: The Princess, the Scoundrel, and the Farm Boy",
+    "The Empire Strikes Back: So You Want to Be a Jedi?",
+    "Return of the Jedi: Beware the Power of the Dark Side!",
+    "Star Wars Resistance: Le Nouvel Espion",
+    "Star Wars Resistance: Triples Ténèbres",
+    "Star Wars Resistance: Le Secret de Yeager",
+    "Star Wars Resistance: La Rescapée"
+  ],
+  "noSeriesForAudience": ["Star Wars Treasury: The Original Trilogy"],
+  "noSeason": ["A Death on Utapau", "In Search of the Crystal", "Crystal Crisis", "The Big Bang"],
+  "migrateMissingPageid": [],
+  "ignoreMissingPageid": [],
+  "notAdaptation": [
+    "The High Republic: Light of the Jedi",
+    "Thrawn Ascendancy: Chaos Rising",
+    "Thrawn Ascendancy: Greater Good",
+    "Thrawn Ascendancy: Lesser Evil",
+    "Rebel Rising",
+    "The Odyssey of Star Wars: An Epic Poem",
+    "The Weapon of a Jedi: A Luke Skywalker Adventure",
+    "Forces of Destiny: The Rey Chronicles"
+  ]
+}

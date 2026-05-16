@@ -4,7 +4,7 @@ import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieeped
 import { docFromPage, fillDraftWithInfoboxData, getAppearances, reduceAstToText } from "../parsing/index.ts";
 import { log } from "../util.ts";
 import { writeFile } from "fs/promises";
-import { cleanupDraft } from "./cleanupDrafts.js";
+import { cleanupDraft } from "./cleanupDrafts.ts";
 import { allowedAppCategories } from "../const.ts";
 import type { AppearanceEntry, AppearanceTemplate, AppearancesDrafts, MediaDraft, MediaStageResult, SeriesDraft } from "../types/index.ts";
 

@@ -8,6 +8,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { log } from "./util.ts";
+import { FixtureError } from "./errors.ts";
 import type { WookieepediaImageInfoResult, WookieepediaPageResult } from "./types/wookieepedia.ts";
 
 type TitleInput = string | string[];
@@ -116,7 +117,7 @@ function normalizeTitle(title: string): string {
 }
 
 function requireIndex(index: Map<string, string> | null, name: string): Map<string, string> {
-  if (!index) throw new Error(`${name} fixture index is not initialized`);
+  if (!index) throw new FixtureError(`${name} fixture index is not initialized`);
   return index;
 }
 
@@ -162,8 +163,9 @@ export async function fetchTimelineLocal(legends = false): Promise<WookieepediaP
     return JSON.parse(content) as WookieepediaPageResult;
   } catch (err) {
     if (err instanceof Error && "code" in err && err.code === "ENOENT") {
-      throw new Error(
+      throw new FixtureError(
         `Timeline fixture not found at ${timelinePath}. Run 'node scripts/capture-api-data.js' first.`,
+        { cause: err },
       );
     }
     throw err;

@@ -4,6 +4,7 @@ import { MW_API_USER_AGENT } from "./const.ts";
 import { log } from "./util.ts";
 import netLog from "./netLog.ts";
 import { fetchWookieeLocal, fetchImageInfoLocal } from "./fetchLocal.ts";
+import { WookieepediaApiError, WookieepediaPageError } from "./errors.ts";
 import type { WookieepediaImageInfoResult, WookieepediaPageResult } from "./types/wookieepedia.ts";
 
 type TitleInput = string | string[];
@@ -61,7 +62,7 @@ const opts = {
 
 function assertFoundPage(page: ApiPage): asserts page is ApiPage & { pageid: number } {
   if (page.pageid === undefined) {
-    throw new Error(`Page ${page.title} did not include a pageid`);
+    throw new WookieepediaPageError(`Page ${page.title} did not include a pageid`);
   }
 }
 
@@ -70,7 +71,7 @@ function assertRevisionPage(
 ): asserts page is ApiPage & { pageid: number; revisions: [{ slots: { main: { "*": string } }; timestamp: string }] } {
   assertFoundPage(page);
   if (!page.revisions?.[0]) {
-    throw new Error(`Page ${page.title} did not include revision content`);
+    throw new WookieepediaPageError(`Page ${page.title} did not include revision content`);
   }
 }
 
@@ -79,7 +80,7 @@ function assertImageInfoPage(
 ): asserts page is ApiPage & { pageid: number; imageinfo: [{ sha1: string; timestamp: string; url: string }] } {
   assertFoundPage(page);
   if (!page.imageinfo?.[0]) {
-    throw new Error(`Page ${page.title} did not include image info`);
+    throw new WookieepediaPageError(`Page ${page.title} did not include image info`);
   }
 }
 
@@ -100,7 +101,7 @@ const fetchWookieeHelper = async function* (
     netLog.requestNum++;
 
     if (!resp.ok) {
-      throw "Non 2xx response status! Response:\n" + JSON.stringify(resp);
+      throw new WookieepediaApiError("Non 2xx response status! Response:\n" + JSON.stringify(resp));
     }
 
     // TODO: using blob() with node-fetch-cache causes node to hang forever. Uncomment when fixed
@@ -113,7 +114,7 @@ const fetchWookieeHelper = async function* (
     // If server is busy, wait and retry
     if (json.error?.code === "maxlag") {
       if (++delayed > 15) {
-        throw new Error("Too many maxlag errors");
+        throw new WookieepediaApiError("Too many maxlag errors");
       }
       const delay = 1000 * Number(resp.headers.get("Retry-After"));
       log.info(`Waiting for server to catch up for ${delay}ms...`);
@@ -126,7 +127,7 @@ const fetchWookieeHelper = async function* (
       log.error(apiUrl);
       log.error(json);
       log.error(resp);
-      throw new Error("Response Invalid");
+      throw new WookieepediaApiError("Response Invalid");
     }
     const pages = Object.values(json.query.pages);
 
@@ -166,7 +167,7 @@ const fetchWookieeRemote = async function* (
     cache,
   )) {
     if (page.invalid !== undefined) {
-      throw new Error(
+      throw new WookieepediaPageError(
         `Page ${page.title} is invalid. invalid=true returned from the API. Invalid reason: ${page.invalidreason}`,
       );
     }

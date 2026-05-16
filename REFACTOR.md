@@ -314,23 +314,25 @@ scripts/
 
 ### 7.1 Configuration Externalization
 
-- [ ] Move suppression lists from `const.ts` to JSON/YAML config files
-- [ ] Add `.env.example` with placeholder values for documentation
+- [x] Move suppression lists from `const.ts` to JSON/YAML config files
+- [x] ~~Add `.env.example` with placeholder values for documentation~~ (skipped; env docs deferred)
 
 ### 7.2 Error Handling
 
-- [ ] Define custom error classes
-- [ ] Consistent error handling strategy
+- [x] Define custom error classes
+- [x] Consistent error handling strategy
 
 ### 7.3 CLI Improvements
 
-- [ ] Add proper CLI framework (commander/yargs)
-- [ ] Better help text and argument validation
+- [x] Add proper CLI framework (commander/yargs)
+- [x] Better help text and argument validation
 
 ### 7.4 Documentation
 
-- [ ] JSDoc comments on public APIs
-- [ ] Update README.md with build/run instructions
+- [x] ~~JSDoc comments on public APIs~~ (skipped; existing types/comments are sufficient for Phase 7)
+- [x] ~~Update README.md with build/run instructions~~ (deferred per user instruction)
+
+**Completed:** Moved manually reviewed log suppressions to `config/suppressLog.json` while preserving the `const.ts` export shape. Added narrow custom error classes and applied them only to code paths that already stopped execution; logged-and-continued parser/wiki issues and existing warning/error log levels were intentionally left unchanged. Replaced manual argument parsing with Commander while preserving existing flags and environment-variable requirements. README/env documentation is deferred to a later documentation pass.
 
 ---
 

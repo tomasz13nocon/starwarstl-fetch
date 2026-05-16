@@ -8,6 +8,7 @@ import config from "./config.ts";
 import netLog from "./netLog.ts";
 import { client, closeDb, db } from "./db.ts";
 import { REDIS_URI } from "./const.ts";
+import { FetchError } from "./errors.ts";
 
 import type { AppearanceEntry } from "./types/appearances.ts";
 import type { MediaDraft, SeriesDraft } from "./types/draft.ts";
@@ -17,8 +18,6 @@ type AppearanceCollectionDocument = {
   name: string;
   media: AppearanceEntry[];
 };
-
-const { LIMIT } = config();
 
 async function writePipelineResult({
   drafts,
@@ -123,6 +122,13 @@ ${netLog.s3write ? "Number of S3 write requests: " + netLog.s3write : ""}`
 
 try {
   await main();
+} catch (error) {
+  if (error instanceof FetchError) {
+    log.error(`${error.name}: ${error.message}`);
+  } else {
+    log.error(error);
+  }
+  process.exitCode = 1;
 } finally {
   await closeDb();
 }

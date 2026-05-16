@@ -1,5 +1,6 @@
 import process from "node:process";
 import fs from "node:fs";
+import { Command, CommanderError, InvalidArgumentError } from "commander";
 import { S3Image } from "./image/s3Image.ts";
 import { FsImage } from "./image/fsImage.ts";
 import { log } from "./util.ts";
@@ -35,10 +36,56 @@ const config: Config = {
   Image: FsImage,
 };
 
+type CliOptions = {
+  cache?: boolean;
+  limit?: number;
+  fs?: boolean;
+  s3?: boolean;
+  legends?: boolean;
+  local?: boolean;
+  offline?: boolean;
+};
+
+function parsePositiveInteger(value: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new InvalidArgumentError("must be a positive integer");
+  }
+  return parsed;
+}
+
+export function parseCliArgs(argv = process.argv): CliOptions {
+  const program = new Command()
+    .name("fetch")
+    .description("Fetch and transform Star Wars timeline data from Wookieepedia")
+    .allowExcessArguments(false)
+    .option("-c, --cache", "cache Wookieepedia page requests")
+    .option("-l, --limit <count>", "process only the first <count> timeline rows", parsePositiveInteger)
+    .option("--fs", "store images on the local filesystem")
+    .option("--s3", "store images in S3")
+    .option("--legends", "use the legends timeline and fixtures")
+    .option("--local", "read Wookieepedia data from local fixtures")
+    .option("--offline", "alias for --local");
+
+  program.exitOverride();
+  program.parse(argv);
+  return program.opts<CliOptions>();
+}
+
 // Process env vars and command line args on the first invocation
 // Returns config object
 export default function getConfig(): Config {
   if (initialized) return config;
+
+  let cli: CliOptions;
+  try {
+    cli = parseCliArgs();
+  } catch (error) {
+    if (error instanceof CommanderError) {
+      process.exit(error.exitCode);
+    }
+    throw error;
+  }
 
   for (const [name, value] of requiredEnv) {
     if (value === undefined) {
@@ -53,34 +100,12 @@ export default function getConfig(): Config {
     config.Image = S3Image;
   }
 
-  // Command line args
-  for (let i = 2; i < process.argv.length; i++) {
-    const arg = process.argv[i];
-
-    if (arg === "--cache" || arg === "-c") {
-      config.CACHE_PAGES = true;
-    } else if (arg === "--limit" || arg === "-l") {
-      i++;
-      const rawValue = process.argv[i];
-      const value = Number(rawValue);
-      if (i >= process.argv.length || !Number.isInteger(value) || value < 1) {
-        log.error(`option ${arg} requires a positive integer value`);
-        process.exit(1);
-      }
-      config.LIMIT = value;
-    } else if (arg === "--fs") {
-      config.Image = FsImage;
-    } else if (arg === "--s3") {
-      config.Image = S3Image;
-    } else if (arg === "--legends") {
-      config.LEGENDS = true;
-    } else if (arg === "--local" || arg === "--offline") {
-      config.LOCAL = true;
-    } else {
-      log.error(`Unknown argument: ${arg}`);
-      process.exit(1);
-    }
-  }
+  if (cli.cache) config.CACHE_PAGES = true;
+  if (cli.limit !== undefined) config.LIMIT = cli.limit;
+  if (cli.fs) config.Image = FsImage;
+  if (cli.s3) config.Image = S3Image;
+  if (cli.legends) config.LEGENDS = true;
+  if (cli.local || cli.offline) config.LOCAL = true;
 
   if (config.LOCAL) {
     log.info("Using local fixtures (offline mode)");

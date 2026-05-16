@@ -5,7 +5,7 @@ import { fetchWookiee } from "../fetchWookiee.ts";
 import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing/index.ts";
 import { seriesRegexes } from "../regex.ts";
 import { log } from "../util.ts";
-import { cleanupDraft } from "./cleanupDrafts.js";
+import { cleanupDraft } from "./cleanupDrafts.ts";
 import type { FullType, MediaDraft, SeriesDraft, SeriesType } from "../types/index.ts";
 
 const { CACHE_PAGES } = config();

@@ -21,6 +21,7 @@ import { log } from "./util.ts";
 import config from "./config.ts";
 import { fetchWookiee } from "./fetchWookiee.ts";
 import { knownTemplates } from "./const.ts";
+import { PipelineError } from "./errors.ts";
 import timeline from "./pipeline/timeline.ts";
 import media from "./pipeline/media.ts";
 import series from "./pipeline/series.ts";
@@ -56,18 +57,18 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
 
   const timelineResult = await fetchWookiee(timelinePage, CACHE_PAGES).next();
   if (timelineResult.done) {
-    throw new Error(`No page returned for ${timelinePage}`);
+    throw new PipelineError(`No page returned for ${timelinePage}`);
   }
 
   if (isPageMissing(timelineResult.value)) {
-    throw new Error(`Timeline page not found: ${timelinePage}`);
+    throw new PipelineError(`Timeline page not found: ${timelinePage}`);
   }
 
   const timelineWikitext = timelineResult.value.wikitext;
   const timelineDoc = wtf(timelineWikitext);
   const timelineTable = timelineDoc.tables()[1];
   if (timelineTable === undefined) {
-    throw new Error(`Timeline table not found on ${timelinePage}`);
+    throw new PipelineError(`Timeline table not found on ${timelinePage}`);
   }
   let data = timelineTable.json() as TimelineRow[];
 
@@ -76,7 +77,7 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
   const unknownTemplates = templates.filter((t): t is string => typeof t === "string" && !knownTemplates.has(t as never));
   if (unknownTemplates.length !== 0) {
     log.error("Unknown templates:", unknownTemplates);
-    throw new Error("Unknown templates found in the timeline!");
+    throw new PipelineError("Unknown templates found in the timeline!");
   }
 
   // Apply limit if specified
