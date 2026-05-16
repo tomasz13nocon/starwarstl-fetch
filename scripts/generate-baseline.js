@@ -36,6 +36,12 @@ if (!process.argv.includes("--local")) {
   process.argv.push("--local");
 }
 
+// Keep generated baselines comparable to regression tests. The pipeline marks
+// future-dated media as `unreleased` using Date.now(), so baseline output must
+// be generated with the same effective clock as the test.
+const REGRESSION_TEST_DATE = "2026-01-18T14:14:49.775Z";
+Date.now = () => Date.parse(REGRESSION_TEST_DATE);
+
 // Parse --limit before imports too
 let limit = 0;
 for (let i = 2; i < process.argv.length; i++) {

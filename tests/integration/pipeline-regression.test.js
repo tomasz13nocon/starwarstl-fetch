@@ -16,13 +16,14 @@
  */
 
 import "../../src/env.ts";
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 const SNAPSHOTS_DIR = path.join(process.cwd(), "tests", "snapshots");
 const BASELINE_PATH = path.join(SNAPSHOTS_DIR, "pipeline-baseline.json");
 const SNAPSHOT_FIXTURES_PATH = path.join(SNAPSHOTS_DIR, "fixtures");
+const REGRESSION_TEST_DATE = new Date("2026-01-18T14:14:49.775Z");
 
 // Set longer timeout for this test file (pipeline takes several minutes)
 // vitest.config.js has testTimeout: 60000, but we may need more
@@ -32,6 +33,11 @@ describe("pipeline regression - full run", { timeout: 600000 }, () => {
   let originalFixturesPath;
 
   beforeAll(async () => {
+    // Some pipeline output, notably `unreleased`, depends on Date.now(). Freeze
+    // time to the baseline generation time so frozen fixtures stay deterministic.
+    vi.useFakeTimers();
+    vi.setSystemTime(REGRESSION_TEST_DATE);
+
     // Load baseline
     try {
       const baselineContent = await fs.readFile(BASELINE_PATH, "utf-8");
@@ -76,6 +82,8 @@ describe("pipeline regression - full run", { timeout: 600000 }, () => {
   }, 600000); // 10 minute timeout for beforeAll
 
   afterAll(() => {
+    vi.useRealTimers();
+
     // Restore original FIXTURES_PATH
     if (originalFixturesPath !== undefined) {
       process.env.FIXTURES_PATH = originalFixturesPath;
