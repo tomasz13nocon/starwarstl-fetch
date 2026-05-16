@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 import { MONGO_URI } from "./const.ts";
-import { log } from "./util.js";
+import { log } from "./util.ts";
 
 const client = new MongoClient(MONGO_URI);
 await client.connect();

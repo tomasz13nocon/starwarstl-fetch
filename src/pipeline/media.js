@@ -2,7 +2,7 @@ import config, { debug } from "../config.js";
 import { fetchWookiee } from "../fetchWookiee.js";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.js";
 import { docFromPage, fillDraftWithInfoboxData, reduceAstToText } from "../parsing.js";
-import { log } from "../util.js";
+import { log } from "../util.ts";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.js";
 import native from "../../native/index.cjs";

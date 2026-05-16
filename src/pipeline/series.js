@@ -4,7 +4,7 @@ import { seriesTypes, suppressLog } from "../const.ts";
 import { fetchWookiee } from "../fetchWookiee.js";
 import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing.js";
 import { seriesRegexes } from "../regex.ts";
-import { log } from "../util.js";
+import { log } from "../util.ts";
 import { cleanupDraft } from "./cleanupDrafts.js";
 
 const { CACHE_PAGES } = config();

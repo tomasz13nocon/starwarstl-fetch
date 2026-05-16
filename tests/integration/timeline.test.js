@@ -11,7 +11,7 @@ import path from "node:path";
 import wtf from "wtf_wikipedia";
 
 // Mock the log to avoid console output
-vi.mock("../../src/util.js", async (importOriginal) => {
+vi.mock("../../src/util.ts", async (importOriginal) => {
   const original = await importOriginal();
   return {
     ...original,

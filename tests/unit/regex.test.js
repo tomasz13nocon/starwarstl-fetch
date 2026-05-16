@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { reg, seasonReg, seasonRegWordBound, seriesRegexes } from "../../src/regex.ts";
 
 // Mock the log to avoid console output during tests
-vi.mock("../../src/util.js", () => ({
+vi.mock("../../src/util.ts", () => ({
   log: {
     warn: vi.fn(),
     info: vi.fn(),

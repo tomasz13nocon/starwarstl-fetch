@@ -7,7 +7,7 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { log } from "./util.js";
+import { log } from "./util.ts";
 
 /**
  * Get the fixtures directory for the current continuity.

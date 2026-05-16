@@ -1,6 +1,6 @@
 import wtf from "wtf_wikipedia";
 import { fetchWookiee } from "./fetchWookiee.js";
-import { log, toCamelCase } from "./util.js";
+import { log, toCamelCase } from "./util.ts";
 import netLog from "./netLog.ts";
 import { NUMBERS, infoboxFields, suppressLog } from "./const.ts";
 import { decode } from "html-entities";

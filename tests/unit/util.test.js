@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toCamelCase, toHumanReadable, unscuffDate } from "../../src/util.js";
+import { toCamelCase, toHumanReadable, unscuffDate } from "../../src/util.ts";
 
 describe("toCamelCase", () => {
   it("converts 'release date' to 'releaseDate'", () => {

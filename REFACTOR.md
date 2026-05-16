@@ -187,7 +187,9 @@ scripts/
 
 ### 2.1 Utilities
 
-- [ ] `src/util.ts` - utility functions and logging setup
+- [x] `src/util.ts` - utility functions and logging setup
+
+**Completed:** Converted utility helpers and logger setup to TypeScript, replacing the temporary `src/util.d.ts` shim with explicit helper/logging types.
 
 ### 2.2 Configuration
 

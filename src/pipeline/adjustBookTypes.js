@@ -1,4 +1,4 @@
-import { log } from "../util.js";
+import { log } from "../util.ts";
 
 export default function (drafts, seriesDrafts) {
   // Problem: Junior series are referred to as "young reader" by wookieepedia, so we have to infer yr type by looking at entries of the series

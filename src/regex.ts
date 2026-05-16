@@ -1,5 +1,5 @@
 import { NUMBERS, suppressLog } from "./const.ts";
-import { log } from "./util.js";
+import { log } from "./util.ts";
 
 export type BookAudienceRegexMatch = "jr" | "ya" | "a";
 

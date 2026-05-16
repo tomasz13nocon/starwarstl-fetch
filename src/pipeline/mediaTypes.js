@@ -1,5 +1,5 @@
 import { figureOutFullTypes } from "../parsing.js";
-import { log } from "../util.js";
+import { log } from "../util.ts";
 
 export default async function (drafts, seriesDrafts) {
   let progress = 0;

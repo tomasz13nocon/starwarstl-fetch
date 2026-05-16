@@ -2,7 +2,7 @@ import process from "node:process";
 import fs from "node:fs";
 import { S3Image } from "./image/s3Image.js";
 import { FsImage } from "./image/fsImage.js";
-import { log } from "./util.js";
+import { log } from "./util.ts";
 import { MW_API_USER_AGENT, AWS_ACCESS_KEY, AWS_SECRET_KEY, IMAGE_PATH, Size } from "./const.ts";
 
 export const debug = {

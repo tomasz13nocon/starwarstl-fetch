@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { reduceAstToText } from "../../src/parsing.js";
 
 // Mock dependencies to isolate the pure function
-vi.mock("../../src/util.js", () => ({
+vi.mock("../../src/util.ts", () => ({
   log: {
     warn: vi.fn(),
     info: vi.fn(),

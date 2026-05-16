@@ -1,6 +1,6 @@
 import { suppressLog } from "../const.ts";
 import { db } from "../db.js";
-import { log } from "../util.js";
+import { log } from "../util.ts";
 
 export default async function (drafts) {
   log.info("Veryfing page IDs...");

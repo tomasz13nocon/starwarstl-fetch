@@ -58,7 +58,7 @@ async function main() {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
   const { runPipeline } = await import("../src/runPipeline.js");
-  const { log } = await import("../src/util.js");
+  const { log } = await import("../src/util.ts");
 
   const SNAPSHOTS_DIR = path.join(process.cwd(), "tests", "snapshots");
   const FIXTURES_SRC = path.join(process.cwd(), "fixtures", "canon");

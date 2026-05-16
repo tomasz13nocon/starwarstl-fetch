@@ -6,7 +6,7 @@ import {
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import sharp from "sharp";
-import { log } from "../util.js";
+import { log } from "../util.ts";
 import { Size, S3_IMAGE_PATH, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET } from "../const.ts";
 import netLog from "../netLog.ts";
 // import "./env.js"; // TODO confirm not needed

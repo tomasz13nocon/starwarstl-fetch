@@ -3,7 +3,7 @@ import { Size } from "../const.ts";
 import { db } from "../db.js";
 import { fetchImageInfo } from "../fetchWookiee.js";
 import netLog from "../netLog.ts";
-import { log, toHumanReadable } from "../util.js";
+import { log, toHumanReadable } from "../util.ts";
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 import { encode, isBlurhashValid } from "blurhash";

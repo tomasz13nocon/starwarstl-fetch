@@ -1,5 +1,5 @@
 import wtf from "wtf_wikipedia";
-import { log } from "./util.js";
+import { log } from "./util.ts";
 
 export default function () {
   wtf.extend((models, templates) => {

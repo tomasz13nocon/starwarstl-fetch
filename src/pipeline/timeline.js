@@ -1,5 +1,5 @@
 import { decode } from "html-entities";
-import { log, unscuffDate } from "../util.js";
+import { log, unscuffDate } from "../util.ts";
 import { types } from "../const.ts";
 
 function cleanupTitle(str) {

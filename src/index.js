@@ -1,6 +1,6 @@
 import "./env.ts";
 import { runPipeline } from "./runPipeline.js";
-import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.js";
+import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.ts";
 import config from "./config.js";
 import netLog from "./netLog.ts";
 import { client, closeDb, db } from "./db.js";

@@ -33,7 +33,7 @@ import path from "node:path";
 import wtf from "wtf_wikipedia";
 import initWtf from "../src/initWtf.js";
 import { fetchWookiee, fetchImageInfo } from "../src/fetchWookiee.js";
-import { log } from "../src/util.js";
+import { log } from "../src/util.ts";
 import { types } from "../src/const.ts";
 import { decode } from "html-entities";
 
