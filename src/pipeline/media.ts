@@ -161,10 +161,7 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
       if (debug.distinctInfoboxes && !infoboxes.includes(infobox._type))
         infoboxes.push(infobox._type, "\n");
 
-      // TODO(final refactor stage): uncomment this assignment and update the regression baseline.
-      // Audiobook entries should carry this flag, but enabling it now changes the preserved
-      // pre-refactor output (for example "The High Republic: The Battle of Jedha").
-      // if (infobox._type === "audiobook") draft.audiobook = true;
+      if (infobox._type === "audiobook") draft.audiobook = true;
 
       fillDraftWithInfoboxData(draft, infobox);
 

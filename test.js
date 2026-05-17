@@ -1,3 +1,5 @@
+// Custom manual ad-hoc tests. If you're an agent, do not touch this
+
 import wtf from "wtf_wikipedia";
 import fs from "fs/promises";
 import util from "util";

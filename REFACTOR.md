@@ -391,28 +391,30 @@ scripts/
 
 ### 9.1 Remove Refactor Artifacts
 
-- [ ] Remove obsolete migration shims, temporary declarations, compatibility wrappers, and TODOs that only existed to support the JS → TS transition
-- [ ] Delete or archive stale refactor-only scripts, notes, and generated files that are no longer useful after the migration
-- [ ] Review comments added during the refactor and remove anything that describes temporary process instead of lasting code behavior
-- [ ] Ensure remaining TODO/FIXME comments describe real future work, not completed refactor steps
+- [x] Remove obsolete migration shims, temporary declarations, compatibility wrappers, and TODOs that only existed to support the JS → TS transition
+- [x] Delete or archive stale refactor-only scripts, notes, and generated files that are no longer useful after the migration
+- [x] Review comments added during the refactor and remove anything that describes temporary process instead of lasting code behavior
+- [x] Ensure remaining TODO/FIXME comments describe real future work, not completed refactor steps
 
 ### 9.2 Update Project Documentation
 
-- [ ] Update `AGENTS.md` with current codebase guidance for future agents, removing obsolete refactor-era instructions where appropriate
-- [ ] Update `tests/README.md` and related docs to match the final test projects, baseline workflow, fixture layout, and expected slow/known-failure cases
-- [ ] Document the final pipeline architecture, core domain types, data flow, and extension points for future development
-- [ ] Update package scripts/documentation comments so command descriptions match the final implementation
+- [x] Update `AGENTS.md` with current codebase guidance for future agents, removing obsolete refactor-era instructions where appropriate
+- [x] Update `tests/README.md` and related docs to match the final test projects, baseline workflow, fixture layout, and expected slow/known-failure cases
+- [x] Document the final pipeline architecture, core domain types, data flow, and extension points for future development
+- [x] Update package scripts/documentation comments so command descriptions match the final implementation
 
 ### 9.3 Architecture & Maintenance Review
 
-- [ ] Verify project descriptions no longer refer to the codebase as mid-migration unless that remains true
-- [ ] Ensure source comments explain non-obvious Wookieepedia/wtf_wikipedia/native-parser behavior rather than historical refactor decisions
-- [ ] Confirm new code organization is discoverable: entry point, config, fetchers, parsing modules, pipeline stages, image storage, and DB layer
-- [ ] Document operational requirements: environment variables, MongoDB expectations, image storage modes, local fixtures, and cron usage
+- [x] Verify project descriptions no longer refer to the codebase as mid-migration unless that remains true
+- [x] Ensure source comments explain non-obvious Wookieepedia/wtf_wikipedia/native-parser behavior rather than historical refactor decisions
+- [x] Confirm new code organization is discoverable: entry point, config, fetchers, parsing modules, pipeline stages, image storage, and DB layer
+- [x] Document operational requirements: environment variables, MongoDB expectations, image storage modes, local fixtures, and cron usage
 
 ### 9.4 Final Readiness Checks
 
-- [ ] Make a final pass over docs from the perspective of a future agent starting with no conversation context
+- [x] Make a final pass over docs from the perspective of a future agent starting with no conversation context
+
+**Completed:** Removed the stale scratch appearance-parser script, refreshed agent/test/README guidance for the finished TypeScript codebase, and left remaining TODO comments only where they describe actual future behavior work rather than migration process.
 
 ---
 

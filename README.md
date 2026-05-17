@@ -2,6 +2,14 @@
 
 Code used to fetch and transform data from Wookieepedia.
 
+The fetch module reads Wookieepedia timeline/article data, parses it into typed media, series, image, and appearance drafts, then writes database-ready documents to MongoDB. It can run against live Wookieepedia data or against checked-in local fixtures for offline development and regression testing.
+
+## Running
+
+```bash
+npm run fetch -- --help
+```
+
 ## Other StarWarsTL repositories
 
 - [Client](https://github.com/tomasz13nocon/starwarstl-client)
