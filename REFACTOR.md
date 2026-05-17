@@ -363,10 +363,6 @@ scripts/
 
 ### 8.4 Final Readiness Checks
 
-- [ ] Run the full test suite, including regression tests
-- [ ] Run the local fetch pipeline (`npm run fetch -- --local`) and confirm it completes with only documented expected parsing errors
-- [ ] Run type checking and any available lint/format checks
-- [ ] Review `git status` for stray generated files, local-only artifacts, or accidental fixture/baseline changes
 - [ ] Make a final pass over docs from the perspective of a future agent starting with no conversation context
 
 ---

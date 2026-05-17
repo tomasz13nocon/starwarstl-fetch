@@ -52,7 +52,9 @@ async function writePipelineResult({
         );
       }
       if (missingDrafts.length) {
-        await db.collection("missingMedia").insertMany(missingDrafts as OptionalId<Document>[], { session });
+        await db
+          .collection("missingMedia")
+          .insertMany(missingDrafts as OptionalId<Document>[], { session });
       }
       if (missingMediaNoLongerMissing.length) {
         await db.collection("missingMedia").deleteMany({
@@ -116,7 +118,7 @@ Total API data recieved: ${toHumanReadable(netLog.bytesRecieved)}
 Total image data recieved: ${toHumanReadable(netLog.imageBytesRecieved)}
 Number of HTTP requests made: ${netLog.requestNum}
 ${netLog.s3read ? "Number of S3 read requests: " + netLog.s3read : ""}
-${netLog.s3write ? "Number of S3 write requests: " + netLog.s3write : ""}`
+${netLog.s3write ? "Number of S3 write requests: " + netLog.s3write : ""}`,
   );
 }
 
@@ -124,9 +126,9 @@ try {
   await main();
 } catch (error) {
   if (error instanceof FetchError) {
-    log.error(`${error.name}: ${error.message}`);
+    log.error(`FATAL ERROR: ${error.name}: ${error.message}`);
   } else {
-    log.error(error);
+    log.error(`FATAL ERROR: ${error}`);
   }
   process.exitCode = 1;
 } finally {

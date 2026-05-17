@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { reduceAstToText } from "../../src/parsing.js";
+import { reduceAstToText } from "../../src/parsing/index.ts";
 
 // Mock dependencies to isolate the pure function
 vi.mock("../../src/util.ts", () => ({
