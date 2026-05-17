@@ -29,6 +29,7 @@ const requiredEnv = [
 let initialized = false;
 
 const config: Config = {
+  CACHE_PAGES: false,
   LIMIT: 0,
   LEGENDS: false,
   LOCAL: false,
@@ -36,6 +37,7 @@ const config: Config = {
 };
 
 type CliOptions = {
+  cache?: boolean;
   limit?: number;
   fs?: boolean;
   s3?: boolean;
@@ -57,6 +59,7 @@ export function parseCliArgs(argv = process.argv): CliOptions {
     .name("fetch")
     .description("Fetch and transform Star Wars timeline data from Wookieepedia")
     .allowExcessArguments(false)
+    .option("-c, --cache", "cache Wookieepedia page requests")
     .option(
       "-l, --limit <count>",
       "process only the first <count> timeline rows",
@@ -101,6 +104,7 @@ export default function getConfig(): Config {
     config.Image = S3Image;
   }
 
+  if (cli.cache) config.CACHE_PAGES = true;
   if (cli.limit !== undefined) config.LIMIT = cli.limit;
   if (cli.fs) config.Image = FsImage;
   if (cli.s3) config.Image = S3Image;

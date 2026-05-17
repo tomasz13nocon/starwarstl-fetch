@@ -13,6 +13,7 @@ export type ImageStorage = {
 export type ImageStorageConstructor = new (filename: string) => ImageStorage;
 
 export type Config = {
+  CACHE_PAGES: boolean;
   LIMIT: number;
   LEGENDS: boolean;
   LOCAL: boolean;

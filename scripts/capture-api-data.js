@@ -44,6 +44,7 @@ const continuity = isLegends ? "legends" : "canon";
 // Initialize wtf_wikipedia with custom templates
 initWtf();
 
+const CACHE_PAGES = true;
 const FIXTURES_DIR = path.join(process.cwd(), "fixtures", continuity);
 
 async function cleanFixtures() {
@@ -77,7 +78,7 @@ async function captureTimeline() {
   const timelinePage = `Timeline of ${continuity} media`;
   log.info(`Fetching timeline: "${timelinePage}"...`);
 
-  const result = await fetchWookiee(timelinePage).next();
+  const result = await fetchWookiee(timelinePage, CACHE_PAGES).next();
   const page = result.value;
 
   if (page.missing) {
@@ -119,7 +120,7 @@ async function captureMediaArticles(titles) {
   const seriesTitles = new Set();
   const coverFilenames = new Set();
 
-  for await (const page of fetchWookiee(titles)) {
+  for await (const page of fetchWookiee(titles, CACHE_PAGES)) {
     progress++;
     log.setStatusBarText([`Media: ${progress}/${titles.length}`]);
 
@@ -173,7 +174,7 @@ async function captureSeriesArticles(titles) {
 
   let progress = 0;
 
-  for await (const page of fetchWookiee(titles)) {
+  for await (const page of fetchWookiee(titles, CACHE_PAGES)) {
     progress++;
     log.setStatusBarText([`Series: ${progress}/${titles.length}`]);
 

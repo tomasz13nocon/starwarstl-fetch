@@ -17,8 +17,8 @@ type DraftWithArticleTitle = {
 
 // Fetches an article with a given title and returns a wtf doc.
 // If article doesn't exist returns null.
-export async function docFromTitle(title: string): Promise<WtfDocument | null> {
-  const result = await fetchWookiee(title).next();
+export async function docFromTitle(title: string, cache?: boolean): Promise<WtfDocument | null> {
+  const result = await fetchWookiee(title, cache).next();
   if (result.done) throw new Error(`No page returned for ${title}`);
   const page = result.value;
   if (isPageMissing(page)) return null;

@@ -1,4 +1,4 @@
-import { debug } from "../config.ts";
+import config, { debug } from "../config.ts";
 import { fetchWookiee } from "../fetchWookiee.ts";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.ts";
 import {
@@ -21,22 +21,24 @@ import type {
   SeriesDraft,
 } from "../types/index.ts";
 
+let { CACHE_PAGES } = config();
+
 function articleTitlesForDrafts(drafts: MediaDraft[]): string[] {
   const titles = drafts.map((d) => d.href ?? d.title);
   for (let i = 0; i < titles.length; i++) {
-    if (!titles[i])
-      throw new PipelineError(`No title! Between ${titles[i - 1]} and ${titles[i + 1]}`);
+    if (!titles[i]) throw new PipelineError(`No title! Between ${titles[i - 1]} and ${titles[i + 1]}`);
   }
   return [...new Set(titles)];
 }
 
 function redlinkLogger(): (message: string) => void {
-  return debug.redlinks
-    ? (message: string) => log.warn(message)
-    : (message: string) => log.info(message);
+  return debug.redlinks ? (message: string) => log.warn(message) : (message: string) => log.info(message);
 }
 
-function addAppearances(draft: MediaDraft, appearancesDrafts: AppearancesDrafts): void {
+function addAppearances(
+  draft: MediaDraft,
+  appearancesDrafts: AppearancesDrafts,
+): void {
   if (!draft.doc) return;
   const appearances = getAppearances(draft.doc);
   draft.appearances = appearances?.nodes;
@@ -89,10 +91,7 @@ function parseDraftDate(draft: MediaDraft): void {
   if (draft.dateParsed === undefined) delete draft.dateParsed;
 }
 
-function collectSeriesDrafts(
-  draft: MediaDraft,
-  seriesDraftsMap: Record<string, SeriesDraft>,
-): void {
+function collectSeriesDrafts(draft: MediaDraft, seriesDraftsMap: Record<string, SeriesDraft>): void {
   if (!draft.series) return;
   if (draft.type === "tv" && draft.series.length > 1) {
     log.warn(
@@ -123,7 +122,7 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
   let outOf = drafts.length;
   log.setStatusBarText([`Article: ${progress}/${outOf}`]);
 
-  let pages = fetchWookiee(articleTitlesForDrafts(drafts));
+  let pages = fetchWookiee(articleTitlesForDrafts(drafts), CACHE_PAGES);
   let infoboxes: string[] = [];
   let seriesDraftsMap: Record<string, SeriesDraft> = {};
   let appearancesDrafts: AppearancesDrafts = {};

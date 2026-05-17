@@ -1,5 +1,5 @@
 import { writeFile } from "fs/promises";
-import { debug } from "../config.ts";
+import config, { debug } from "../config.ts";
 import { seriesTypes, suppressLog } from "../const.ts";
 import { fetchWookiee } from "../fetchWookiee.ts";
 import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing/index.ts";
@@ -8,6 +8,8 @@ import { log } from "../util.ts";
 import { PipelineError } from "../errors.ts";
 import { cleanupDraft } from "./cleanupDrafts.ts";
 import type { FullType, MediaDraft, SeriesDraft, SeriesType } from "../types/index.ts";
+
+const { CACHE_PAGES } = config();
 
 const hardcodedSeriesTypes: Partial<Record<string, SeriesType>> = {
   "Golden Books": "yr",
@@ -25,7 +27,10 @@ export default async function series(
   let outOf = seriesDrafts.length;
 
   // Series handling
-  let seriesPages = fetchWookiee(seriesDrafts.map((d) => d.title));
+  let seriesPages = fetchWookiee(
+    seriesDrafts.map((d) => d.title),
+    CACHE_PAGES,
+  );
 
   for await (let page of seriesPages) {
     for (let seriesDraft of seriesDrafts.filter((d) => d.title.replace(/#.*/, "") === page.title)) {
