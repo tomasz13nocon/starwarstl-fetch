@@ -1,5 +1,6 @@
 import type { MediaDraft, SeriesDraft } from "./draft.js";
 import type { AppearancesDrafts } from "./appearances.js";
+import type { MissingMediaDocument } from "./db.js";
 
 export type PipelineOptions = {
   skipImages?: boolean;
@@ -8,7 +9,7 @@ export type PipelineOptions = {
 };
 
 export type ValidatePageIdsResult = {
-  missingDrafts: unknown[];
+  missingDrafts: MissingMediaDocument[];
   missingMediaNoLongerMissing: MediaDraft[];
 };
 
@@ -18,10 +19,18 @@ export type PipelineResult = ValidatePageIdsResult & {
   appearancesDrafts: AppearancesDrafts;
 };
 
+export type PipelineState = {
+  drafts: MediaDraft[];
+  seriesDrafts: SeriesDraft[];
+  appearancesDrafts: AppearancesDrafts;
+};
+
 export type MediaStageResult = {
   seriesDrafts: SeriesDraft[];
   appearancesDrafts: AppearancesDrafts;
 };
+
+export type PipelineStage<Input, Output> = (input: Input) => Output | Promise<Output>;
 
 export type TimelineCell = {
   text: string;

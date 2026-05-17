@@ -1,13 +1,14 @@
 import config from "../config.ts";
 import { Size } from "../const.ts";
-import { db } from "../db.ts";
+import { collections } from "../db.ts";
 import { fetchImageInfo } from "../fetchWookiee.ts";
+import { ImageProcessingError } from "../errors.ts";
 import netLog from "../netLog.ts";
 import { log, toHumanReadable } from "../util.ts";
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 import { encode, isBlurhashValid } from "blurhash";
-import type { MediaDraft, WookieepediaImageInfoResult } from "../types/index.ts";
+import type { MediaDraft } from "../types/index.ts";
 
 const { Image } = config();
 
@@ -21,9 +22,9 @@ type CurrentCover = {
   coverHash?: string;
 };
 
-export default async function images(drafts: MediaDraft[]): Promise<void> {
-  let docs = (await db
-    .collection("media")
+export default async function images(drafts: MediaDraft[]): Promise<MediaDraft[]> {
+  let docs = await collections
+    .media()
     .find(
       {},
       {
@@ -38,7 +39,7 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
         },
       },
     )
-    .toArray()) as unknown as CurrentCover[];
+    .toArray();
 
   let currentCovers: Record<string, CurrentCover> = {};
   for (let doc of docs) {
@@ -51,7 +52,9 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
     if (v.coverWook) titlesDict[v.coverWook] = v.title;
   }
 
-  let covers = drafts.filter((o) => o.coverWook).map((draft) => "File:" + draft.coverWook);
+  let covers = drafts.flatMap((draft) =>
+    draft.coverWook === undefined ? [] : [`File:${draft.coverWook}`],
+  );
 
   log.info("Fetching imageinfo...");
   let progress = 0;
@@ -68,7 +71,7 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
         : imageinfo.title;
     const coverTitle = imageTitle.slice(5);
     let articleTitle = titlesDict[coverTitle];
-    if (!articleTitle) throw new Error(`No article title found for image ${imageinfo.title}`);
+    if (!articleTitle) throw new ImageProcessingError(`No article title found for image ${imageinfo.title}`);
     let draftsWithThisCover = drafts.filter((d) => d.coverWook === coverTitle);
     if (!("url" in imageinfo) || !imageinfo.url) {
       log.warn(`Image file is 404 for image "${imageinfo.title}" in article "${articleTitle}".`);
@@ -80,7 +83,7 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
     let myFilename = imageinfo.title.slice(5);
     // Change extension to webp
     let pos = myFilename.lastIndexOf(".");
-    myFilename = myFilename.substr(0, pos < 0 ? myFilename.length : pos) + ".webp";
+    myFilename = myFilename.slice(0, pos < 0 ? myFilename.length : pos) + ".webp";
     let image = new Image(myFilename);
 
     // Check if we need to get any covers
@@ -100,10 +103,10 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
         let resp = await fetch(imageinfo.url, { headers: { Accept: "image/webp,*/*;0.9" } });
         netLog.requestNum++;
         if (!resp.ok) {
-          throw new Error("Non 2xx response status! Response:\n" + JSON.stringify(resp));
+          throw new ImageProcessingError("Non 2xx response status! Response:\n" + JSON.stringify(resp));
         }
         if (resp.headers.get("Content-Type") !== "image/webp") {
-          throw new Error(
+          throw new ImageProcessingError(
             `Image in non webp. article: ${articleTitle}, filename: ${image.filename}`,
           );
           // image.filename = imageinfo.title.slice(5);
@@ -164,15 +167,17 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
     }
 
     const firstDraft = draftsWithThisCover[0];
-    if (!firstDraft) throw new Error(`No draft matched cover ${imageinfo.title}`);
+    if (!firstDraft) throw new ImageProcessingError(`No draft matched cover ${imageinfo.title}`);
     let blurhashValid = isBlurhashValid(firstDraft.coverHash ?? "");
     if (!blurhashValid.result) {
       log.error(
         `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${firstDraft.coverHash}" Reason: ` +
-          blurhashValid.errorReason,
+          (blurhashValid.errorReason ?? "unknown"),
       );
     }
 
     log.setStatusBarText([`Image: ${++progress}/${outOf}`]);
   }
+
+  return drafts;
 }

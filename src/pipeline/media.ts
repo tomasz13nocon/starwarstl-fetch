@@ -11,6 +11,7 @@ import { log } from "../util.ts";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.ts";
 import { allowedAppCategories } from "../const.ts";
+import { PipelineError } from "../errors.ts";
 import type {
   AppearanceEntry,
   AppearanceTemplate,
@@ -22,6 +23,98 @@ import type {
 
 let { CACHE_PAGES } = config();
 
+function articleTitlesForDrafts(drafts: MediaDraft[]): string[] {
+  const titles = drafts.map((d) => d.href ?? d.title);
+  for (let i = 0; i < titles.length; i++) {
+    if (!titles[i]) throw new PipelineError(`No title! Between ${titles[i - 1]} and ${titles[i + 1]}`);
+  }
+  return [...new Set(titles)];
+}
+
+function redlinkLogger(): (message: string) => void {
+  return debug.redlinks ? (message: string) => log.warn(message) : (message: string) => log.info(message);
+}
+
+function addAppearances(
+  draft: MediaDraft,
+  appearancesDrafts: AppearancesDrafts,
+): void {
+  if (!draft.doc) return;
+  const appearances = getAppearances(draft.doc);
+  draft.appearances = appearances?.nodes;
+  if (!appearances?.links) return;
+
+  for (let [type, links] of Object.entries(appearances.links)) {
+    if (type.startsWith("l-")) continue;
+    if (type.startsWith("c-")) type = type.slice(2);
+    for (const link of links) {
+      const appearancesForType = (appearancesDrafts[type] ??= {});
+      const linkName = link.name.endsWith("/Legends") ? link.name.slice(0, -8) : link.name;
+      const appearanceEntry: AppearanceEntry = {
+        id: draft._id,
+        ...(link.templates && {
+          t: link.templates.map((t: AppearanceTemplate) => ({
+            name: t.name,
+            ...(t.parameters.length ? { parameters: t.parameters } : {}),
+          })),
+        }),
+      };
+      const entries = (appearancesForType[linkName] ??= []);
+      entries.push(appearanceEntry);
+    }
+  }
+}
+
+function parseDraftDate(draft: MediaDraft): void {
+  try {
+    if (draft.dateDetails) {
+      try {
+        draft.dateParsed = parseWookieepediaDate(draft.dateDetails.reduce(reduceAstToText, ""));
+      } catch (e) {
+        if (e instanceof UnsupportedDateFormat) {
+          draft.dateParsed = parseWookieepediaDate(draft.date);
+        } else {
+          throw e;
+        }
+      }
+    } else {
+      draft.dateParsed = parseWookieepediaDate(draft.date);
+    }
+  } catch (e) {
+    if (e instanceof UnsupportedDateFormat) {
+      log.error(draft.title, e);
+    } else {
+      throw e;
+    }
+  }
+
+  if (draft.dateParsed === undefined) delete draft.dateParsed;
+}
+
+function collectSeriesDrafts(draft: MediaDraft, seriesDraftsMap: Record<string, SeriesDraft>): void {
+  if (!draft.series) return;
+  if (draft.type === "tv" && draft.series.length > 1) {
+    log.warn(
+      `${draft.title} has type "tv" and belongs to multiple series.` +
+        " This can cause bugs in frontend!" +
+        " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples.",
+    );
+  }
+  for (const seriesTitle of draft.series) {
+    if (!(seriesTitle in seriesDraftsMap)) {
+      seriesDraftsMap[seriesTitle] = { title: seriesTitle };
+    }
+  }
+}
+
+function validateAppearanceCategories(appearancesDrafts: AppearancesDrafts): void {
+  for (const type of Object.keys(appearancesDrafts)) {
+    if (!(allowedAppCategories as readonly string[]).includes(type)) {
+      throw new PipelineError(`Appearances category "${type}" is not allowed.`);
+    }
+  }
+}
+
 export default async function media(drafts: MediaDraft[]): Promise<MediaStageResult> {
   log.info("Fetching articles...");
 
@@ -29,12 +122,7 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
   let outOf = drafts.length;
   log.setStatusBarText([`Article: ${progress}/${outOf}`]);
 
-  const titles = drafts.map((d) => d.href ?? d.title);
-  for (let i = 0; i < titles.length; i++) {
-    if (!titles[i]) throw new Error(`No title! Between ${titles[i - 1]} and ${titles[i + 1]}`);
-  }
-
-  let pages = fetchWookiee([...new Set(titles)], CACHE_PAGES);
+  let pages = fetchWookiee(articleTitlesForDrafts(drafts), CACHE_PAGES);
   let infoboxes: string[] = [];
   let seriesDraftsMap: Record<string, SeriesDraft> = {};
   let appearancesDrafts: AppearancesDrafts = {};
@@ -56,8 +144,7 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
       draft.pageid = page.pageid;
       let doc = await docFromPage(page, draft);
       if (doc === null) {
-        let logRedlink = debug.redlinks ? log.warn : log.info;
-        logRedlink(`${page.title} is a redlink.`);
+        redlinkLogger()(`${page.title} is a redlink.`);
         draft.redlink = true;
         // TODO: ensure these have all availible info
         continue;
@@ -66,7 +153,7 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
 
       let infobox = doc.infobox();
       if (!infobox) {
-        throw new Error(
+        throw new PipelineError(
           `No infobox! title: ${draft.title}\nwikitext:\n${page.wikitext.slice(0, 1500)}`,
         );
       }
@@ -74,102 +161,33 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
       if (debug.distinctInfoboxes && !infoboxes.includes(infobox._type))
         infoboxes.push(infobox._type, "\n");
 
-      if (infobox._type === "audiobook") draft.audiobook === true;
+      // TODO(final refactor stage): uncomment this assignment and update the regression baseline.
+      // Audiobook entries should carry this flag, but enabling it now changes the preserved
+      // pre-refactor output (for example "The High Republic: The Battle of Jedha").
+      // if (infobox._type === "audiobook") draft.audiobook = true;
 
       fillDraftWithInfoboxData(draft, infobox);
 
-      let appearances = getAppearances(doc);
-      draft.appearances = appearances?.nodes;
-      if (appearances?.links) {
-        for (let [type, links] of Object.entries(appearances.links)) {
-          if (type.startsWith("l-")) continue;
-          if (type.startsWith("c-")) type = type.slice(2);
-          for (let link of links) {
-            if (!(type in appearancesDrafts)) appearancesDrafts[type] = {};
-            const appearancesForType = appearancesDrafts[type]!;
-            let linkName = link.name;
-            if (linkName.endsWith("/Legends")) linkName = linkName.slice(0, -8);
-            if (!(linkName in appearancesForType)) appearancesForType[linkName] = [];
-            // Log repeat appearances
-            // if (appearancesDrafts[type][linkName].find((o) => o.id === draft._id)) {
-            //   console.error(`Repeat appearance of ${type}: ${linkName} in ${draft.title}`);
-            // }
-            // for (let [oldType, appDraftsType] of Object.entries(appearancesDrafts)) {
-            //   if (appDraftsType[linkName]?.find((o) => o.id === draft._id)) {
-            //     console.error(
-            //       `Repeat appearance across categories of ${oldType}: ${linkName} in ${draft.title}`
-            //     );
-            //   }
-            // }
-            const appearanceEntry: AppearanceEntry = {
-              id: draft._id,
-              ...(link.templates && {
-                t: link.templates.map((t: AppearanceTemplate) => ({
-                  name: t.name,
-                  ...(t.parameters.length ? { parameters: t.parameters } : {}),
-                })),
-              }),
-            };
-            appearancesForType[linkName]!.push(appearanceEntry);
-          }
-        }
-      }
+      addAppearances(draft, appearancesDrafts);
 
       cleanupDraft(draft);
 
-      try {
-        if (draft.dateDetails) {
-          try {
-            draft.dateParsed = parseWookieepediaDate(draft.dateDetails.reduce(reduceAstToText, ""));
-          } catch (e) {
-            if (e instanceof UnsupportedDateFormat) {
-              draft.dateParsed = parseWookieepediaDate(draft.date);
-            } else {
-              throw e;
-            }
-          }
-        } else {
-          draft.dateParsed = parseWookieepediaDate(draft.date);
-        }
-      } catch (e) {
-        if (e instanceof UnsupportedDateFormat) {
-          log.error(draft.title, e);
-        } else {
-          throw e;
-        }
-      }
-
-      if (draft.dateParsed === undefined) delete draft.dateParsed;
-
-      if (draft.series) {
-        if (draft.type === "tv" && draft.series.length > 1) {
-          log.warn(
-            `${draft.title} has type "tv" and belongs to multiple series.` +
-              " This can cause bugs in frontend!" +
-              " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples.",
-          );
-        }
-        for (let seriesTitle of draft.series) {
-          if (!(seriesTitle in seriesDraftsMap)) {
-            seriesDraftsMap[seriesTitle] = { title: seriesTitle };
-          }
-        }
-      }
+      parseDraftDate(draft);
+      collectSeriesDrafts(draft, seriesDraftsMap);
 
       log.setStatusBarText([`Article: ${++progress}/${outOf}`]);
     }
   }
 
-  // Make sure no unknown appearances category was found
-  for (let type of Object.keys(appearancesDrafts)) {
-    if (!(allowedAppCategories as readonly string[]).includes(type)) {
-      throw new Error(`Appearances category "${type}" is not allowed.`);
-    }
-  }
+  validateAppearanceCategories(appearancesDrafts);
 
   if (debug.distinctInfoboxes) {
     await writeFile("../../debug/infoboxes.txt", infoboxes.join(""));
   }
 
   return { seriesDrafts: Object.values(seriesDraftsMap), appearancesDrafts };
+}
+
+export function enrichMediaArticles(drafts: MediaDraft[]): Promise<MediaStageResult> {
+  return media(drafts);
 }

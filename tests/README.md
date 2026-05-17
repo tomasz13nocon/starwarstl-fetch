@@ -4,9 +4,9 @@
 
 ```bash
 npm test                              # Run all tests
-npm test -- --project unit            # Unit tests only (~0.1s)
-npm test -- --project integration     # Integration tests, excludes regression (~1s)
-npm test -- --project regression      # Full regression test (~40s)
+npm test -- --project unit            # Unit tests only
+npm test -- --project integration     # Integration tests, excludes regression
+npm test -- --project regression      # Full regression test
 ```
 
 ## Test Structure
@@ -30,10 +30,3 @@ The `tests/snapshots/` directory contains:
 
 **Important**: The baseline was captured once from the working JS implementation. Do NOT regenerate it during the refactor - the whole point is to compare against the original output.
 
-## After the Refactor
-
-Once the TypeScript refactor is complete:
-
-- The regression test and baseline can be removed (no longer needed)
-- Keep `timeline.test.js` and unit tests for ongoing development
-- Potentially reuse the baseline approach for future rewrites (e.g., Rust)

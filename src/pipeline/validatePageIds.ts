@@ -1,7 +1,8 @@
 import { suppressLog } from "../const.ts";
-import { db } from "../db.ts";
+import { collections } from "../db.ts";
 import { log } from "../util.ts";
-import type { MediaDraft, ValidatePageIdsResult } from "../types/index.ts";
+import { PipelineError } from "../errors.ts";
+import type { MediaDraft, MissingMediaDocument, ValidatePageIdsResult } from "../types/index.ts";
 
 type OldMedia = {
   title: string;
@@ -19,13 +20,13 @@ export default async function validatePageIds(
 ): Promise<ValidatePageIdsResult> {
   log.info("Veryfing page IDs...");
 
-  const missingDrafts: unknown[] = [];
+  const missingDrafts: MissingMediaDocument[] = [];
   const missingMediaNoLongerMissing: MediaDraft[] = [];
 
-  const oldMediaArr = (await db
-    .collection("media")
-    .find({}, { projection: { title: 1, pageid: 1, notUnique: 1 } })
-    .toArray()) as unknown as OldMedia[];
+  const oldMediaArr = await collections
+    .media()
+    .find<OldMedia>({}, { projection: { title: 1, pageid: 1, notUnique: 1 } })
+    .toArray();
 
   for (let oldMedia of oldMediaArr) {
     const newMedia = drafts.find((m) => m.pageid === oldMedia.pageid);
@@ -34,11 +35,12 @@ export default async function validatePageIds(
       if ((suppressLog.ignoreMissingPageid as readonly string[]).includes(oldMedia.title)) continue;
 
       if ((suppressLog.migrateMissingPageid as readonly string[]).includes(oldMedia.title)) {
-        // TODO implement or remove from suppress log
-        throw new Error("Not implemented");
+        throw new PipelineError(
+          `Missing page ID migration is configured for "${oldMedia.title}", but migrations are not implemented`,
+        );
       }
 
-      const pageidsInUse = await db.collection("lists").distinct("items");
+      const pageidsInUse = await collections.lists().distinct("items");
 
       // WARN:pageid If we end up using pageids for stuff other than lists, this needs to be updated
       if (!pageidsInUse.includes(oldMedia.pageid)) {
@@ -52,7 +54,8 @@ export default async function validatePageIds(
       // persist missingDrafts to missingMedia in DB
       // frontend: display message about media being gone from one of user's lists, and show it in list page under "Media removed from timeline" heading
 
-      missingDrafts.push(await db.collection("media").findOne({ pageid: oldMedia.pageid }));
+      const missingDraft = await collections.media().findOne({ pageid: oldMedia.pageid });
+      if (missingDraft !== null) missingDrafts.push(missingDraft);
       log.warn(
         `"${oldMedia.title}" with pageid: ${oldMedia.pageid} missing from new data. Saving to missingMedia.`,
       );
@@ -74,10 +77,10 @@ export default async function validatePageIds(
   }
 
   const oldPageids = new Set(oldMediaArr.map((m) => m.pageid));
-  const missingMediaArr = (await db
-    .collection("missingMedia")
-    .find({}, { projection: { pageid: 1, title: 1 } })
-    .toArray()) as unknown as MissingMedia[];
+  const missingMediaArr = await collections
+    .missingMedia()
+    .find<MissingMedia>({}, { projection: { pageid: 1, title: 1 } })
+    .toArray();
 
   for (let newMedia of drafts) {
     if (!oldPageids.has(newMedia.pageid)) {

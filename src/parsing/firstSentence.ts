@@ -205,8 +205,8 @@ error: ${error.name}: ${error.message}`,
   const seriesDoc = await docFromTitle(seriesTitle);
   if (seriesDoc === null) throw new Error(`${seriesTitle} is not a valid wookieepedia article.`);
   log.info(`title: ${seriesDoc.title()} (fetched: ${seriesTitle})`);
-  log.info(`sentence: ${seriesDoc.sentence(0)}, text: ${sentenceText(seriesDoc, 0)}`);
   const seriesSentence = sentenceText(seriesDoc, 0);
+  log.info(`sentence: ${seriesSentence}`);
   const regSeries = reg(seriesSentence, documentTitle(doc));
   if (!regSeries)
     log.warn(

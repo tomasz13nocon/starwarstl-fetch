@@ -61,7 +61,7 @@ export type ParsedAppearances = {
 };
 
 export type DraftAppearance = {
-  name: AppearanceCategory | string;
+  name: string;
   value: AppearanceNode[];
 };
 
@@ -73,9 +73,7 @@ export type AppearanceEntry = {
   }>;
 };
 
-export type AppearancesDrafts = Partial<
-  Record<AppearanceCategory | string, Record<string, AppearanceEntry[]>>
->;
+export type AppearancesDrafts = Partial<Record<string, Record<string, AppearanceEntry[]>>>;
 
 export function isAppearanceNodeList(node: AppearanceNode): node is AppearanceNodeList {
   return "List" in node;

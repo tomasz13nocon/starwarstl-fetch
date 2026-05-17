@@ -5,6 +5,7 @@ import { fetchWookiee } from "../fetchWookiee.ts";
 import { docFromPage, figureOutFullTypes, fillDraftWithInfoboxData } from "../parsing/index.ts";
 import { seriesRegexes } from "../regex.ts";
 import { log } from "../util.ts";
+import { PipelineError } from "../errors.ts";
 import { cleanupDraft } from "./cleanupDrafts.ts";
 import type { FullType, MediaDraft, SeriesDraft, SeriesType } from "../types/index.ts";
 
@@ -18,7 +19,7 @@ const hardcodedSeriesTypes: Partial<Record<string, SeriesType>> = {
 export default async function series(
   drafts: MediaDraft[],
   seriesDrafts: SeriesDraft[],
-): Promise<void> {
+): Promise<SeriesDraft[]> {
   log.info("Fetching series...");
 
   let seriesInfoboxes: string[] = [];
@@ -76,7 +77,7 @@ export default async function series(
       let seriesInfobox = seriesDoc.infobox();
       const firstSentenceNode = seriesDoc.sentence(0);
       if (firstSentenceNode === null)
-        throw new Error(`Expected first sentence in series article: ${seriesTitle}`);
+        throw new PipelineError(`Expected first sentence in series article: ${seriesTitle}`);
       let firstSentence = firstSentenceNode.text();
       // Figure out type from categories ...
       if (seriesDoc.categories().includes("Multimedia projects")) {
@@ -104,17 +105,13 @@ Sentence: ${firstSentence}`,
             seriesInfobox._type
           ];
           if (seriesDraft.type === undefined)
-            throw new Error(
+            throw new PipelineError(
               `Can't infer type.
 Series ${seriesTitle} has unknown infobox:
 ${seriesInfobox._type}
 Series comprises: ${episodes.map((e) => e.title).join("\n")}`,
             );
-          if (
-            debug.distinctInfoboxes &&
-            seriesInfobox &&
-            !seriesInfoboxes.includes(seriesInfobox._type)
-          ) {
+          if (debug.distinctInfoboxes && !seriesInfoboxes.includes(seriesInfobox._type)) {
             seriesInfoboxes.push(seriesInfobox._type, "\n");
           }
         }
@@ -122,7 +119,7 @@ Series comprises: ${episodes.map((e) => e.title).join("\n")}`,
         cleanupDraft(seriesDraft);
         await figureOutFullTypes(seriesDraft, seriesDoc, true);
       } else if (!seriesDraft.type) {
-        throw new Error(
+        throw new PipelineError(
           `No infobox and failed to infer series type from article!
 Series: ${seriesTitle}
 Sentence: ${firstSentence}
@@ -136,4 +133,6 @@ Series comprises: ${episodes.map((e) => e.title).join("\n")}`,
   if (debug.distinctInfoboxes) {
     await writeFile("../../debug/seriesInfoboxes.txt", seriesInfoboxes.join(""));
   }
+
+  return seriesDrafts;
 }

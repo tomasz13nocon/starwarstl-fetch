@@ -1,23 +1,15 @@
 import "./env.ts";
 import { createClient } from "redis";
-import type { Document, OptionalId } from "mongodb";
 
 import { runPipeline } from "./runPipeline.ts";
 import { buildTvImagePath, fileExists, log, toHumanReadable } from "./util.ts";
 import config from "./config.ts";
 import netLog from "./netLog.ts";
-import { client, closeDb, db } from "./db.ts";
+import { client, closeDb, collections } from "./db.ts";
 import { REDIS_URI } from "./const.ts";
 import { FetchError } from "./errors.ts";
 
-import type { AppearanceEntry } from "./types/appearances.ts";
-import type { MediaDraft, SeriesDraft } from "./types/draft.ts";
 import type { PipelineResult } from "./types/pipeline.ts";
-
-type AppearanceCollectionDocument = {
-  name: string;
-  media: AppearanceEntry[];
-};
 
 async function writePipelineResult({
   drafts,
@@ -29,14 +21,14 @@ async function writePipelineResult({
   const session = client.startSession();
   try {
     await session.withTransaction(async () => {
-      let mediaColl = db.collection<MediaDraft>("media");
-      let seriesColl = db.collection<SeriesDraft>("series");
+      let mediaColl = collections.media();
+      let seriesColl = collections.series();
 
       log.info("Clearing DB");
       await mediaColl.deleteMany({}, { session });
       await seriesColl.deleteMany({}, { session });
       for (let type of Object.keys(appearancesDrafts)) {
-        await db.collection(type).deleteMany({}, { session });
+        await collections.appearances(type).deleteMany({}, { session });
       }
 
       log.info("Writing to DB");
@@ -44,7 +36,7 @@ async function writePipelineResult({
       await seriesColl.insertMany(seriesDrafts, { session });
       for (let [type, typeAppearances] of Object.entries(appearancesDrafts)) {
         if (typeAppearances === undefined) continue;
-        const appearancesCollection = db.collection<AppearanceCollectionDocument>(type);
+        const appearancesCollection = collections.appearances(type);
         await appearancesCollection.createIndex({ name: "text" }, { session });
         await appearancesCollection.insertMany(
           Object.entries(typeAppearances).map(([name, media]) => ({ name, media })),
@@ -52,18 +44,16 @@ async function writePipelineResult({
         );
       }
       if (missingDrafts.length) {
-        await db
-          .collection("missingMedia")
-          .insertMany(missingDrafts as OptionalId<Document>[], { session });
+        await collections.missingMedia().insertMany(missingDrafts, { session });
       }
       if (missingMediaNoLongerMissing.length) {
-        await db.collection("missingMedia").deleteMany({
+        await collections.missingMedia().deleteMany({
           pageid: { $in: missingMediaNoLongerMissing.map((m) => m.pageid) },
         });
       }
 
-      await db
-        .collection("meta")
+      await collections
+        .meta()
         .updateOne({}, { $set: { dataUpdateTimestamp: Date.now() } }, { upsert: true, session });
     });
   } finally {
@@ -72,7 +62,7 @@ async function writePipelineResult({
 }
 
 async function warnForNewTvShows(): Promise<void> {
-  let tvShowsNew = (await db.collection("media").distinct("series", { type: "tv" })).filter(
+  let tvShowsNew = (await collections.media().distinct("series", { type: "tv" })).filter(
     (show): show is string => typeof show === "string",
   );
   for (let show of tvShowsNew) {

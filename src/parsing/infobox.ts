@@ -6,12 +6,12 @@ import { log, toCamelCase } from "../util.ts";
 
 import type { AstNode, TextNode } from "../types/ast.ts";
 import type { InfoboxField } from "../const.ts";
-import type { MediaDraft, SeriesDraft } from "../types/draft.ts";
+import type { InfoboxDraftFields, MediaDraft, SeriesDraft } from "../types/draft.ts";
 import type { InfoboxData } from "../types/parsing.ts";
 import type { WtfInfobox, WtfInfoboxValue, WtfLink } from "../types/wtf.ts";
 
-type MutableDraft = (MediaDraft | SeriesDraft) & Record<string, unknown>;
 type RawAstNode = Record<string, unknown> & { type?: unknown; text?: unknown; raw?: unknown };
+type InfoboxDraftKey = keyof InfoboxDraftFields;
 
 export type InfoboxFieldMapping = InfoboxField;
 
@@ -113,9 +113,18 @@ function requireAstNode(astNode: RawAstNode): AstNode {
   throw new Error(`Unexpected wtf_wikipedia AST node shape: ${JSON.stringify(astNode)}`);
 }
 
-export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobox): void {
+function setInfoboxDraftField<K extends InfoboxDraftKey>(
+  draft: MediaDraft | SeriesDraft,
+  key: K,
+  value: InfoboxDraftFields[K],
+): void {
+  Object.assign(draft, { [key]: value });
+}
+
+export function fillDraftWithInfoboxData(draft: MediaDraft | SeriesDraft, infobox: WtfInfobox): void {
   for (const [key, value] of Object.entries(getInfoboxData(infobox, infoboxFields))) {
-    draft[key] = processAst(value);
+    const draftKey = key as InfoboxDraftKey;
+    setInfoboxDraftField(draft, draftKey, processAst(value) as InfoboxDraftFields[typeof draftKey]);
   }
 
   draft.coverWook = infobox
@@ -123,10 +132,12 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
     .wikitext()
     .replaceAll(/(\[\[|File:|\]\]|\|.*)/g, "");
 
-  if (draft.releaseDate && !draft.releaseDateDetails) {
-    const rd = new Date(String(draft.releaseDate));
+  const releaseDate =
+    "releaseDate" in draft && typeof draft.releaseDate === "string" ? draft.releaseDate : undefined;
+  if (releaseDate && !draft.releaseDateDetails) {
+    const rd = new Date(releaseDate);
     if (isNaN(Number(rd))) {
-      draft.releaseDateDetails = [{ type: "text", text: String(draft.releaseDate) }];
+      draft.releaseDateDetails = [{ type: "text", text: releaseDate }];
     } else {
       draft.releaseDateDetails = rd.toLocaleDateString("en-US", {
         year: "numeric",
@@ -135,8 +146,9 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
       });
     }
   }
-  if (draft.date && !draft.dateDetails) {
-    draft.dateDetails = [{ type: "text", text: String(draft.date) }];
+  const date = "date" in draft && typeof draft.date === "string" ? draft.date : undefined;
+  if (date && !draft.dateDetails) {
+    draft.dateDetails = [{ type: "text", text: date }];
   }
 
   if (draft.isbn === "none") delete draft.isbn;
@@ -145,12 +157,12 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
     infobox
       .get("publisher")
       .links()
-      .map((e) => decode(e.page())) || null;
+      .map((e) => decode(e.page()));
   draft.series =
     infobox
       .get("series")
       .links()
-      .map((e) => decode(getPageWithAnchor(e))) || null;
+      .map((e) => decode(getPageWithAnchor(e)));
 
   const seasonText = infobox.get("season").text();
   if (seasonText) {
@@ -178,9 +190,9 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
     if (Array.isArray(episodeText)) {
       episodeText = episodeText.reduce(reduceAstToText, "");
     }
-    if (!/^\d+([–-]\d+)?$/.test(String(episodeText))) {
+    if (!/^\d+([–-]\d+)?$/.test(episodeText)) {
       log.error(
-        `Episode '${String(episodeText)}' does not have a valid format! Title: ${draft.title}`,
+        `Episode '${episodeText}' does not have a valid format! Title: ${draft.title}`,
       );
     }
 
@@ -191,7 +203,7 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
   if (draft.season) draft.se += "S" + String(draft.season);
   if (draft.seasonNote) draft.se += "-" + draft.seasonNote;
   if (draft.season && draft.episode) draft.se += " ";
-  if (draft.episode) draft.se += "E" + String(draft.episode);
+  if (draft.episode) draft.se += "E" + draft.episode;
 }
 
 // Takes a text node, returns an array of text and note nodes. Also removes italics/bold.
@@ -208,9 +220,7 @@ function processNotes(textNode: TextNode): AstNode[] {
   return nodes;
 }
 
-function processAst(sentence: WtfInfoboxValue): string | AstNode[] | null | WtfInfoboxValue {
-  if (!sentence) return sentence;
-
+function processAst(sentence: WtfInfoboxValue): string | AstNode[] | null {
   const newAst: AstNode[] = [];
   let list: AstNode[][] = [];
   let listItem: AstNode[] = [];
@@ -282,8 +292,8 @@ function getInfoboxData(infobox: WtfInfobox, keys: readonly InfoboxField[]): Inf
       value = infobox.get(alias);
       if (value.text() !== "") break;
     }
-    let dbKey = toCamelCase(key.name || key.aliases[0] || "");
-    if (key.details) dbKey += "Details";
+    const baseKey = toCamelCase(key.name || key.aliases[0] || "");
+    const dbKey = (key.details ? `${baseKey}Details` : baseKey) as InfoboxDraftKey;
     if (value) ret[dbKey] = value;
   }
   return ret;

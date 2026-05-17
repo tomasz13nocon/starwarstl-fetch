@@ -1,5 +1,6 @@
 import { figureOutFullTypes } from "../parsing/index.ts";
 import { log } from "../util.ts";
+import { PipelineError } from "../errors.ts";
 import type { MediaDraft, SeriesDraft } from "../types/index.ts";
 
 export default async function mediaTypes(
@@ -13,9 +14,17 @@ export default async function mediaTypes(
   // Second iteration over media to get full types, for which we need series data.
   // Second iteration because we want to batch series fetching.
   for (let draft of drafts) {
-    if (!draft.doc) throw new Error(`Missing parsed doc for ${draft.title}`);
+    if (!draft.doc) throw new PipelineError(`Missing parsed doc for ${draft.title}`);
     await figureOutFullTypes(draft, draft.doc, false, seriesDrafts);
     delete draft.doc;
     log.setStatusBarText([`Second iteration (full types). Article: ${++progress}/${outOf}`]);
   }
+}
+
+export async function addMediaFullTypes(
+  drafts: MediaDraft[],
+  seriesDrafts: SeriesDraft[],
+): Promise<MediaDraft[]> {
+  await mediaTypes(drafts, seriesDrafts);
+  return drafts;
 }

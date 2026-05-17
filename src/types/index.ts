@@ -1,6 +1,7 @@
 export * from "./appearances.js";
 export * from "./ast.js";
 export * from "./config.ts";
+export * from "./db.ts";
 export * from "./draft.js";
 export * from "./media.js";
 export * from "./parsing.js";

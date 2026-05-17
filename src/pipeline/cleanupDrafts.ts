@@ -1,4 +1,4 @@
-export function cleanupDraft<T extends object>(draft: T): void {
+export function cleanupDraft(draft: object): void {
   for (const [key, value] of Object.entries(draft)) {
     if (
       (Array.isArray(value) && !value.length) ||
@@ -6,16 +6,18 @@ export function cleanupDraft<T extends object>(draft: T): void {
       value === null ||
       value === ""
     ) {
-      delete draft[key as keyof T];
+      Reflect.deleteProperty(draft, key);
     }
   }
 }
 
 // Delete empty values in provided draft arrays
-export default function cleanupDrafts(...draftArrs: object[][]): void {
+export default function cleanupDrafts<T extends object[][]>(...draftArrs: T): T {
   for (let drafts of draftArrs) {
     for (let draft of drafts) {
       cleanupDraft(draft);
     }
   }
+
+  return draftArrs;
 }

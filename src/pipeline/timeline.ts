@@ -1,11 +1,11 @@
 import { decode } from "html-entities";
 import { log, unscuffDate } from "../util.ts";
 import { types } from "../const.ts";
-import type { FullType, ListNode, MediaDraft, MediaType, TimelineRow } from "../types/index.ts";
+import { PipelineError } from "../errors.ts";
+import type { ListNode, MediaDraft, MediaType, TimelineRow } from "../types/index.ts";
 
 function cleanupTitle(str: string): string {
-  return decode(str)
-    .split("*")[0]!
+  return (decode(str).split("*")[0] ?? "")
     .replace("†", "")
     .trim()
     .replace(/^"(.*)"$/, "$1");
@@ -19,7 +19,7 @@ export default function timeline(table: TimelineRow[]): MediaDraft[] {
   let drafts: TimelineDraft[] = [];
   let draftMap: Record<string, TimelineDraft> = {}; // Used to find duplicates
 
-  const firstRow = table[0];
+  const firstRow = table[0] as Partial<TimelineRow> | undefined;
 
   if (
     firstRow?.Title === undefined ||
@@ -27,7 +27,7 @@ export default function timeline(table: TimelineRow[]): MediaDraft[] {
     firstRow.Released === undefined ||
     firstRow.Year === undefined
   ) {
-    throw new Error("Timeline parsing error: Unexpected table layout. Some columns are missing.");
+    throw new PipelineError("Timeline parsing error: Unexpected table layout. Some columns are missing.");
   }
 
   for (let [i, item] of table.entries()) {
@@ -71,7 +71,8 @@ export default function timeline(table: TimelineRow[]): MediaDraft[] {
 
     // Check for duplicate titles - these are usually "chapter" entries, that link to their parent media
     if (draftMap[draft.title]) {
-      let first = draftMap[draft.title]!;
+      const first = draftMap[draft.title];
+      if (first === undefined) throw new PipelineError(`Duplicate draft missing for ${draft.title}`);
       if (!first.href) {
         first.href = first.title;
         first.title = cleanupTitle(first.titleText ?? first.title);
@@ -114,4 +115,8 @@ export default function timeline(table: TimelineRow[]): MediaDraft[] {
   }
 
   return drafts;
+}
+
+export function parseTimelineRows(table: TimelineRow[]): MediaDraft[] {
+  return timeline(table);
 }

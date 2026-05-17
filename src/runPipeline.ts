@@ -22,10 +22,10 @@ import config from "./config.ts";
 import { fetchWookiee } from "./fetchWookiee.ts";
 import { knownTemplates } from "./const.ts";
 import { PipelineError } from "./errors.ts";
-import timeline from "./pipeline/timeline.ts";
-import media from "./pipeline/media.ts";
+import { parseTimelineRows } from "./pipeline/timeline.ts";
+import { enrichMediaArticles } from "./pipeline/media.ts";
 import series from "./pipeline/series.ts";
-import mediaTypes from "./pipeline/mediaTypes.ts";
+import { addMediaFullTypes } from "./pipeline/mediaTypes.ts";
 import adjustBookTypes from "./pipeline/adjustBookTypes.ts";
 import images from "./pipeline/images.ts";
 import validateFullTypes from "./pipeline/validateFullTypes.ts";
@@ -34,6 +34,7 @@ import validatePageIds from "./pipeline/validatePageIds.ts";
 
 import type { MediaDraft } from "./types/draft.ts";
 import type {
+  PipelineState,
   PipelineOptions,
   PipelineResult,
   TimelineRow,
@@ -94,32 +95,38 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
     data = data.slice(0, limit);
   }
 
-  // Run pipeline stages
-  const drafts = timeline(data);
+  let state: PipelineState = {
+    drafts: parseTimelineRows(data),
+    seriesDrafts: [],
+    appearancesDrafts: {},
+  };
 
-  const { seriesDrafts, appearancesDrafts } = await media(drafts);
+  state = { ...state, ...(await enrichMediaArticles(state.drafts)) };
 
-  await series(drafts, seriesDrafts);
+  state = { ...state, seriesDrafts: await series(state.drafts, state.seriesDrafts) };
 
-  await mediaTypes(drafts, seriesDrafts);
+  state = {
+    ...state,
+    drafts: await addMediaFullTypes(state.drafts, state.seriesDrafts),
+  };
 
-  adjustBookTypes(drafts, seriesDrafts);
+  state = { ...state, seriesDrafts: adjustBookTypes(state.drafts, state.seriesDrafts) };
 
   if (!skipImages) {
-    await images(drafts);
+    state = { ...state, drafts: await images(state.drafts) };
   }
 
-  validateFullTypes(drafts);
+  validateFullTypes(state.drafts);
 
-  cleanupDrafts(drafts, seriesDrafts);
+  cleanupDrafts(state.drafts, state.seriesDrafts);
 
   let missingDrafts: ValidatePageIdsResult["missingDrafts"] = [];
   let missingMediaNoLongerMissing: MediaDraft[] = [];
   if (!skipValidatePageIds) {
-    ({ missingDrafts, missingMediaNoLongerMissing } = await validatePageIds(drafts));
+    ({ missingDrafts, missingMediaNoLongerMissing } = await validatePageIds(state.drafts));
   }
 
-  return { drafts, seriesDrafts, appearancesDrafts, missingDrafts, missingMediaNoLongerMissing };
+  return { ...state, missingDrafts, missingMediaNoLongerMissing };
 }
 
 export default runPipeline;
