@@ -4,11 +4,13 @@ import { log } from "./util.ts";
 import type { WtfTemplateParseResult, WtfTemplateParser } from "wtf_wikipedia";
 
 function value(value: WtfTemplateParseResult[string]): string | undefined {
-  return value as string | undefined;
+  if (typeof value === "string" || value === undefined) return value;
+  throw new Error(`Expected a scalar template value, got ${JSON.stringify(value)}`);
 }
 
 function requiredList(parsed: WtfTemplateParseResult): string[] {
-  return parsed.list as string[];
+  if (parsed.list === undefined) throw new Error(`Expected positional template arguments.`);
+  return parsed.list;
 }
 
 function optionalList(parsed: WtfTemplateParseResult): string[] {
@@ -57,6 +59,18 @@ export default function initWtf(): void {
 
     function formatLink(page: string | undefined, name?: string) {
       return `[[${page}${name ? "|" + name : ""}]]`;
+    }
+
+    function requiredValue(parsed: WtfTemplateParseResult, key: string): string {
+      const ret = value(parsed[key]);
+      if (ret === undefined) throw new Error(`Expected template argument "${key}".`);
+      return ret;
+    }
+
+    function requiredListValue(parsed: WtfTemplateParseResult, index: number): string {
+      const ret = requiredList(parsed)[index];
+      if (ret === undefined) throw new Error(`Expected positional template argument ${index}.`);
+      return ret;
     }
 
     // This is based on a scuffed template used by some Cite templates.
@@ -108,7 +122,7 @@ export default function initWtf(): void {
       // https://starwars.fandom.com/wiki/Template:IDWAdventuresCite-2020
       // TODO: these are issues containing two stories. We should include the name of the issue in the title, like Wookieepedia does, instead of just the story titles.
       return hideParanthetical(
-        optionalList(parsed)[1] || value(parsed.story)!,
+        optionalList(parsed)[1] || requiredValue(parsed, "story"),
         optionalList(parsed)[2] || value(parsed.stext),
       );
     }
@@ -151,7 +165,7 @@ export default function initWtf(): void {
       if (parsed.stext || parsed.sformatted) {
         return formatLink(value(parsed.story), value(parsed.stext) || value(parsed.sformatted));
       } else {
-        return hideParanthetical(value(parsed.story)!);
+        return hideParanthetical(requiredValue(parsed, "story"));
       }
     };
 
@@ -195,7 +209,7 @@ export default function initWtf(): void {
       list.push(parsed);
 
       // https://starwars.fandom.com/wiki/Template:FFG
-      return hideParanthetical(value(parsed.story)!, value(parsed.stext));
+      return hideParanthetical(requiredValue(parsed, "story"), value(parsed.stext));
     };
 
     templates.film = (tmpl) => {
@@ -238,7 +252,7 @@ export default function initWtf(): void {
       let parsed = parse(tmpl);
       list.push(parsed);
 
-      let episode = `Episode ${requiredList(parsed)[0]} (Star Wars: Jedi Temple Challenge)`;
+      let episode = `Episode ${requiredListValue(parsed, 0)} (Star Wars: Jedi Temple Challenge)`;
       return formatLink(episode);
     };
 
@@ -246,7 +260,7 @@ export default function initWtf(): void {
       let parsed = parse(tmpl);
       list.push(parsed);
 
-      let episode = `Episode ${requiredList(parsed)[0]} (Grogu Cutest In The Galaxy)`;
+      let episode = `Episode ${requiredListValue(parsed, 0)} (Grogu Cutest In The Galaxy)`;
       return formatLink(episode, requiredList(parsed)[1]);
     };
 
@@ -258,16 +272,17 @@ export default function initWtf(): void {
 
       let episode;
       const parsedList = requiredList(parsed);
-      if (parsedList[0] === "Porgs") {
+      const subject = requiredListValue(parsed, 0);
+      if (subject === "Porgs") {
         episode = "Porgs (Galactic Pals)";
-      } else if (parsedList[0] === "Rancor") {
+      } else if (subject === "Rancor") {
         episode = "Rancor (Galactic Pals)";
-      } else if (parsedList[0] === "Tauntaun") {
+      } else if (subject === "Tauntaun") {
         episode = "Tauntaun (Galactic Pals)";
-      } else if (parsedList[0]!.includes("(")) {
-        episode = parsedList[0];
+      } else if (subject.includes("(")) {
+        episode = subject;
       } else {
-        episode = parsedList[0] + " (episode)";
+        episode = subject + " (episode)";
       }
 
       return formatLink(episode, parsedList[1]);
@@ -281,16 +296,17 @@ export default function initWtf(): void {
 
       let episode;
       const parsedList = requiredList(parsed);
-      if (parsedList[0] === "Porgs") {
+      const subject = requiredListValue(parsed, 0);
+      if (subject === "Porgs") {
         episode = "Porgs (Galaxy of Creatures)";
-      } else if (parsedList[0] === "Rancor") {
+      } else if (subject === "Rancor") {
         episode = "Rancor (Galaxy of Creatures)";
-      } else if (parsedList[0] === "Tauntaun") {
+      } else if (subject === "Tauntaun") {
         episode = "Tauntaun (Galaxy of Creatures)";
-      } else if (parsedList[0]!.includes("(")) {
-        episode = parsedList[0];
+      } else if (subject.includes("(")) {
+        episode = subject;
       } else {
-        episode = parsedList[0] + " (episode)";
+        episode = subject + " (episode)";
       }
 
       return formatLink(episode, parsedList[1]);

@@ -183,8 +183,8 @@ const fetchWookieeRemote = async function* (
       yield {
         title: page.title,
         pageid: page.pageid,
-        wikitext: page.revisions?.[0].slots.main["*"],
-        timestamp: page.revisions?.[0].timestamp,
+        wikitext: page.revisions[0].slots.main["*"],
+        timestamp: page.revisions[0].timestamp,
         // If there's no normalization this field is undefined
         normalizedFrom: page.normalizedFrom,
       };
@@ -229,9 +229,9 @@ const fetchImageInfoRemote = async function* (
       yield {
         title: page.title,
         pageid: page.pageid,
-        sha1: page.imageinfo?.[0].sha1,
-        timestamp: page.imageinfo?.[0].timestamp,
-        url: page.imageinfo?.[0].url,
+        sha1: page.imageinfo[0].sha1,
+        timestamp: page.imageinfo[0].timestamp,
+        url: page.imageinfo[0].url,
         // If there's no normalization this field is undefined
         normalizedFrom: page.normalizedFrom,
       };

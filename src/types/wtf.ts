@@ -8,7 +8,7 @@ export type WtfTemplate = {
 
 export type WtfLink = {
   page(): string;
-  anchor(): string | undefined;
+  anchor(): string;
   json(): { page: string; text?: string; anchor?: string };
 };
 
@@ -16,6 +16,7 @@ export type WtfInfoboxValue = {
   text(): string;
   wikitext(): string;
   links(): WtfLink[];
+  ast(): unknown[];
   json?(): unknown;
 };
 
@@ -29,7 +30,7 @@ export type WtfParagraph = {
 };
 
 export type WtfRedirectTarget = {
-  page: string;
+  page?: string;
 };
 
 export type WtfTable = {
@@ -38,15 +39,14 @@ export type WtfTable = {
 
 /** Minimal document surface currently used by the fetch pipeline. */
 export type WtfDocument = {
-  title(): string;
-  pageID(id: number): void;
-  pageID(): number;
+  title(): string | null;
+  pageID(id?: number): number | null;
   wikitext(): string;
   isRedirect(): boolean;
-  redirectTo(): WtfRedirectTarget;
+  redirectTo(): WtfRedirectTarget | null;
   isDisambig(): boolean;
-  sentence(index: number): WtfParagraph;
-  paragraph(index: number): WtfParagraph;
+  sentence(index: number): WtfParagraph | null;
+  paragraph(index: number): WtfParagraph | null;
   categories(): string[];
   templates(): WtfTemplate[];
   tables(): WtfTable[];

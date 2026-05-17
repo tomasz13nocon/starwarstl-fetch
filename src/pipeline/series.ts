@@ -74,7 +74,10 @@ export default async function series(
         seriesDraft.displayTitle = seriesTitle.replaceAll("#", " ");
       }
       let seriesInfobox = seriesDoc.infobox();
-      let firstSentence = seriesDoc.sentence(0).text();
+      const firstSentenceNode = seriesDoc.sentence(0);
+      if (firstSentenceNode === null)
+        throw new Error(`Expected first sentence in series article: ${seriesTitle}`);
+      let firstSentence = firstSentenceNode.text();
       // Figure out type from categories ...
       if (seriesDoc.categories().includes("Multimedia projects")) {
         seriesDraft.type = "multimedia";

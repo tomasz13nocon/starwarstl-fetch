@@ -11,6 +11,7 @@ import type { InfoboxData } from "../types/parsing.ts";
 import type { WtfInfobox, WtfInfoboxValue, WtfLink } from "../types/wtf.ts";
 
 type MutableDraft = (MediaDraft | SeriesDraft) & Record<string, unknown>;
+type RawAstNode = Record<string, unknown> & { type?: unknown; text?: unknown; raw?: unknown };
 
 export type InfoboxFieldMapping = InfoboxField;
 
@@ -39,7 +40,65 @@ export function reduceAstToText(acc: string, item: AstNode): string {
 }
 
 function getPageWithAnchor(link: WtfLink): string {
-  return link.page() + (link.anchor() ? "#" + link.anchor() : "");
+  const anchor = link.anchor();
+  return link.page() + (anchor ? "#" + anchor : "");
+}
+
+function isRawAstNode(value: unknown): value is RawAstNode {
+  return typeof value === "object" && value !== null;
+}
+
+function decodeRawAstNode(originalAstNode: RawAstNode): RawAstNode {
+  return Object.fromEntries(
+    Object.entries(originalAstNode).map(([key, value]) => [
+      key,
+      typeof value === "string" ? decode(value) : value,
+    ]),
+  );
+}
+
+function requireTextNode(astNode: RawAstNode): TextNode & Record<string, unknown> {
+  if (astNode.type !== "text" || typeof astNode.text !== "string") {
+    throw new Error(`Expected wtf_wikipedia text AST node, got ${JSON.stringify(astNode)}`);
+  }
+  return { ...astNode, type: "text", text: astNode.text };
+}
+
+function requireAstNode(astNode: RawAstNode): AstNode {
+  const { text: rawText, type: _rawType, ...rest } = astNode;
+  switch (astNode.type) {
+    case "text":
+    case "note":
+      if (typeof astNode.text !== "string") break;
+      return { ...astNode, type: astNode.type, text: astNode.text };
+    case "internal link":
+    case "interwiki link":
+      if (typeof astNode.page !== "string") break;
+      if (astNode.type === "internal link")
+        return {
+          ...rest,
+          type: "internal link",
+          page: astNode.page,
+          ...(typeof rawText === "string" ? { text: rawText } : {}),
+        };
+      return {
+        ...rest,
+        type: "interwiki link",
+        page: astNode.page,
+        ...(typeof rawText === "string" ? { text: rawText } : {}),
+      };
+    case "external link":
+      if (typeof astNode.site !== "string") break;
+      if (typeof rawText === "string")
+        return {
+          ...rest,
+          type: "external link",
+          site: astNode.site,
+          text: rawText,
+        };
+      return { ...rest, type: "external link", site: astNode.site };
+  }
+  throw new Error(`Unexpected wtf_wikipedia AST node shape: ${JSON.stringify(astNode)}`);
 }
 
 export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobox): void {
@@ -74,12 +133,12 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
     infobox
       .get("publisher")
       .links()
-      ?.map((e) => decode(e.page())) || null;
+      .map((e) => decode(e.page())) || null;
   draft.series =
     infobox
       .get("series")
       .links()
-      ?.map((e) => decode(getPageWithAnchor(e))) || null;
+      .map((e) => decode(getPageWithAnchor(e))) || null;
 
   const seasonText = infobox.get("season").text();
   if (seasonText) {
@@ -144,32 +203,33 @@ function processAst(sentence: WtfInfoboxValue): string | AstNode[] | null | WtfI
   let list: AstNode[][] = [];
   let listItem: AstNode[] = [];
   let current = newAst;
-  const ast = (sentence as unknown as { ast(): Array<Record<string, unknown>> }).ast();
+  const ast = sentence.ast();
   if (ast.length === 0) return null;
   for (const [i, originalAstNode] of ast.entries()) {
-    const astNode = Object.fromEntries(
-      Object.entries(originalAstNode).map(([key, value]) => [
-        key,
-        typeof value === "string" ? decode(value) : value,
-      ]),
-    ) as TextNode & Record<string, unknown>;
+    if (!isRawAstNode(originalAstNode)) {
+      throw new Error(
+        `Expected wtf_wikipedia AST node object, got ${JSON.stringify(originalAstNode)}`,
+      );
+    }
+    const astNode = decodeRawAstNode(originalAstNode);
     if (astNode.type !== "text") {
       delete astNode.raw;
-      current.push(astNode);
+      current.push(requireAstNode(astNode));
       continue;
     }
+    const textNode = requireTextNode(astNode);
 
-    if (i === 0 && astNode.text.startsWith("*")) {
+    if (i === 0 && textNode.text.startsWith("*")) {
       listItem = [];
       list = [listItem];
       current = listItem;
       newAst.push({ type: "list", data: list });
-      astNode.text = astNode.text.replace(/^\*+/, "");
+      textNode.text = textNode.text.replace(/^\*+/, "");
     }
 
-    const lines = astNode.text.split(/\n/);
+    const lines = textNode.text.split(/\n/);
     if (lines.length === 1) {
-      current.push(...processNotes(astNode));
+      current.push(...processNotes(textNode));
       continue;
     }
     let preceding: TextNode | undefined;
@@ -192,7 +252,7 @@ function processAst(sentence: WtfInfoboxValue): string | AstNode[] | null | WtfI
           current = newAst;
         }
       }
-      preceding = { ...astNode, text: line.replace(/^\*+ */, "") };
+      preceding = { ...textNode, text: line.replace(/^\*+ */, "") };
     }
     if (preceding) current.push(...processNotes(preceding));
   }
