@@ -16,8 +16,8 @@ type FixtureResult = WookieepediaPageResult | WookieepediaImageInfoResult;
 
 /**
  * Get the fixtures directory for the current continuity.
- * @param {boolean} legends - Whether to use legends continuity
- * @returns {string} Path to fixtures directory
+ * @param legends - Whether to use legends continuity
+ * @returns Path to fixtures directory
  *
  * The base path can be overridden via FIXTURES_PATH environment variable.
  * This is useful for testing against snapshotted fixtures.
@@ -83,7 +83,7 @@ export function resetLocalIndexes() {
 
 /**
  * Initialize or get cached indexes.
- * @param {boolean} legends - Whether to use legends continuity
+ * @param legends - Whether to use legends continuity
  */
 async function ensureIndexes(legends = false): Promise<void> {
   const dir = getFixturesDir(legends);

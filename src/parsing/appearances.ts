@@ -7,7 +7,6 @@ import { log } from "../util.ts";
 import type {
   AppearanceTemplateParameter,
   ArticleAppearances,
-  ParsedAppearances,
   ParsedAppearanceLink,
 } from "../types/index.ts";
 import type { WtfDocument } from "../types/wtf.ts";
