@@ -9,6 +9,7 @@
     "capture": "node scripts/capture-api-data.js",
     "baseline": "node scripts/generate-baseline.js",
     "check": "tsc",
+    "format": "prettier --write src",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

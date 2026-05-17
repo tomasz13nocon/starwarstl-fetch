@@ -30,6 +30,11 @@ export type FullType =
   | "comic-strip"
   | "comic-story";
 
-export const TYPES_REQUIRING_FULL_TYPE = ["tv", "book", "comic", "game"] as const satisfies readonly MediaType[];
+export const TYPES_REQUIRING_FULL_TYPE = [
+  "tv",
+  "book",
+  "comic",
+  "game",
+] as const satisfies readonly MediaType[];
 
 export type TypeRequiringFullType = (typeof TYPES_REQUIRING_FULL_TYPE)[number];

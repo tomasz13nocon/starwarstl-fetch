@@ -9,6 +9,6 @@ export default function validateFullTypes(drafts: MediaDraft[]): void {
   if (noFullTypes.length)
     log.error(
       `No fullType despite being required (for frontend filters) on the following media:
-      ${noFullTypes.join("\n")}`
+      ${noFullTypes.join("\n")}`,
     );
 }

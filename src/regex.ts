@@ -20,11 +20,11 @@ export function reg(str: string, title: string): BookAudienceRegexMatch | null {
 }
 
 export const seasonReg = new RegExp(
-  "^(?:season )?(" + Object.keys(NUMBERS).reduce((acc, n) => `${acc}|${n}`) + ")$"
+  "^(?:season )?(" + Object.keys(NUMBERS).reduce((acc, n) => `${acc}|${n}`) + ")$",
 );
 
 export const seasonRegWordBound = new RegExp(
-  "(?:season )?\\b(" + Object.keys(NUMBERS).reduce((acc, n) => `${acc}|${n}`) + ")\\b"
+  "(?:season )?\\b(" + Object.keys(NUMBERS).reduce((acc, n) => `${acc}|${n}`) + ")\\b",
 );
 
 // Latter ones have higher priority, as they overwrite

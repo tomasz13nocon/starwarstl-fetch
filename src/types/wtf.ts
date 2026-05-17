@@ -62,6 +62,9 @@ export type TimelineTableRow = {
   [key: string]: unknown;
 };
 
-export type InfoboxFieldMapper<TDraft> = (draft: TDraft, infobox: WtfInfobox) => void | Promise<void>;
+export type InfoboxFieldMapper<TDraft> = (
+  draft: TDraft,
+  infobox: WtfInfobox,
+) => void | Promise<void>;
 
 export type ParsedInfoboxField = string | AstNode[];

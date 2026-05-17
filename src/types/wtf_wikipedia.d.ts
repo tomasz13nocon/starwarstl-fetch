@@ -25,7 +25,10 @@ declare module "wtf_wikipedia" {
     parse: WtfTemplateParser;
   };
 
-  export type WtfTemplateHandler = (templateWikitext: string, list: WtfTemplateParseResult[]) => string;
+  export type WtfTemplateHandler = (
+    templateWikitext: string,
+    list: WtfTemplateParseResult[],
+  ) => string;
 
   export type WtfTemplateHandlers = Record<string, WtfTemplateHandler>;
 

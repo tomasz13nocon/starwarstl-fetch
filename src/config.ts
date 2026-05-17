@@ -60,7 +60,11 @@ export function parseCliArgs(argv = process.argv): CliOptions {
     .description("Fetch and transform Star Wars timeline data from Wookieepedia")
     .allowExcessArguments(false)
     .option("-c, --cache", "cache Wookieepedia page requests")
-    .option("-l, --limit <count>", "process only the first <count> timeline rows", parsePositiveInteger)
+    .option(
+      "-l, --limit <count>",
+      "process only the first <count> timeline rows",
+      parsePositiveInteger,
+    )
     .option("--fs", "store images on the local filesystem")
     .option("--s3", "store images in S3")
     .option("--legends", "use the legends timeline and fixtures")

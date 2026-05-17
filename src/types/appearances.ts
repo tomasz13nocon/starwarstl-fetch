@@ -13,7 +13,11 @@ export type AppearanceCategory =
   | "vehicles"
   | "miscellanea";
 
-export type AppearanceNode = AppearanceNodeList | AppearanceNodeTemplate | AppearanceNodeLink | AppearanceNodeText;
+export type AppearanceNode =
+  | AppearanceNodeList
+  | AppearanceNodeTemplate
+  | AppearanceNodeLink
+  | AppearanceNodeText;
 
 /** Native Rust parser shape: discriminated by object key, not by a `type` field. */
 export type AppearanceNodeList = {
@@ -69,7 +73,9 @@ export type AppearanceEntry = {
   }>;
 };
 
-export type AppearancesDrafts = Partial<Record<AppearanceCategory | string, Record<string, AppearanceEntry[]>>>;
+export type AppearancesDrafts = Partial<
+  Record<AppearanceCategory | string, Record<string, AppearanceEntry[]>>
+>;
 
 export function isAppearanceNodeList(node: AppearanceNode): node is AppearanceNodeList {
   return "List" in node;

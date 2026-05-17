@@ -58,11 +58,15 @@ export function isPageFound(page: WookieepediaPageResult): page is WookieepediaP
   return !isPageMissing(page);
 }
 
-export function isImageMissing(image: WookieepediaImageInfoResult): image is WookieepediaMissingImageInfo {
+export function isImageMissing(
+  image: WookieepediaImageInfoResult,
+): image is WookieepediaMissingImageInfo {
   return "missing" in image;
 }
 
-export function isImageInvalid(image: WookieepediaImageInfoResult): image is WookieepediaInvalidImageInfo {
+export function isImageInvalid(
+  image: WookieepediaImageInfoResult,
+): image is WookieepediaInvalidImageInfo {
   return "invalid" in image;
 }
 

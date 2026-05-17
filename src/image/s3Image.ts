@@ -49,7 +49,7 @@ export class S3Image implements ImageStorage {
           Bucket: BUCKET,
           Prefix: `${S3_IMAGE_PATH}${size}`,
           ContinuationToken: continuationToken,
-        })
+        }),
       );
       netLog.s3read++;
 
@@ -72,11 +72,12 @@ export class S3Image implements ImageStorage {
         new GetObjectCommand({
           Bucket: BUCKET,
           Key: `${S3_IMAGE_PATH}${size}${this.filename}`,
-        })
+        }),
       )
     ).Body;
     netLog.s3read++;
-    if (!data || !("on" in data)) throw new Error(`S3 object body is not readable: ${this.filename}`);
+    if (!data || !("on" in data))
+      throw new Error(`S3 object body is not readable: ${this.filename}`);
     const stream = data as Readable;
     return new Promise<Buffer>((resolve, reject) => {
       const chunks: Buffer[] = [];
@@ -93,7 +94,7 @@ export class S3Image implements ImageStorage {
         Key: `${S3_IMAGE_PATH}${size}${this.filename}`,
         Body: buffer,
         ContentType: "image/webp",
-      })
+      }),
     );
     netLog.s3write++;
     log.info(`Wrote ${this.filename} at size ${size} to S3.`);
@@ -138,7 +139,7 @@ export class S3Image implements ImageStorage {
       new DeleteObjectCommand({
         Bucket: BUCKET,
         Key: `${S3_IMAGE_PATH}${size}${this.filename}`,
-      })
+      }),
     );
     netLog.s3write++;
     log.info(`Deleted ${this.filename} at size ${size} from S3.`);

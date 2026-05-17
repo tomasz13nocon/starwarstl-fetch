@@ -2,7 +2,10 @@ import { figureOutFullTypes } from "../parsing/index.ts";
 import { log } from "../util.ts";
 import type { MediaDraft, SeriesDraft } from "../types/index.ts";
 
-export default async function mediaTypes(drafts: MediaDraft[], seriesDrafts: SeriesDraft[]): Promise<void> {
+export default async function mediaTypes(
+  drafts: MediaDraft[],
+  seriesDrafts: SeriesDraft[],
+): Promise<void> {
   let progress = 0;
   let outOf = drafts.length;
   log.info("Extracting full types");

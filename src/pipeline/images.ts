@@ -22,7 +22,7 @@ type CurrentCover = {
 };
 
 export default async function images(drafts: MediaDraft[]): Promise<void> {
-  let docs = await db
+  let docs = (await db
     .collection("media")
     .find(
       {},
@@ -36,9 +36,9 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
           coverSha1: 1,
           coverHash: 1,
         },
-      }
+      },
     )
-    .toArray() as unknown as CurrentCover[];
+    .toArray()) as unknown as CurrentCover[];
 
   let currentCovers: Record<string, CurrentCover> = {};
   for (let doc of docs) {
@@ -62,13 +62,14 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
 
   for await (let imageinfo of imageinfos) {
     // Keep in mind imageinfo.title is a filename of the image, not the article title
-    const imageTitle = ("normalizedFrom" in imageinfo && imageinfo.normalizedFrom ? imageinfo.normalizedFrom : imageinfo.title);
+    const imageTitle =
+      "normalizedFrom" in imageinfo && imageinfo.normalizedFrom
+        ? imageinfo.normalizedFrom
+        : imageinfo.title;
     const coverTitle = imageTitle.slice(5);
     let articleTitle = titlesDict[coverTitle];
     if (!articleTitle) throw new Error(`No article title found for image ${imageinfo.title}`);
-    let draftsWithThisCover = drafts.filter(
-      (d) => d.coverWook === coverTitle
-    );
+    let draftsWithThisCover = drafts.filter((d) => d.coverWook === coverTitle);
     if (!("url" in imageinfo) || !imageinfo.url) {
       log.warn(`Image file is 404 for image "${imageinfo.title}" in article "${articleTitle}".`);
       continue;
@@ -103,7 +104,7 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
         }
         if (resp.headers.get("Content-Type") !== "image/webp") {
           throw new Error(
-            `Image in non webp. article: ${articleTitle}, filename: ${image.filename}`
+            `Image in non webp. article: ${articleTitle}, filename: ${image.filename}`,
           );
           // image.filename = imageinfo.title.slice(5);
         }
@@ -167,8 +168,8 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
     let blurhashValid = isBlurhashValid(firstDraft.coverHash ?? "");
     if (!blurhashValid.result) {
       log.error(
-          `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${firstDraft.coverHash}" Reason: ` +
-          blurhashValid.errorReason
+        `Blurhash invalid for ${imageinfo.title} of ${articleTitle}! Hash: "${firstDraft.coverHash}" Reason: ` +
+          blurhashValid.errorReason,
       );
     }
 

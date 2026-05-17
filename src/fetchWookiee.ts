@@ -66,18 +66,20 @@ function assertFoundPage(page: ApiPage): asserts page is ApiPage & { pageid: num
   }
 }
 
-function assertRevisionPage(
-  page: ApiPage,
-): asserts page is ApiPage & { pageid: number; revisions: [{ slots: { main: { "*": string } }; timestamp: string }] } {
+function assertRevisionPage(page: ApiPage): asserts page is ApiPage & {
+  pageid: number;
+  revisions: [{ slots: { main: { "*": string } }; timestamp: string }];
+} {
   assertFoundPage(page);
   if (!page.revisions?.[0]) {
     throw new WookieepediaPageError(`Page ${page.title} did not include revision content`);
   }
 }
 
-function assertImageInfoPage(
-  page: ApiPage,
-): asserts page is ApiPage & { pageid: number; imageinfo: [{ sha1: string; timestamp: string; url: string }] } {
+function assertImageInfoPage(page: ApiPage): asserts page is ApiPage & {
+  pageid: number;
+  imageinfo: [{ sha1: string; timestamp: string; url: string }];
+} {
   assertFoundPage(page);
   if (!page.imageinfo?.[0]) {
     throw new WookieepediaPageError(`Page ${page.title} did not include image info`);

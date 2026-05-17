@@ -33,7 +33,12 @@ import cleanupDrafts from "./pipeline/cleanupDrafts.ts";
 import validatePageIds from "./pipeline/validatePageIds.ts";
 
 import type { MediaDraft } from "./types/draft.ts";
-import type { PipelineOptions, PipelineResult, TimelineRow, ValidatePageIdsResult } from "./types/pipeline.ts";
+import type {
+  PipelineOptions,
+  PipelineResult,
+  TimelineRow,
+  ValidatePageIdsResult,
+} from "./types/pipeline.ts";
 import type { WtfTemplate } from "./types/wtf.ts";
 import { isPageMissing } from "./types/wookieepedia.ts";
 
@@ -73,8 +78,12 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
   let data = timelineTable.json() as TimelineRow[];
 
   // Verify no unexpected templates
-  const templates = Array.from(new Set(timelineDoc.templates().map((t: WtfTemplate) => t.json().template)));
-  const unknownTemplates = templates.filter((t): t is string => typeof t === "string" && !knownTemplates.has(t as never));
+  const templates = Array.from(
+    new Set(timelineDoc.templates().map((t: WtfTemplate) => t.json().template)),
+  );
+  const unknownTemplates = templates.filter(
+    (t): t is string => typeof t === "string" && !knownTemplates.has(t as never),
+  );
   if (unknownTemplates.length !== 0) {
     log.error("Unknown templates:", unknownTemplates);
     throw new PipelineError("Unknown templates found in the timeline!");

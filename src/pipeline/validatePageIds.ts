@@ -14,16 +14,18 @@ type MissingMedia = {
   pageid?: number;
 };
 
-export default async function validatePageIds(drafts: MediaDraft[]): Promise<ValidatePageIdsResult> {
+export default async function validatePageIds(
+  drafts: MediaDraft[],
+): Promise<ValidatePageIdsResult> {
   log.info("Veryfing page IDs...");
 
   const missingDrafts: unknown[] = [];
   const missingMediaNoLongerMissing: MediaDraft[] = [];
 
-  const oldMediaArr = await db
+  const oldMediaArr = (await db
     .collection("media")
     .find({}, { projection: { title: 1, pageid: 1, notUnique: 1 } })
-    .toArray() as unknown as OldMedia[];
+    .toArray()) as unknown as OldMedia[];
 
   for (let oldMedia of oldMediaArr) {
     const newMedia = drafts.find((m) => m.pageid === oldMedia.pageid);
@@ -72,10 +74,10 @@ export default async function validatePageIds(drafts: MediaDraft[]): Promise<Val
   }
 
   const oldPageids = new Set(oldMediaArr.map((m) => m.pageid));
-  const missingMediaArr = await db
+  const missingMediaArr = (await db
     .collection("missingMedia")
     .find({}, { projection: { pageid: 1, title: 1 } })
-    .toArray() as unknown as MissingMedia[];
+    .toArray()) as unknown as MissingMedia[];
 
   for (let newMedia of drafts) {
     if (!oldPageids.has(newMedia.pageid)) {

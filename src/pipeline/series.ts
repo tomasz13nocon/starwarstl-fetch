@@ -15,7 +15,10 @@ const hardcodedSeriesTypes: Partial<Record<string, SeriesType>> = {
   "Disney Die-Cut Classics": "yr",
 };
 
-export default async function series(drafts: MediaDraft[], seriesDrafts: SeriesDraft[]): Promise<void> {
+export default async function series(
+  drafts: MediaDraft[],
+  seriesDrafts: SeriesDraft[],
+): Promise<void> {
   log.info("Fetching series...");
 
   let seriesInfoboxes: string[] = [];
@@ -25,7 +28,7 @@ export default async function series(drafts: MediaDraft[], seriesDrafts: SeriesD
   // Series handling
   let seriesPages = fetchWookiee(
     seriesDrafts.map((d) => d.title),
-    CACHE_PAGES
+    CACHE_PAGES,
   );
 
   for await (let page of seriesPages) {
@@ -51,7 +54,7 @@ export default async function series(drafts: MediaDraft[], seriesDrafts: SeriesD
           let fullType: FullType | undefined;
           if (
             episodes.every((e, index) =>
-              index === 0 ? (fullType = e.fullType) : fullType === e.fullType
+              index === 0 ? (fullType = e.fullType) : fullType === e.fullType,
             )
           ) {
             seriesDraft.fullType = fullType;
@@ -60,7 +63,7 @@ export default async function series(drafts: MediaDraft[], seriesDrafts: SeriesD
         } else {
           seriesDraft.type = "unknown";
           log.warn(
-            "Failed to infer type. Setting 'unknown'. Consider adding 'unkown' entry to the legend."
+            "Failed to infer type. Setting 'unknown'. Consider adding 'unkown' entry to the legend.",
           );
         }
         progress++;
@@ -85,7 +88,7 @@ export default async function series(drafts: MediaDraft[], seriesDrafts: SeriesD
                 log.warn(
                   `Multiple regex matches in first sentence of series article: ${seriesTitle} when looking for type.
 Matched for: ${seriesDraft.type} and ${type} (latter takes priority).
-Sentence: ${firstSentence}`
+Sentence: ${firstSentence}`,
                 );
             }
             seriesDraft.type = type as SeriesType;
@@ -94,13 +97,15 @@ Sentence: ${firstSentence}`
       }
       if (seriesInfobox !== null) {
         if (!seriesDraft.type) {
-          seriesDraft.type = (seriesTypes as Partial<Record<string, SeriesType>>)[seriesInfobox._type];
+          seriesDraft.type = (seriesTypes as Partial<Record<string, SeriesType>>)[
+            seriesInfobox._type
+          ];
           if (seriesDraft.type === undefined)
             throw new Error(
               `Can't infer type.
 Series ${seriesTitle} has unknown infobox:
 ${seriesInfobox._type}
-Series comprises: ${episodes.map((e) => e.title).join("\n")}`
+Series comprises: ${episodes.map((e) => e.title).join("\n")}`,
             );
           if (
             debug.distinctInfoboxes &&
@@ -118,7 +123,7 @@ Series comprises: ${episodes.map((e) => e.title).join("\n")}`
           `No infobox and failed to infer series type from article!
 Series: ${seriesTitle}
 Sentence: ${firstSentence}
-Series comprises: ${episodes.map((e) => e.title).join("\n")}`
+Series comprises: ${episodes.map((e) => e.title).join("\n")}`,
         );
       }
       log.setStatusBarText([`Series article: ${++progress}/${outOf}`]);

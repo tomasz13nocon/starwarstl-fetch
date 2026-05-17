@@ -45,12 +45,12 @@ export const toHumanReadable = (n: number): string | undefined => {
 export const log: Logger = process.stdout.isTTY
   ? logWithStatusbar()
   : {
-    setStatusBarText: () => { },
-    log: (...args) => console.log(...args),
-    info: (...args) => console.info("INFO: ", ...args),
-    warn: (...args) => console.warn("WARN: ", ...args),
-    error: (...args) => console.error("ERROR: ", ...args),
-  };
+      setStatusBarText: () => {},
+      log: (...args) => console.log(...args),
+      info: (...args) => console.info("INFO: ", ...args),
+      warn: (...args) => console.warn("WARN: ", ...args),
+      error: (...args) => console.error("ERROR: ", ...args),
+    };
 
 if (process.stdout.isTTY) {
   log.setStatusBarText([""]);

@@ -113,7 +113,10 @@ export async function figureOutFullTypes(
     else draft.fullType = "game";
   } else if (draft.type === "comic") {
     if (!doc) draft.fullType = "comic";
-    else if (/manga|japanese webcomic/i.test(doc.sentence(0).text()) || doc.categories().includes("Canon manga"))
+    else if (
+      /manga|japanese webcomic/i.test(doc.sentence(0).text()) ||
+      doc.categories().includes("Canon manga")
+    )
       draft.fullType = "comic-manga";
     else if (/manga|japanese webcomic/i.test(doc.sentence(1)?.text())) {
       draft.fullType = "comic-manga";

@@ -70,8 +70,16 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
 
   if (draft.isbn === "none") delete draft.isbn;
 
-  draft.publisher = infobox.get("publisher").links()?.map((e) => decode(e.page())) || null;
-  draft.series = infobox.get("series").links()?.map((e) => decode(getPageWithAnchor(e))) || null;
+  draft.publisher =
+    infobox
+      .get("publisher")
+      .links()
+      ?.map((e) => decode(e.page())) || null;
+  draft.series =
+    infobox
+      .get("series")
+      .links()
+      ?.map((e) => decode(getPageWithAnchor(e))) || null;
 
   const seasonText = infobox.get("season").text();
   if (seasonText) {
@@ -100,7 +108,9 @@ export function fillDraftWithInfoboxData(draft: MutableDraft, infobox: WtfInfobo
       episodeText = episodeText.reduce(reduceAstToText, "");
     }
     if (!/^\d+([–-]\d+)?$/.test(String(episodeText))) {
-      log.error(`Episode '${String(episodeText)}' does not have a valid format! Title: ${draft.title}`);
+      log.error(
+        `Episode '${String(episodeText)}' does not have a valid format! Title: ${draft.title}`,
+      );
     }
 
     draft.episode = episodeText;
@@ -190,10 +200,7 @@ function processAst(sentence: WtfInfoboxValue): string | AstNode[] | null | WtfI
   return newAst.length === 1 && newAst[0]?.type === "text" ? newAst[0].text : newAst;
 }
 
-function getInfoboxData(
-  infobox: WtfInfobox,
-  keys: readonly InfoboxField[],
-): InfoboxData {
+function getInfoboxData(infobox: WtfInfobox, keys: readonly InfoboxField[]): InfoboxData {
   const ret: InfoboxData = {};
   for (let key of keys) {
     if (typeof key === "string") key = { aliases: [key] };

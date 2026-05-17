@@ -1,12 +1,24 @@
 import config, { debug } from "../config.ts";
 import { fetchWookiee } from "../fetchWookiee.ts";
 import { UnsupportedDateFormat, parseWookieepediaDate } from "../parseWookieepediaDate.ts";
-import { docFromPage, fillDraftWithInfoboxData, getAppearances, reduceAstToText } from "../parsing/index.ts";
+import {
+  docFromPage,
+  fillDraftWithInfoboxData,
+  getAppearances,
+  reduceAstToText,
+} from "../parsing/index.ts";
 import { log } from "../util.ts";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.ts";
 import { allowedAppCategories } from "../const.ts";
-import type { AppearanceEntry, AppearanceTemplate, AppearancesDrafts, MediaDraft, MediaStageResult, SeriesDraft } from "../types/index.ts";
+import type {
+  AppearanceEntry,
+  AppearanceTemplate,
+  AppearancesDrafts,
+  MediaDraft,
+  MediaStageResult,
+  SeriesDraft,
+} from "../types/index.ts";
 
 let { CACHE_PAGES } = config();
 
@@ -30,8 +42,8 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
   for await (let page of pages) {
     if (debug.article && debug.article !== page.title) continue;
 
-      if (!("wikitext" in page)) continue;
-      const matchingDrafts = drafts.filter((d) => (d.href ?? d.title) === page.title);
+    if (!("wikitext" in page)) continue;
+    const matchingDrafts = drafts.filter((d) => (d.href ?? d.title) === page.title);
     if (matchingDrafts.length === 0) {
       log.error(
         `No matching draft for: "${page.title}". ${page.normalizedFrom ? 'Title was normalized from "' + page.normalizedFrom + '"' : "Title was NOT normalized."}`,
@@ -133,8 +145,8 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
         if (draft.type === "tv" && draft.series.length > 1) {
           log.warn(
             `${draft.title} has type "tv" and belongs to multiple series.` +
-            " This can cause bugs in frontend!" +
-            " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples.",
+              " This can cause bugs in frontend!" +
+              " Use of buildTvImagePath based on series array and collapsing adjacent tv episodes are some examples.",
           );
         }
         for (let seriesTitle of draft.series) {

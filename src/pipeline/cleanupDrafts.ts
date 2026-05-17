@@ -6,7 +6,7 @@ export function cleanupDraft<T extends object>(draft: T): void {
       value === null ||
       value === ""
     ) {
-        delete draft[key as keyof T];
+      delete draft[key as keyof T];
     }
   }
 }
