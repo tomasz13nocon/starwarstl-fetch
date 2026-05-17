@@ -68,3 +68,35 @@ export type InfoboxFieldMapper<TDraft> = (
 ) => void | Promise<void>;
 
 export type ParsedInfoboxField = string | AstNode[];
+
+export type WtfTemplateParseValue = string | string[] | undefined;
+
+export type WtfTemplateParseResult = {
+  list?: string[];
+  [key: string]: WtfTemplateParseValue;
+};
+
+export type WtfTemplateParser = (
+  templateWikitext: string,
+  positionalKeys?: string[],
+) => WtfTemplateParseResult;
+
+export type WtfExtensionModels = {
+  parse: WtfTemplateParser;
+};
+
+export type WtfTemplateHandler = (
+  templateWikitext: string,
+  list: WtfTemplateParseResult[],
+) => string;
+
+export type WtfTemplateHandlers = Record<string, WtfTemplateHandler>;
+
+export type WtfExtension = (models: WtfExtensionModels, templates: WtfTemplateHandlers) => void;
+
+export type WtfParser = {
+  (wikitext: string, options?: object): WtfDocument;
+  extend(extension: WtfExtension): WtfParser;
+  plugin(extension: WtfExtension): WtfParser;
+  version: string;
+};

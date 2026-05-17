@@ -1,7 +1,7 @@
-import wtf from "wtf_wikipedia";
+import wtf from "./wtf.ts";
 import { log } from "./util.ts";
 
-import type { WtfTemplateParseResult, WtfTemplateParser } from "wtf_wikipedia";
+import type { WtfTemplateParseResult, WtfTemplateParser } from "./types/wtf.ts";
 
 function value(value: WtfTemplateParseResult[string]): string | undefined {
   if (typeof value === "string" || value === undefined) return value;

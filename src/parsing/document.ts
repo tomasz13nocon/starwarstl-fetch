@@ -1,4 +1,4 @@
-import wtf from "wtf_wikipedia";
+import wtf from "../wtf.ts";
 
 import { fetchWookiee } from "../fetchWookiee.ts";
 import netLog from "../netLog.ts";

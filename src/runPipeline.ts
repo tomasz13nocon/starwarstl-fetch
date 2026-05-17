@@ -15,7 +15,7 @@
  * @module runPipeline
  */
 
-import wtf from "wtf_wikipedia";
+import wtf from "./wtf.ts";
 import initWtf from "./initWtf.ts";
 import { log } from "./util.ts";
 import config from "./config.ts";
