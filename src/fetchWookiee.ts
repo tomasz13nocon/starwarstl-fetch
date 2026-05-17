@@ -1,4 +1,3 @@
-import NodeFetchCache, { FileSystemCache } from "node-fetch-cache";
 import config, { debug } from "./config.ts";
 import { MW_API_USER_AGENT } from "./const.ts";
 import { log } from "./util.ts";
@@ -27,10 +26,6 @@ type ApiResponse = {
     normalized?: ApiNormalizedTitle[];
   };
 };
-
-const fetchCache = NodeFetchCache.create({
-  cache: new FileSystemCache(),
-});
 
 // Joins titles with pipe and returns a wookieepedia API URL string
 function createUrl(titles: string[], apiParams: ApiParams): string {
@@ -90,7 +85,6 @@ function assertImageInfoPage(page: ApiPage): asserts page is ApiPage & {
 const fetchWookieeHelper = async function* (
   titles: TitleInput,
   apiParams: ApiParams = {},
-  cache = true,
 ): AsyncGenerator<ApiPage> {
   if (typeof titles === "string") titles = [titles];
 
@@ -99,14 +93,13 @@ const fetchWookieeHelper = async function* (
   // Fandom allows up to 50 titles per request
   for (let i = 0; i < titles.length; i += 50) {
     const apiUrl = createUrl(titles.slice(i, i + 50), apiParams);
-    const resp = cache ? await fetchCache(apiUrl, opts) : await fetch(apiUrl, opts);
+    const resp = await fetch(apiUrl, opts);
     netLog.requestNum++;
 
     if (!resp.ok) {
       throw new WookieepediaApiError("Non 2xx response status! Response:\n" + JSON.stringify(resp));
     }
 
-    // TODO: using blob() with node-fetch-cache causes node to hang forever. Uncomment when fixed
     // let respSize = (await resp.clone().blob()).size;
     // netLog.bytesRecieved += respSize;
     // log.info(`Recieved ${toHumanReadable(respSize)} of ${apiParams.prop}`);
@@ -161,13 +154,12 @@ const fetchWookieeHelper = async function* (
 // titles needs to be a string (single title) or a non empty array of strings
 const fetchWookieeRemote = async function* (
   titles: TitleInput,
-  cache = true,
 ): AsyncGenerator<WookieepediaPageResult> {
-  for await (const page of fetchWookieeHelper(
-    titles,
-    { prop: "revisions", rvprop: "content|timestamp", rvslots: "main" },
-    cache,
-  )) {
+  for await (const page of fetchWookieeHelper(titles, {
+    prop: "revisions",
+    rvprop: "content|timestamp",
+    rvslots: "main",
+  })) {
     if (page.invalid !== undefined) {
       throw new WookieepediaPageError(
         `Page ${page.title} is invalid. invalid=true returned from the API. Invalid reason: ${page.invalidreason}`,
@@ -195,13 +187,12 @@ const fetchWookieeRemote = async function* (
 // Wrapper that delegates to local or remote based on config
 export const fetchWookiee = async function* (
   titles: TitleInput,
-  cache = true,
 ): AsyncGenerator<WookieepediaPageResult> {
   const { LOCAL, LEGENDS } = config();
   if (LOCAL) {
-    yield* fetchWookieeLocal(titles, cache, LEGENDS);
+    yield* fetchWookieeLocal(titles, LEGENDS);
   } else {
-    yield* fetchWookieeRemote(titles, cache);
+    yield* fetchWookieeRemote(titles);
   }
 };
 

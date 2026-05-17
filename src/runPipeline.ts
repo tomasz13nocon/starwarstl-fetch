@@ -51,7 +51,7 @@ import { isPageMissing } from "./types/wookieepedia.ts";
  */
 export async function runPipeline(options: PipelineOptions = {}): Promise<PipelineResult> {
   const { skipImages = false, skipValidatePageIds = false, limit = 0 } = options;
-  const { CACHE_PAGES, LEGENDS } = config();
+  const { LEGENDS } = config();
 
   // Initialize wtf_wikipedia with custom templates
   initWtf();
@@ -61,7 +61,7 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
   const timelinePage = `Timeline of ${LEGENDS ? "legends" : "canon"} media`;
   log.info(`Fetching ${timelinePage}...`);
 
-  const timelineResult = await fetchWookiee(timelinePage, CACHE_PAGES).next();
+  const timelineResult = await fetchWookiee(timelinePage).next();
   if (timelineResult.done) {
     throw new PipelineError(`No page returned for ${timelinePage}`);
   }

@@ -175,13 +175,11 @@ export async function fetchTimelineLocal(legends = false): Promise<WookieepediaP
 /**
  * Local version of fetchWookiee - yields page data from fixtures.
  * @param {string|string[]} titles - Page title(s) to fetch
- * @param {boolean} _cache - Ignored (for API compatibility)
  * @param {boolean} legends - Whether to use legends continuity
  * @yields {object} Page data with title, pageid, wikitext, timestamp
  */
 export async function* fetchWookieeLocal(
   titles: TitleInput,
-  _cache = true,
   legends = false,
 ): AsyncGenerator<WookieepediaPageResult> {
   if (typeof titles === "string") titles = [titles];

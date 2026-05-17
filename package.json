@@ -29,7 +29,6 @@
     "log-with-statusbar": "^1.2.0",
     "md5": "^2.3.0",
     "mongodb": "^6.1.0",
-    "node-fetch-cache": "^4.1.0",
     "redis": "^4.6.10",
     "sharp": "^0.33.5",
     "wtf_wikipedia": "file:wtf_wikipedia"
