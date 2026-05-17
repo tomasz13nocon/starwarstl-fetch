@@ -29,6 +29,8 @@ npm test -- --project integration # Run integration tests (excludes regression)
 npm test -- --project regression # Run regression test only
 ```
 
+**Regression tests are mandatory after every code change during the TypeScript refactor.** The regression suite is the primary guard against behavior changes; do not consider a refactor complete, and do not commit it, until `npm test -- --project regression` has passed unless the user explicitly says otherwise.
+
 ### wtf_wikipedia Structure
 
 The `wtf_wikipedia/` directory contains a custom fork of the wikitext parser. Key locations:

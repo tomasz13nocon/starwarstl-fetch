@@ -32,6 +32,10 @@ function optionalDocumentSentenceText(
   return sentenceText(doc, index);
 }
 
+function nullableSentenceText(doc: WtfDocument, index: number): string | undefined {
+  return doc.sentence(index)?.text();
+}
+
 function paragraphText(doc: WtfDocument, index: number): string {
   const paragraph = doc.paragraph(index);
   if (paragraph === null)
@@ -156,7 +160,7 @@ export async function figureOutFullTypes(
       doc.categories().includes("Canon manga")
     )
       draft.fullType = "comic-manga";
-    else if (/manga|japanese webcomic/i.test(optionalDocumentSentenceText(doc, 1) ?? "")) {
+    else if (/manga|japanese webcomic/i.test(nullableSentenceText(doc, 1) ?? "")) {
       draft.fullType = "comic-manga";
       if (!suppressLog.lowConfidenceManga.includes(draft.title))
         log.warn(

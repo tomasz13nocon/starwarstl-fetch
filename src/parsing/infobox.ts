@@ -65,7 +65,7 @@ function requireTextNode(astNode: RawAstNode): TextNode & Record<string, unknown
 }
 
 function requireAstNode(astNode: RawAstNode): AstNode {
-  const { text: rawText, type: _rawType, ...rest } = astNode;
+  const rawText = astNode.text;
   switch (astNode.type) {
     case "text":
     case "note":
@@ -76,27 +76,39 @@ function requireAstNode(astNode: RawAstNode): AstNode {
       if (typeof astNode.page !== "string") break;
       if (astNode.type === "internal link")
         return {
-          ...rest,
-          type: "internal link",
           page: astNode.page,
+          ...(typeof astNode.anchor === "string" ? { anchor: astNode.anchor } : {}),
           ...(typeof rawText === "string" ? { text: rawText } : {}),
+          type: "internal link",
+        };
+      if (typeof rawText === "string")
+        return {
+          page: astNode.page,
+          ...(typeof astNode.anchor === "string" ? { anchor: astNode.anchor } : {}),
+          ...(typeof astNode.wiki === "string" ? { wiki: astNode.wiki } : {}),
+          ...(typeof astNode.href === "string" ? { href: astNode.href } : {}),
+          type: "interwiki link",
+          text: rawText,
         };
       return {
-        ...rest,
-        type: "interwiki link",
         page: astNode.page,
-        ...(typeof rawText === "string" ? { text: rawText } : {}),
+        ...(typeof astNode.anchor === "string" ? { anchor: astNode.anchor } : {}),
+        ...(typeof astNode.wiki === "string" ? { wiki: astNode.wiki } : {}),
+        ...(typeof astNode.href === "string" ? { href: astNode.href } : {}),
+        type: "interwiki link",
       };
     case "external link":
       if (typeof astNode.site !== "string") break;
       if (typeof rawText === "string")
         return {
-          ...rest,
-          type: "external link",
           site: astNode.site,
           text: rawText,
+          type: "external link",
         };
-      return { ...rest, type: "external link", site: astNode.site };
+      return {
+        site: astNode.site,
+        type: "external link",
+      };
   }
   throw new Error(`Unexpected wtf_wikipedia AST node shape: ${JSON.stringify(astNode)}`);
 }
