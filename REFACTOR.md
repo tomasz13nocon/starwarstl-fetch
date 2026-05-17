@@ -336,32 +336,79 @@ scripts/
 
 ---
 
-## Phase 8: Refactor Cleanup & Handoff Readiness
+## Phase 8: Code Quality Hardening
 
-**Goal:** Remove refactor-only scaffolding and leave the project in a clear, current, development-ready state for future contributors and agents.
+**Goal:** Finish the refactor as production-quality TypeScript rather than merely translated JavaScript. Do not change behavior for aesthetic reasons; each item should either remove a real maintenance hazard, tighten a weak boundary, or make an existing invariant explicit. Regression tests remain mandatory after code changes.
 
-### 8.1 Remove Refactor Artifacts
+### 8.1 Make Static Analysis Clean
+
+- [ ] Run `npx eslint src` and fix all remaining errors without weakening the ESLint config as a shortcut
+- [ ] Fix the known `draft.audiobook === true` no-op in `src/pipeline/media.ts` if regression confirms it is an unintentional preserved bug; if behavior must remain unchanged, document why in code
+- [ ] Remove remaining non-null assertions from source code by proving the invariant, restructuring control flow, or using explicit runtime errors
+- [ ] Fix unsafe string/number operations, deprecated APIs, unbound methods, unused imports, and unnecessary conditions reported by lint
+- [ ] Keep `npm run check` passing after lint cleanup
+
+### 8.2 Tighten Type Boundaries Where They Matter
+
+- [ ] Define typed MongoDB collection document shapes for the data actually written by `src/index.ts` and exposed by `src/db.ts`
+- [ ] Replace broad `Record<string, unknown>` draft writes in infobox processing with a narrower typed assignment strategy, unless a specific dynamic boundary is unavoidable
+- [ ] Review `AppearanceCategory`/appearance draft types so known categories and unknown string categories are represented intentionally, not through redundant unions
+- [ ] Audit `any`, `unknown`, and assertion usage in `src/`; keep assertions only at external/dynamic boundaries such as `wtf_wikipedia`, JSON fixtures, MediaWiki responses, and the native parser
+- [ ] For unavoidable dynamic parser boundaries, ensure the runtime validation errors are clear and close to the boundary
+
+### 8.3 Clarify Pipeline State Without Rewriting It Prematurely
+
+- [ ] Review the mutable draft lifecycle and identify temporary fields, required-by-stage fields, and final DB fields
+- [ ] Either encode those lifecycle expectations in types/helpers or document them in focused source comments where future changes are likely to break invariants
+- [ ] Avoid a broad immutable-pipeline rewrite unless inspection reveals concrete bugs or type problems that cannot be fixed cleanly within the current mutable pipeline
+- [ ] Ensure cleanup of temporary fields is centralized and type-aware enough that new temporary fields are not accidentally persisted
+- [ ] Review cross-stage coupling around `series`, `fullType`, `dateParsed`, `appearances`, and image fields for hidden assumptions that should become explicit checks
+
+### 8.4 Validate Error Handling and Failure Modes
+
+- [ ] Review custom error classes added in Phase 7 and ensure they are used only where they add useful context or handling behavior
+- [ ] Convert remaining generic throws in core pipeline/fetch/parsing paths to contextual errors where that materially improves diagnosis
+- [ ] Preserve intentionally logged-and-continued wiki/parser issues; do not turn noisy Wookieepedia data problems into hard failures unless existing behavior already required that
+- [ ] Ensure expected native appearance parser failures for "A New Dawn" and "'Star Wars'' 4" remain non-blocking as described in `AGENTS.md`
+
+### 8.5 Final Code Validation
+
+- [ ] `npm run check` passes
+- [ ] `npx eslint src` passes
+- [ ] `npm test -- --project unit` passes
+- [ ] `npm test -- --project integration` passes
+- [ ] `npm test -- --project regression` passes
+- [ ] `npm run fetch -- --local` completes, ignoring only documented expected appearance-parser errors
+- [ ] Review the final diff from Phase 8 and confirm every code change is justified by a concrete quality, safety, or maintainability benefit
+
+---
+
+## Phase 9: Final Refactor Cleanup & Handoff Readiness
+
+**Goal:** After the codebase is considered high quality, remove refactor-only scaffolding and leave the project in a clear, current, development-ready state for future contributors and agents. This phase is deliberately last; do not treat documentation cleanup as a substitute for code-quality work.
+
+### 9.1 Remove Refactor Artifacts
 
 - [ ] Remove obsolete migration shims, temporary declarations, compatibility wrappers, and TODOs that only existed to support the JS → TS transition
 - [ ] Delete or archive stale refactor-only scripts, notes, and generated files that are no longer useful after the migration
 - [ ] Review comments added during the refactor and remove anything that describes temporary process instead of lasting code behavior
 - [ ] Ensure remaining TODO/FIXME comments describe real future work, not completed refactor steps
 
-### 8.2 Update Project Documentation
+### 9.2 Update Project Documentation
 
 - [ ] Update `AGENTS.md` with current codebase guidance for future agents, removing obsolete refactor-era instructions where appropriate
 - [ ] Update `tests/README.md` and related docs to match the final test projects, baseline workflow, fixture layout, and expected slow/known-failure cases
 - [ ] Document the final pipeline architecture, core domain types, data flow, and extension points for future development
 - [ ] Update package scripts/documentation comments so command descriptions match the final implementation
 
-### 8.3 Architecture & Maintenance Review
+### 9.3 Architecture & Maintenance Review
 
 - [ ] Verify project descriptions no longer refer to the codebase as mid-migration unless that remains true
 - [ ] Ensure source comments explain non-obvious Wookieepedia/wtf_wikipedia/native-parser behavior rather than historical refactor decisions
 - [ ] Confirm new code organization is discoverable: entry point, config, fetchers, parsing modules, pipeline stages, image storage, and DB layer
 - [ ] Document operational requirements: environment variables, MongoDB expectations, image storage modes, local fixtures, and cron usage
 
-### 8.4 Final Readiness Checks
+### 9.4 Final Readiness Checks
 
 - [ ] Make a final pass over docs from the perspective of a future agent starting with no conversation context
 
@@ -406,6 +453,9 @@ scripts/
 5. **Pipeline output identical** to pre-refactor baseline
 6. **Offline mode** works for development
 7. **Improved code organization** - especially `parsing.js` split
+8. **Static analysis clean** - TypeScript and ESLint both pass without local rule weakening
+9. **Typed operational boundaries** - database writes, parser/native/API boundaries, and pipeline temporary state are explicit enough for safe future changes
+10. **No unjustified churn** - final quality work fixes concrete risks or clarifies real invariants, not style preferences for their own sake
 
 ---
 
