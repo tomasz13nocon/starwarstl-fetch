@@ -91,7 +91,9 @@ export function getAppearances(doc: WtfDocument): ArticleAppearances | undefined
     const error = e as Error;
     const paragraph = doc.paragraph(0);
     if (paragraph === null)
-      throw new Error(`Expected first paragraph in ${doc.title() ?? "untitled document"}`);
+      throw new Error(`Expected first paragraph in ${doc.title() ?? "untitled document"}`, {
+        cause: e,
+      });
     log.error(
       `Error parsing appearances for ${doc.title()}\n${error.message}\nFirst paragraph of the page: ${paragraph.text()}`,
     );

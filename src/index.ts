@@ -117,8 +117,8 @@ Number of redirects encountered: ${netLog.redirectNum}
 Total API data recieved: ${toHumanReadable(netLog.bytesRecieved)}
 Total image data recieved: ${toHumanReadable(netLog.imageBytesRecieved)}
 Number of HTTP requests made: ${netLog.requestNum}
-${netLog.s3read ? "Number of S3 read requests: " + netLog.s3read : ""}
-${netLog.s3write ? "Number of S3 write requests: " + netLog.s3write : ""}`,
+${netLog.s3read ? "Number of S3 read requests: " + netLog.s3read.toString() : ""}
+${netLog.s3write ? "Number of S3 write requests: " + netLog.s3write.toString() : ""}`,
   );
 }
 

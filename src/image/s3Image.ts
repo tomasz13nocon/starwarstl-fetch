@@ -63,7 +63,7 @@ export class S3Image implements ImageStorage {
         continuationToken = response.NextContinuationToken;
       }
     }
-    return S3Image.#existsCache[size]?.[this.filename] ?? false;
+    return S3Image.#existsCache[size][this.filename] ?? false;
   }
 
   async read(size: ImageSize = Size.FULL): Promise<Buffer> {
