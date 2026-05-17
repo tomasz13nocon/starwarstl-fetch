@@ -145,7 +145,7 @@ function processAst(sentence: WtfInfoboxValue): string | AstNode[] | null | WtfI
     ) as TextNode & Record<string, unknown>;
     if (astNode.type !== "text") {
       delete astNode.raw;
-      current.push(astNode as AstNode);
+      current.push(astNode);
       continue;
     }
 

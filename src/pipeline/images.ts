@@ -60,7 +60,7 @@ export default async function images(drafts: MediaDraft[]): Promise<void> {
 
   let imageinfos = fetchImageInfo(covers);
 
-  for await (let imageinfo of imageinfos as AsyncGenerator<WookieepediaImageInfoResult>) {
+  for await (let imageinfo of imageinfos) {
     // Keep in mind imageinfo.title is a filename of the image, not the article title
     const imageTitle = ("normalizedFrom" in imageinfo && imageinfo.normalizedFrom ? imageinfo.normalizedFrom : imageinfo.title);
     const coverTitle = imageTitle.slice(5);

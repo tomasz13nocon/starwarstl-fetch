@@ -50,7 +50,7 @@ export default function timeline(table: TimelineRow[]): MediaDraft[] {
       titleText: item.Title.text, // For finding duplicates, removed later
     };
 
-    if (item.col2.text === "JR") draft.fullType = "book-jr" as FullType;
+    if (item.col2.text === "JR") draft.fullType = "book-jr";
     let notes = item.Title.text.split("*");
     if (notes.length > 1) {
       const timelineNote: ListNode = {

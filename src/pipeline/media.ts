@@ -18,7 +18,7 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
   log.setStatusBarText([`Article: ${progress}/${outOf}`]);
 
   const titles = drafts.map((d) => d.href ?? d.title);
-  for (var i = 0; i < titles.length; i++) {
+  for (let i = 0; i < titles.length; i++) {
     if (!titles[i]) throw new Error(`No title! Between ${titles[i - 1]} and ${titles[i + 1]}`);
   }
 

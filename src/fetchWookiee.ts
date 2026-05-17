@@ -49,7 +49,7 @@ function createUrl(titles: string[], apiParams: ApiParams): string {
     "&maxlag=1" +
     "&maxage=604800" +
     `&titles=${titlesStr}` +
-    `${paramsStr}`
+    paramsStr
   );
 }
 
