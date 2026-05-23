@@ -12,7 +12,7 @@
 NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-nvm use 19
+nvm use 24
 echo "using node $(node -v)"
 
 cd $FETCH_DIR
