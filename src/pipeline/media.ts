@@ -7,6 +7,7 @@ import {
   getAppearances,
   reduceAstToText,
 } from "../parsing/index.ts";
+import { isPageMissing } from "../types/wookieepedia.ts";
 import { log } from "../util.ts";
 import { writeFile } from "fs/promises";
 import { cleanupDraft } from "./cleanupDrafts.ts";
@@ -129,6 +130,16 @@ export default async function media(drafts: MediaDraft[]): Promise<MediaStageRes
 
   for await (let page of pages) {
     if (debug.article && debug.article !== page.title) continue;
+
+    if (isPageMissing(page)) {
+      const matchingDrafts = drafts.filter((d) => (d.href ?? d.title) === page.title);
+      for (let draft of matchingDrafts) {
+        redlinkLogger()(`${page.title} is a redlink.`);
+        draft.redlink = true;
+        log.setStatusBarText([`Article: ${++progress}/${outOf}`]);
+      }
+      continue;
+    }
 
     if (!("wikitext" in page)) continue;
     const matchingDrafts = drafts.filter((d) => (d.href ?? d.title) === page.title);

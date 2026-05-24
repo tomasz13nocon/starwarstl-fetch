@@ -83,6 +83,8 @@ export default async function validatePageIds(
     .toArray();
 
   for (let newMedia of drafts) {
+    if (!Number.isInteger(newMedia.pageid)) continue;
+
     if (!oldPageids.has(newMedia.pageid)) {
       log.info(
         `New media: ${newMedia.fullType ?? newMedia.type} "${newMedia.title}" with pageid ${newMedia.pageid}`,

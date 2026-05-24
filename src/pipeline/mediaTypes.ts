@@ -14,6 +14,7 @@ export default async function mediaTypes(
   // Second iteration over media to get full types, for which we need series data.
   // Second iteration because we want to batch series fetching.
   for (let draft of drafts) {
+    if (draft.redlink) continue;
     if (!draft.doc) throw new PipelineError(`Missing parsed doc for ${draft.title}`);
     await figureOutFullTypes(draft, draft.doc, false, seriesDrafts);
     delete draft.doc;
